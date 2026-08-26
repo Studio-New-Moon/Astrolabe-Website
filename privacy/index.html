@@ -85,14 +85,14 @@
 <main>
   <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
   <h1>Privacy Policy</h1>
-  <div class="dates">Effective date: August 25, 2026 &middot; Last updated: 2026-08-23</div>
+  <div class="dates">Effective date: August 25, 2026 &middot; Last updated: 2026-08-25</div>
 
-  <p class="lede">Follow My Astrolabe is made by Studio New Moon. The short version: it computes your birth chart and reads the sky on your own device. We don't run servers, we don't have accounts, we don't show ads, and we don't collect analytics. Almost everything this policy describes never leaves your phone.</p>
+  <p class="lede">Follow My Astrolabe is made by Studio New Moon. The short version: it computes your birth chart and reads the sky on your own device. There are no accounts, no ads, and no analytics, and almost everything this policy describes never leaves your phone. The one exception is ordering a physical print &mdash; that involves a payment and a postal address, and is spelled out below.</p>
 
   <h2>Information the App Uses</h2>
 
   <h3>Birth details you enter</h3>
-  <p>Your name, birth date, birth time (or an approximate time window, if you don't know it exactly), and birth place are used to compute your natal chart &mdash; the core function of the app. This is done entirely on your device; nothing about your birth details is transmitted to us or to any server we operate, because no such server exists.</p>
+  <p>Your name, birth date, birth time (or an approximate time window, if you don't know it exactly), and birth place are used to compute your natal chart &mdash; the core function of the app. This is done entirely on your device. Nothing about your birth details is transmitted to us, and nothing about them reaches the print-ordering service described below either, even when you order a print.</p>
   <p>Looking up your birth place uses Apple's MapKit, which sends your search text to Apple's own map servers to find matching places and resolve the correct time zone &mdash; the same way typing an address into Apple Maps does. That exchange is between your device and Apple directly; we never see it, store it, or have access to it. Apple's own privacy practices govern that part of the lookup, described at <a href="https://www.apple.com/legal/privacy/">apple.com/legal/privacy</a>.</p>
   <p>Your birth details are stored locally on your device only, and stay there unless you delete the app.</p>
 
@@ -108,36 +108,45 @@
   <h3>Appearance and app settings</h3>
   <p>Things like your chosen color scheme, metal finish, font, and whether you've subscribed are stored locally so the app remembers your preferences between launches. None of this identifies you to us, because we never receive it in the first place.</p>
 
+  <h3>Ordering a print, if you choose to</h3>
+  <p>Chart to Canvas turns your chart into a physical print &mdash; and a physical print has to be paid for and posted somewhere. This one feature, alone in the app, involves information leaving your device and other companies handling it. None of it happens unless you start an order.</p>
+  <p>When you begin checkout, the app sends <strong>only the print itself</strong> &mdash; which product, what quantity, the price, and a link to the artwork &mdash; to a small ordering service we run on Cloudflare. That request carries nothing about you, and nothing from the birth details your chart was computed from.</p>
+  <p>Payment happens on <strong>Stripe</strong>'s own hosted checkout page, opened in a secure browser sheet. Your name, email address, shipping address, and card details are entered there, on Stripe's page, and go to Stripe. The app never sees your card number at any point.</p>
+  <p>Once Stripe confirms the payment, our ordering service passes your <strong>name, email address, and shipping address</strong> to <strong>Gelato</strong>, the print partner that produces and ships the poster &mdash; for the same reason any sender needs an address. Our service keeps no database of its own; it holds nothing after the order is placed. What record exists lives with Stripe and Gelato, who handle it under their own privacy policies (<a href="https://stripe.com/privacy">stripe.com/privacy</a>, and Gelato's policy on their own site).</p>
+
   <h2>What We Don't Do</h2>
   <ul>
-    <li><strong>We don't operate a server that the app talks to.</strong> There is currently no backend of any kind &mdash; no account system, no login, no cloud sync.</li>
+    <li><strong>We don't run an account system.</strong> There is no login, no cloud sync, and no profile of you anywhere but on your own phone. The one service we do operate &mdash; the print-ordering service described above &mdash; is only reachable when you place an order, and stores nothing.</li>
     <li><strong>We don't use analytics or crash-reporting SDKs.</strong></li>
     <li><strong>We don't show ads</strong>, and we don't use any advertising or tracking SDKs.</li>
-    <li><strong>We don't sell, rent, or share your information</strong>, because we don't collect it in the first place &mdash; there's nothing to share.</li>
+    <li><strong>We don't sell or rent your information to anyone.</strong> The only information we ever pass on is the name and address a print has to be shipped to, and it goes only to the printer who ships it.</li>
     <li><strong>We don't use App Tracking Transparency</strong> because the app doesn't track you across other companies' apps or websites.</li>
   </ul>
 
   <h2>Third Parties</h2>
-  <p>The only outside party involved in anything the app does is <strong>Apple</strong>, via MapKit (birth-place search, described above) and via the App Store itself (app distribution, and in-app purchases, if you choose to subscribe &mdash; handled entirely by Apple's own StoreKit; we never see or store your payment information). We don't integrate any other third-party service, SDK, or library.</p>
+  <p><strong>Apple</strong> is involved in the ordinary running of the app: MapKit for birth-place search (described above), and the App Store itself for distribution and for subscriptions, which are handled entirely by Apple's own StoreKit &mdash; we never see or store your payment information.</p>
+  <p><strong>Stripe</strong> and <strong>Gelato</strong> are involved only if you order a print, exactly as described above, and <strong>Cloudflare</strong> hosts the small ordering service that connects the two along with the print artwork itself.</p>
+  <p>Beyond those, we integrate no third-party service, SDK, or library &mdash; in particular none for analytics, advertising, or crash reporting.</p>
 
   <h2>Children's Privacy</h2>
-  <p>Follow My Astrolabe is not directed at children under 13, and we don't knowingly collect personal information from anyone in that age group. Since the app collects no information from us in the first place, this is consistent with how the app works for every user regardless of age.</p>
+  <p>Follow My Astrolabe is not directed at children under 13, and we don't knowingly collect personal information from anyone in that age group. The app asks for nothing that identifies you, and the one place personal information does change hands &mdash; ordering a print &mdash; requires a payment card in the first place.</p>
 
   <h2>Your Choices</h2>
-  <p>Because your information lives on your device rather than on a server we control, you're always in direct control of it:</p>
+  <p>Because your information lives on your device rather than in an account on a server, you're always in direct control of it:</p>
   <ul>
     <li><strong>To remove your birth details, photo, or preferences:</strong> edit or clear them from within the app, or delete the app entirely &mdash; deleting the app removes everything Follow My Astrolabe stored on your device.</li>
     <li><strong>To revoke location, motion, or notification permissions:</strong> use your device's Settings app at any time; the app degrades gracefully (a manual sky-pointing slider, or simply no future notification) rather than breaking.</li>
+    <li><strong>For a print you ordered:</strong> the record of it sits with Stripe and Gelato rather than with us, so write to us and we'll help you reach the right one.</li>
   </ul>
 
   <h2>Changes to This Policy</h2>
-  <p>If this policy changes &mdash; for example, if a future version of the app adds features that do involve a server, such as the friend-sharing feature described in our own product plans but not yet built &mdash; we'll update this document and its effective date before that feature ships, and describe plainly what's new.</p>
+  <p>If this policy changes &mdash; for example, if the friend-sharing feature described in our own product plans is eventually built, since sharing something with a friend necessarily involves sending it somewhere &mdash; we'll update this document and its effective date before that feature ships, and describe plainly what's new.</p>
 
   <h2>Contact Us</h2>
   <p>If you have questions about this policy or how Follow My Astrolabe handles information, contact us at:</p>
   <p><strong><a href="mailto:morgan@followmyastrolabe.com">morgan@followmyastrolabe.com</a></strong></p>
 
-  <footer><a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a><br><br>This policy is written to be genuinely accurate to how the app works today, not boilerplate &mdash; if a future feature (like real in-app purchases or friend-sharing) changes what the app does, this document is revised alongside that feature, not after the fact.</footer>
+  <footer><a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a><br><br>This policy is written to be genuinely accurate to how the app works today, not boilerplate &mdash; when a feature changes what the app does, as print ordering did, this document is revised alongside it rather than after the fact.</footer>
 </main>
 </body>
 </html>
