@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Astrolabe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root{
+    --ground: #f7f1e3;
+    --panel: #eee2c4;
+    --ink: #241a10;
+    --muted: #6c5a3d;
+    --brass: #9c7436;
+    --rule: rgba(156,116,54,0.3);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground: #17110a;
+      --panel: #221a10;
+      --ink: #ede0c4;
+      --muted: #a6926c;
+      --brass: #c8993f;
+      --rule: rgba(200,153,63,0.3);
+    }
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    padding: clamp(28px, 6vw, 72px) 20px 90px;
+  }
+  main{ max-width: 660px; margin: 0 auto; }
+  .eyebrow a{ color: var(--brass); text-decoration: none; }
+  .eyebrow a:hover{ text-decoration: underline; }
+  .eyebrow{
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 8px;
+  }
+  h1{
+    font-size: clamp(28px, 5vw, 36px);
+    line-height: 1.15;
+    margin: 0 0 14px;
+  }
+  .dates{ color: var(--muted); font-size: 14.5px; margin-bottom: 26px; }
+  .lede{
+    font-size: 18px;
+    padding: 18px 20px;
+    background: var(--panel);
+    border-radius: 10px;
+    border: 1px solid var(--rule);
+    margin-bottom: 8px;
+  }
+  h2{
+    font-size: 22px;
+    margin: 46px 0 4px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px;
+  }
+  h3{ font-size: 17px; margin: 26px 0 6px; color: var(--brass); }
+  p, li{ margin: 10px 0; }
+  ul{ padding-left: 22px; }
+  a{ color: var(--brass); }
+  strong{ color: var(--ink); }
+  footer{
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow"><a href="/">Astrolabe</a></div>
+  <h1>Privacy Policy</h1>
+  <div class="dates">Effective date: [August 25, 2026] &middot; Last updated: 2026-08-23</div>
+
+  <p class="lede">Astrolabe is made by Studio New Moon. The short version: Astrolabe computes your birth chart and reads the sky on your own device. We don't run servers, we don't have accounts, we don't show ads, and we don't collect analytics. Almost everything this policy describes never leaves your phone.</p>
+
+  <h2>Information the App Uses</h2>
+
+  <h3>Birth details you enter</h3>
+  <p>Your name, birth date, birth time (or an approximate time window, if you don't know it exactly), and birth place are used to compute your natal chart &mdash; the core function of the app. This is done entirely on your device; nothing about your birth details is transmitted to us or to any server we operate, because no such server exists.</p>
+  <p>Looking up your birth place uses Apple's MapKit, which sends your search text to Apple's own map servers to find matching places and resolve the correct time zone &mdash; the same way typing an address into Apple Maps does. That exchange is between your device and Apple directly; we never see it, store it, or have access to it. Apple's own privacy practices govern that part of the lookup, described at <a href="https://www.apple.com/legal/privacy/">apple.com/legal/privacy</a>.</p>
+  <p>Your birth details are stored locally on your device only, and stay there unless you delete the app.</p>
+
+  <h3>A profile photo, if you choose to add one</h3>
+  <p>You can optionally add a photo of yourself, shown only within the app. It's selected through Apple's own system photo picker, which never gives the app access to your photo library as a whole &mdash; only the one image you actively choose. That photo is stored locally on your device and is never uploaded anywhere.</p>
+
+  <h3>Location and motion, for the Sky feature</h3>
+  <p>If you use the "point your phone at the sky" feature, the app reads your device's location (only while the app is in use) and motion sensors (compass and gyroscope) to figure out which part of the sky you're facing. This is computed and used entirely on-device, in real time, and is never stored or transmitted. If you decline these permissions, the app falls back to a manual slider instead.</p>
+
+  <h3>Notification preference</h3>
+  <p>If you opt in to being notified about a future feature launch (currently offered for the in-progress Tarot section), the app asks iOS for permission to send local notifications and remembers that you asked, stored locally on your device. This is a local iOS notification preference, not a push notification service &mdash; no token, device identifier, or contact information is sent to us or to anyone else as part of this. As of this writing, no notification has anything to actually send yet; opting in simply reserves your place for when it does.</p>
+
+  <h3>Appearance and app settings</h3>
+  <p>Things like your chosen color scheme, metal finish, font, and whether you've subscribed are stored locally so the app remembers your preferences between launches. None of this identifies you to us, because we never receive it in the first place.</p>
+
+  <h2>What We Don't Do</h2>
+  <ul>
+    <li><strong>We don't operate a server that the app talks to.</strong> There is currently no backend of any kind &mdash; no account system, no login, no cloud sync.</li>
+    <li><strong>We don't use analytics or crash-reporting SDKs.</strong></li>
+    <li><strong>We don't show ads</strong>, and we don't use any advertising or tracking SDKs.</li>
+    <li><strong>We don't sell, rent, or share your information</strong>, because we don't collect it in the first place &mdash; there's nothing to share.</li>
+    <li><strong>We don't use App Tracking Transparency</strong> because the app doesn't track you across other companies' apps or websites.</li>
+  </ul>
+
+  <h2>Third Parties</h2>
+  <p>The only outside party involved in anything the app does is <strong>Apple</strong>, via MapKit (birth-place search, described above) and via the App Store itself (app distribution, and in-app purchases, if you choose to subscribe &mdash; handled entirely by Apple's own StoreKit; we never see or store your payment information). We don't integrate any other third-party service, SDK, or library.</p>
+
+  <h2>Children's Privacy</h2>
+  <p>Astrolabe is not directed at children under 13, and we don't knowingly collect personal information from anyone in that age group. Since the app collects no information from us in the first place, this is consistent with how the app works for every user regardless of age.</p>
+
+  <h2>Your Choices</h2>
+  <p>Because your information lives on your device rather than on a server we control, you're always in direct control of it:</p>
+  <ul>
+    <li><strong>To remove your birth details, photo, or preferences:</strong> edit or clear them from within the app, or delete the app entirely &mdash; deleting the app removes everything Astrolabe stored on your device.</li>
+    <li><strong>To revoke location, motion, or notification permissions:</strong> use your device's Settings app at any time; the app degrades gracefully (a manual sky-pointing slider, or simply no future notification) rather than breaking.</li>
+  </ul>
+
+  <h2>Changes to This Policy</h2>
+  <p>If this policy changes &mdash; for example, if a future version of the app adds features that do involve a server, such as the friend-sharing feature described in our own product plans but not yet built &mdash; we'll update this document and its effective date before that feature ships, and describe plainly what's new.</p>
+
+  <h2>Contact Us</h2>
+  <p>If you have questions about this policy or how Astrolabe handles information, contact us at:</p>
+  <p><strong><a href="mailto:morgan@followmyastrolabe.com">morgan@followmyastrolabe.com</a></strong></p>
+
+  <footer>This policy is written to be genuinely accurate to how the app works today, not boilerplate &mdash; if a future feature (like real in-app purchases or friend-sharing) changes what the app does, this document is revised alongside that feature, not after the fact.</footer>
+</main>
+</body>
+</html>
