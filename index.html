@@ -91,46 +91,16 @@
     text-align:center;
     border-bottom:1px solid var(--panel-line);
   }
-  .hero .wordmark{
-    font-size:clamp(44px,8vw,86px);
-    letter-spacing:.05em;
-    /* The exact ten-stop ramp the app's own title gradient uses
-       (RLegStarPointer's sibling Text in WelcomeView.swift), not a
-       simplified stand-in — this is meant to read as the same wordmark,
-       not a close cousin of it. */
-    background:linear-gradient(180deg,
-      #8A6C2E 0%,#D9B45F 9%,#FDF1CD 20%,#E6C47F 30%,#C19A4D 44%,
-      #9D7C33 56%,#BD9540 66%,#F2DDA0 79%,#C29C48 90%,#7A5F28 100%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    text-shadow:0 1px 0 rgba(0,0,0,.85), 0 3px 7px rgba(0,0,0,.45);
-    margin-bottom:18px;
-  }
-  /* The long leg of the R, carried past the glyph and finished with a
-     star pointer — the same detail the app's own welcome screen title
-     uses. Positioned as a sibling of the gradient-clipped `<h1>` rather
-     than nested inside it: a child element inside `background-clip:text`
-     content breaks the clip in some engines and blanks the glyph it
-     wraps (confirmed — the R disappeared entirely on first pass). The
-     offset is a percentage of the wrapper's own box, which equals the
-     rendered word's size, so it scales with the wordmark across
-     breakpoints without needing font-metric measurement. */
-  .wordmark-wrap{position:relative;display:inline-block;}
-  .star-pointer{
-    position:absolute;left:39.5%;top:48%;width:9%;height:auto;
-    overflow:visible;pointer-events:none;
+  .hero-mark{
+    width:min(620px,72vw);height:auto;margin:0 auto 22px;
   }
   .hero .subtitle{
     font-family:'Cinzel',Georgia,serif;font-weight:600;
-    font-size:clamp(13px,1.6vw,15px);letter-spacing:.16em;text-transform:uppercase;
-    color:var(--brass-bright);opacity:.85;margin:0 0 22px;
+    font-size:clamp(14px,1.8vw,17px);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--brass-bright);opacity:.9;margin:0;
   }
-  .hero .tagline{
-    font-style:italic;font-size:clamp(17px,2.4vw,22px);
-    color:#E8C87A;opacity:.85;max-width:560px;margin:0 auto 6px;
-  }
-  .hero .tagline b{color:var(--resist);font-style:normal;font-weight:600;opacity:1;}
   .hero-cta{
-    margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:14px;
+    margin-top:48px;display:flex;flex-direction:column;align-items:center;gap:14px;
   }
   .badge{
     display:inline-flex;align-items:center;gap:10px;
@@ -280,76 +250,12 @@
 <section class="hero" id="top">
   <div class="stars" aria-hidden="true"></div>
   <div class="wrap">
-    <div class="wordmark-wrap">
-      <h1 class="wordmark">ASTROLABE</h1>
-      <!-- Geometry and colour lifted directly from RLegStarPointer in
-           WelcomeView.swift (the app's own welcome-screen title), not
-           redrawn by eye: bead 8pt down the R's leg at 48.2°, an
-           8-spoke burst (4 long axis-aligned rays reaching 17, 4 short
-           diagonal rays reaching 8), same gold ramp throughout. -->
-      <svg class="star-pointer" viewBox="-13 -13 38 38" aria-hidden="true">
-        <defs>
-          <radialGradient id="beadGrad" gradientUnits="userSpaceOnUse" cx="4.432" cy="5.063" r="4.8">
-            <stop offset="0%" stop-color="#FDF1CD"/>
-            <stop offset="25%" stop-color="#F2DDA0"/>
-            <stop offset="50%" stop-color="#E6C47F"/>
-            <stop offset="75%" stop-color="#9D7C33"/>
-            <stop offset="100%" stop-color="#7A5F28"/>
-          </radialGradient>
-          <radialGradient id="burstGrad" gradientUnits="userSpaceOnUse" cx="5.332" cy="5.963" r="14">
-            <stop offset="0%" stop-color="#FFF8E6" stop-opacity=".5"/>
-            <stop offset="26%" stop-color="#E8C87A" stop-opacity=".42"/>
-            <stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </radialGradient>
-          <linearGradient id="shankGrad" gradientUnits="userSpaceOnUse" x1="-1" y1="-1.118" x2="5.332" y2="5.963">
-            <stop offset="0%" stop-color="#C6A14E"/>
-            <stop offset="50%" stop-color="#C19A4D"/>
-            <stop offset="100%" stop-color="#9D7C33"/>
-          </linearGradient>
-          <linearGradient id="rayL0" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="22.332" y2="5.963">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="rayL90" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="5.332" y2="22.963">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="rayL180" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="-11.668" y2="5.963">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="rayL270" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="5.332" y2="-11.037">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="rayS45" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="10.989" y2="11.620">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="rayS135" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="-.325" y2="11.620">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="rayS225" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="-.325" y2=".306">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="rayS315" gradientUnits="userSpaceOnUse" x1="5.332" y1="5.963" x2="10.989" y2=".306">
-            <stop offset="0%" stop-color="#FFF8E6"/><stop offset="22%" stop-color="#E8C87A" stop-opacity=".65"/><stop offset="100%" stop-color="#E8C87A" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <circle cx="5.332" cy="5.963" r="14" fill="url(#burstGrad)"/>
-        <g stroke-linecap="round" fill="none">
-          <line x1="5.332" y1="5.963" x2="22.332" y2="5.963" stroke="url(#rayL0)" stroke-width="1.2"/>
-          <line x1="5.332" y1="5.963" x2="5.332" y2="22.963" stroke="url(#rayL90)" stroke-width="1.2"/>
-          <line x1="5.332" y1="5.963" x2="-11.668" y2="5.963" stroke="url(#rayL180)" stroke-width="1.2"/>
-          <line x1="5.332" y1="5.963" x2="5.332" y2="-11.037" stroke="url(#rayL270)" stroke-width="1.2"/>
-          <line x1="5.332" y1="5.963" x2="10.989" y2="11.620" stroke="url(#rayS45)" stroke-width=".7"/>
-          <line x1="5.332" y1="5.963" x2="-.325" y2="11.620" stroke="url(#rayS135)" stroke-width=".7"/>
-          <line x1="5.332" y1="5.963" x2="-.325" y2=".306" stroke="url(#rayS225)" stroke-width=".7"/>
-          <line x1="5.332" y1="5.963" x2="10.989" y2=".306" stroke="url(#rayS315)" stroke-width=".7"/>
-        </g>
-        <line x1="-1" y1="-1.118" x2="5.332" y2="5.963" stroke="url(#shankGrad)" stroke-width="1.84" stroke-linecap="butt"/>
-        <circle cx="5.332" cy="5.963" r="3" fill="url(#beadGrad)"/>
-        <circle cx="5.332" cy="5.963" r="3" fill="none" stroke="#7A5F28" stroke-opacity=".55" stroke-width=".5"/>
-        <circle cx="4.252" cy="4.883" r=".78" fill="#fff" fill-opacity=".9"/>
-      </svg>
-    </div>
+    <!-- The actual rendered wordmark, cropped straight out of the app's
+         own welcome-screen screenshot rather than redrawn in CSS/SVG —
+         after two redraw attempts still didn't read as the same mark,
+         so this is the real pixels instead of an approximation of them. -->
+    <img class="hero-mark" src="assets/wordmark-hero.png" alt="ASTROLABE" width="670" height="138">
     <p class="subtitle">Astrology, Cast in Metal</p>
-    <p class="tagline">An Ancient Instrument for Navigating Your Way through the Stars…<br><b>Now on Your Phone.</b></p>
     <div class="hero-cta">
       <span class="badge"><span class="dot"></span> Coming Soon to the App Store</span>
       <span class="hero-note">iPhone &amp; iPad</span>
