@@ -8,15 +8,17 @@ Live at **[www.followmyastrolabe.com](https://www.followmyastrolabe.com)**.
 
 | Path | URL | Notes |
 |---|---|---|
-| `index.html` | `/` | Homepage. A placeholder — meant to be replaced. |
+| `index.html` | `/` | The real marketing site — hero, feature sections, pricing, footer. |
+| `assets/` | `/assets/` | Screenshots and the Studio New Moon logo marks the homepage embeds. |
 | `privacy/index.html` | `/privacy/` | Privacy policy. Copied from the original `astrolabe-privacy` repo. |
 | `support/index.html` | `/support/` | Support page. The Support URL the App Store listing requires. |
 | `CNAME` | — | Tells GitHub Pages the custom domain is `www.followmyastrolabe.com`. |
 | `.nojekyll` | — | Serves the files as-is, skipping Jekyll's build step. |
 
 Plain static HTML with no build step: each page is self-contained, with its
-styles inline in a `<style>` block. Edit a file, commit, and GitHub Pages
-publishes it within a minute or so.
+styles inline in a `<style>` block (the homepage is the one exception with an
+`assets/` folder, for real screenshots and logo marks). Edit a file, commit,
+and GitHub Pages publishes it within a minute or so.
 
 ## Hosting
 
