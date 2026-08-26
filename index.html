@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Follow My Astrolabe</title>
+<meta name="description" content="Follow My Astrolabe — an iOS app from Studio New Moon that reads your birth chart and the sky above you, entirely on your own device.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root{
+    --ground: #f7f1e3;
+    --panel: #eee2c4;
+    --ink: #241a10;
+    --muted: #6c5a3d;
+    --brass: #9c7436;
+    --rule: rgba(156,116,54,0.3);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground: #17110a;
+      --panel: #221a10;
+      --ink: #ede0c4;
+      --muted: #a6926c;
+      --brass: #c8993f;
+      --rule: rgba(200,153,63,0.3);
+    }
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(28px, 6vw, 72px) 20px 48px;
+  }
+  main{
+    max-width: 660px;
+    margin: 0 auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+  .mark{
+    width: clamp(96px, 22vw, 132px);
+    height: auto;
+    margin: 0 auto 28px;
+    display: block;
+    color: var(--brass);
+  }
+  .eyebrow{
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 10px;
+  }
+  h1{
+    font-size: clamp(30px, 6vw, 44px);
+    line-height: 1.15;
+    margin: 0 0 18px;
+  }
+  .lede{
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 46ch;
+    margin: 0 auto 34px;
+  }
+  .note{
+    display: inline-block;
+    font-size: 15px;
+    padding: 14px 20px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  footer{
+    max-width: 660px;
+    width: 100%;
+    margin: 56px auto 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+  }
+  footer a{ color: var(--brass); }
+</style>
+</head>
+<body>
+<main>
+  <!-- Astrolabe mark: outer limb, rete ring, and rule. -->
+  <svg class="mark" viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true">
+    <circle cx="60" cy="60" r="52" stroke-width="2"/>
+    <circle cx="60" cy="60" r="43" stroke-width="1"/>
+    <circle cx="60" cy="60" r="26" stroke-width="1"/>
+    <circle cx="60" cy="60" r="3.5" stroke-width="1.5"/>
+    <path d="M60 8v104M8 60h104" stroke-width="1"/>
+    <path d="M23 23l74 74M97 23l-74 74" stroke-width="0.75" opacity="0.5"/>
+    <path d="M34 86L86 34" stroke-width="2.5"/>
+  </svg>
+
+  <div class="eyebrow">Studio New Moon</div>
+  <h1>Follow My Astrolabe</h1>
+  <p class="lede">An astrolabe you carry — read your birth chart, and the sky above you, entirely on your own device.</p>
+  <p><span class="note">This site is a placeholder. More soon.</span></p>
+</main>
+
+<footer>
+  <a href="/privacy/">Privacy Policy</a>
+</footer>
+</body>
+</html>
