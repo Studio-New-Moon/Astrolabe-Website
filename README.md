@@ -10,6 +10,7 @@ Live at **[www.followmyastrolabe.com](https://www.followmyastrolabe.com)**.
 |---|---|---|
 | `index.html` | `/` | Homepage. A placeholder — meant to be replaced. |
 | `privacy/index.html` | `/privacy/` | Privacy policy. Copied from the original `astrolabe-privacy` repo. |
+| `support/index.html` | `/support/` | Support page. The Support URL the App Store listing requires. |
 | `CNAME` | — | Tells GitHub Pages the custom domain is `www.followmyastrolabe.com`. |
 | `.nojekyll` | — | Serves the files as-is, skipping Jekyll's build step. |
 
