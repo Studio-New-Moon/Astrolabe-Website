@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Astrolabe — An Ancient Instrument, Now on Your Phone</title>
-<meta name="description" content="Astrology, cast in metal. Cast your real birth chart on a working brass instrument that does real astronomical math, read the sky as it actually is, and explore twelve zodiac signs painted in batik, each one art-directed by a professional illustrator.">
+<meta name="description" content="Astrology, cast in metal. Cast your real birth chart on a working brass instrument that does real astronomical math, read the sky as it actually is, and explore twelve zodiac signs illustrated in a batik style, each one created skillfully under the direction of a real-life artist's eye.">
 <link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,7 +113,34 @@
   }
   .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--brass-bright);
     box-shadow:0 0 8px var(--brass-bright);}
-  .hero-note{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+  .hero-note{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
+    max-width:36ch;text-wrap:balance;}
+
+  /* ---------- App Store call to action ---------- */
+  /* Both states are in the markup at once — the pre-launch pill and the
+     real badge — and `body.prelaunch` decides which one is shown, so
+     release day is one word deleted rather than a rewrite. */
+  body.prelaunch .cta-live{display:none;}
+  body:not(.prelaunch) .cta-soon{display:none;}
+
+  .store-link{
+    display:inline-block;
+    /* Apple asks for clear space around the badge of at least a tenth of
+       its height on every side. That is what this padding is — nothing
+       may be moved into it. */
+    padding:6px;
+    border-radius:12px;
+    transition:transform .2s ease, filter .2s ease;
+  }
+  .store-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
+  .store-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
+  /* Sized by height only, so the artwork keeps Apple's proportions. 54px
+     clears their 40px web minimum with room to spare. */
+  .store-badge{height:54px;width:auto;}
+
+  .pricing .cta{
+    margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:12px;
+  }
 
   /* ---------- Feature sections ---------- */
   .feature{padding:104px 0;border-bottom:1px solid var(--panel-line);}
@@ -233,7 +260,21 @@
   }
 </style>
 </head>
-<body>
+<body class="prelaunch">
+
+<!-- ============================================================
+     ON RELEASE DAY, TWO EDITS:
+
+       1. Delete  class="prelaunch"  from the <body> tag above.
+       2. Replace both occurrences of  idAPPLE_ID  with the real
+          Apple ID, e.g.  id6740000000 . It is in App Store Connect
+          under the app's General > App Information, labelled
+          "Apple ID" — a ten-digit number, not the bundle ID.
+
+     Doing only the first is caught: the script at the bottom of the
+     page puts the "Coming Soon" pill back rather than shipping a
+     link to nowhere.
+     ============================================================ -->
 
 <header class="nav">
   <div class="nav-inner">
@@ -257,8 +298,12 @@
     <img class="hero-mark" src="assets/wordmark-hero.png" alt="ASTROLABE" width="670" height="138">
     <p class="subtitle">Astrology, Cast in Metal</p>
     <div class="hero-cta">
-      <span class="badge"><span class="dot"></span> Coming Soon to the App Store</span>
-      <span class="hero-note">iPhone &amp; iPad</span>
+      <span class="badge cta-soon"><span class="dot"></span> Coming Soon to the App Store</span>
+      <a class="store-link cta-live" href="https://apps.apple.com/app/follow-my-astrolabe/idAPPLE_ID">
+        <img class="store-badge" src="assets/app-store-badge.svg" alt="Download on the App Store"
+             width="162" height="54">
+      </a>
+      <span class="hero-note">iPhone &amp; iPad &middot; Free, with an optional subscription</span>
     </div>
   </div>
 </section>
@@ -295,7 +340,7 @@
       <h2>Your Sign and the Real Sky Are Not the Same Thing.</h2>
       <p>Hold your phone up and the instrument follows the sky above you — your zodiac sign shown next to the actual constellation in that direction, because they are not the same thing, and this app is honest about the difference.</p>
     </div>
-    <div class="shot"><img src="assets/screenshots/07-sky.jpg" alt="The Sky Pointing screen, comparing a zodiac sign to the real constellation overhead" loading="lazy"></div>
+    <div class="shot"><img src="assets/screenshots/07-sky.jpg" alt="The Sky Navigator screen, comparing a zodiac sign to the real constellation overhead" loading="lazy"></div>
   </div>
 </section>
 
@@ -308,13 +353,13 @@
 
 <section class="gallery" id="signs">
   <div class="gallery-head">
-    <span class="eyebrow">Twelve Signs, Painted in Batik</span>
-    <h2>Dye Bled Into Cloth, Held by a Pale Wax-Resist Line.</h2>
-    <p>Every sign rendered in a warm, wax-resist batik style — generated under the close, wash-by-wash direction of a professional illustrator, not left to run on its own. Worth exploring on their own, and available as real prints on real paper.</p>
+    <span class="eyebrow">Twelve Signs, in a Batik Style</span>
+    <h2>The Look of Dye in Cloth, Held by a Pale Wax-Resist Line.</h2>
+    <p>Every sign rendered in a warm, wax-resist batik style — digital art, created skillfully under the close, wash-by-wash direction of a real-life artist's eye, not left to run on its own. Worth exploring on their own, and available as real prints on real paper.</p>
   </div>
   <div class="strip">
-    <div class="shot"><img src="assets/screenshots/06-signs.jpg" alt="The gallery of twelve batik-illustrated zodiac signs" loading="lazy"></div>
-    <div class="shot"><img src="assets/screenshots/08-prints.jpg" alt="Ordering a real print of a sign's batik illustration" loading="lazy"></div>
+    <div class="shot"><img src="assets/screenshots/06-signs.jpg" alt="The gallery of twelve zodiac signs illustrated in a batik style" loading="lazy"></div>
+    <div class="shot"><img src="assets/screenshots/08-prints.jpg" alt="Ordering a real print of a sign's batik-style illustration" loading="lazy"></div>
     <div class="shot"><img src="assets/screenshots/02-chart-instrument.jpg" alt="The birth chart instrument, showing planetary placements and the four angles" loading="lazy"></div>
   </div>
 </section>
@@ -338,6 +383,13 @@
         <div class="price">$58.99<sub>/yr</sub></div>
         <div class="desc">Billed annually, cancel anytime.</div>
       </div>
+    </div>
+    <div class="cta">
+      <span class="badge cta-soon"><span class="dot"></span> Coming Soon to the App Store</span>
+      <a class="store-link cta-live" href="https://apps.apple.com/app/follow-my-astrolabe/idAPPLE_ID">
+        <img class="store-badge" src="assets/app-store-badge.svg" alt="Download on the App Store"
+             width="162" height="54">
+      </a>
     </div>
     <p class="fine">Auto-renewable subscription. Cancel anytime in your device's Settings. See our <a href="/privacy/">Privacy Policy</a> for details on what stays on your device.</p>
   </div>
@@ -392,6 +444,16 @@
       html += '<span style="left:' + x + '%;top:' + y + '%;width:' + s + 'px;height:' + s + 'px;opacity:' + o + '"></span>';
     }
     field.innerHTML = html;
+  })();
+
+  // Release-day safety net. If the page has been switched live but the
+  // Apple ID placeholder is still sitting in the link, fall back to the
+  // "Coming Soon" pill rather than sending anyone to a dead App Store URL.
+  (function () {
+    var link = document.querySelector('a.store-link');
+    if (link && link.getAttribute('href').indexOf('APPLE_ID') !== -1) {
+      document.body.classList.add('prelaunch');
+    }
   })();
 </script>
 
