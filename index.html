@@ -234,6 +234,30 @@
   }
   .studio-credit .beetle{height:26px;width:auto;opacity:.9;}
   .studio-credit .studio-wordmark{height:13px;width:auto;opacity:.9;margin-top:2px;}
+
+  /* ---------- Climate commitment ---------- */
+  .climate{
+    padding:96px 0;text-align:center;
+    background:var(--panel);
+    border-bottom:1px solid var(--panel-line);
+  }
+  .climate-icon{
+    width:40px;height:40px;margin:0 auto 22px;color:var(--brass);
+  }
+  .climate h2{font-size:clamp(26px,3.2vw,36px);color:var(--resist);margin:10px 0 16px;}
+  .climate p{max-width:560px;margin:0 auto;color:var(--muted);}
+  .climate-link{
+    display:inline-flex;align-items:center;gap:10px;margin-top:32px;
+    font-family:'Cinzel',Georgia,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--resist);text-decoration:none;
+    padding:13px 26px;border-radius:999px;
+    background:linear-gradient(180deg,#2a1f0c,#150f06);
+    border:1px solid var(--brass);
+    box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+    transition:transform .2s ease, filter .2s ease;
+  }
+  .climate-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
+  .climate-link svg{width:15px;height:15px;flex:0 0 auto;}
   .footer-links{display:flex;gap:64px;flex-wrap:wrap;}
   .footer-col h4{
     font-family:'Cinzel',Georgia,serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
@@ -419,6 +443,18 @@
       </a>
     </div>
     <p class="fine">Auto-renewable subscription. Cancel anytime in your device's Settings. See our <a href="/privacy/">Privacy Policy</a> for details on what stays on your device.</p>
+  </div>
+</section>
+
+<section class="climate" id="climate">
+  <div class="wrap">
+    <img class="climate-icon" src="assets/stripe-climate-badge.svg" alt="Stripe Climate" width="40" height="40" loading="lazy">
+    <span class="eyebrow">Climate Commitment</span>
+    <h2>5% of Print Sales, to Carbon Removal.</h2>
+    <p>Studio New Moon is a member of Stripe Climate. On every print ordered in the app, 5% of that Stripe transaction funds permanent carbon removal — not offsets.</p>
+    <a class="climate-link" href="https://climate.stripe.com/lMRr5u" target="_blank" rel="noopener">
+      See Our Stripe Climate Commitment
+    </a>
   </div>
 </section>
 
