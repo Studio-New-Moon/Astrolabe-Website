@@ -150,6 +150,20 @@
   .feature h2{font-size:clamp(26px,3.2vw,36px);margin:10px 0 20px;color:var(--resist);}
   .feature p{color:var(--ink);opacity:.88;}
   .feature p + p{margin-top:14px;}
+  /* A sentence lifted out of the reading itself and set as type, so the
+     writing is legible at any width and readable as text rather than only
+     as pixels inside a screenshot. */
+  .pullquote{margin:26px 0 0;padding:0 0 0 20px;border-left:2px solid var(--brass);}
+  .pullquote blockquote{
+    margin:0;font-family:'Cinzel',Georgia,serif;font-weight:500;
+    font-size:clamp(17px,1.9vw,20px);line-height:1.5;
+    color:var(--brass-bright);text-wrap:balance;
+  }
+  .pullquote cite{
+    display:block;margin-top:10px;font-style:normal;
+    font-family:'JetBrains Mono',ui-monospace,monospace;
+    font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  }
   /* Sections that carry no screenshot: one column, held to a reading measure. */
   .feature.prose-only .wrap{grid-template-columns:1fr;max-width:760px;}
   .shot{
@@ -368,8 +382,12 @@
       <p>Most horoscopes stop at your sun sign. This one reads your Sun, Moon, Rising, and the planet that rules your whole chart together, as a single throughline instead of four separate blurbs.</p>
       <p>It also ranks all ten planets by how much weight they actually carry in your chart — placement and aspects combined — and opens up the one that comes out on top.</p>
       <p>It closes by naming your chart's overall lean, so those four signs resolve into one picture instead of sitting side by side as trivia — not a type you share with everyone born under your sun sign, but the imprint that's yours alone, and the path it points you toward.</p>
+      <div class="pullquote">
+        <blockquote>&ldquo;Sun and Moon both in water means identity and instinct are made of the same substance, with almost no membrane between them.&rdquo;</blockquote>
+        <cite>From the reading &middot; How These Connect</cite>
+      </div>
     </div>
-    <div class="shot"><img src="assets/screenshots/04-whole-chart.jpg" alt="The Whole Chart screen, with a subscription prompt to unlock the full Sun, Moon, Rising, and chart ruler reading" loading="lazy"></div>
+    <div class="shot"><img src="assets/screenshots/04-whole-chart.jpg" alt="The Whole Chart screen: an At a Glance summary naming a Pisces Sun, Scorpio Moon and Leo Rising, then Core Identity, Emotional Self and Outer Persona sections, each opening a few lines of the reading before fading out" loading="lazy"></div>
   </div>
 </section>
 
@@ -381,7 +399,7 @@
       <p>Alongside the ten planets and four angles, this app plots the North Node, Chiron, Black Moon Lilith, and White Moon Selena — points most apps either omit or list without explaining. Each one gets the same full treatment as a planet: what it means, and what to do about it.</p>
       <p>Astrologers pair Black Moon Lilith, the Moon's farthest swing from Earth, with White Moon Selena, its closest — and this is the first version of the app to track both by name.</p>
     </div>
-    <div class="shot"><img src="assets/screenshots/09-lilith-detail.jpg" alt="The Black Moon Lilith detail screen, with a subscription prompt to unlock the full reading" loading="lazy"></div>
+    <div class="shot"><img src="assets/screenshots/09-lilith-detail.jpg" alt="The Black Moon Lilith detail screen, explaining that Lilith is the mean apogee of the Moon's orbit, the text fading out partway down" loading="lazy"></div>
   </div>
 </section>
 
