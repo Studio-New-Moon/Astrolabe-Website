@@ -150,6 +150,8 @@
   .feature h2{font-size:clamp(26px,3.2vw,36px);margin:10px 0 20px;color:var(--resist);}
   .feature p{color:var(--ink);opacity:.88;}
   .feature p + p{margin-top:14px;}
+  /* Sections that carry no screenshot: one column, held to a reading measure. */
+  .feature.prose-only .wrap{grid-template-columns:1fr;max-width:760px;}
   .shot{
     border-radius:18px;overflow:hidden;
     border:1px solid var(--panel-line);
@@ -383,6 +385,17 @@
   </div>
 </section>
 
+<section class="feature prose-only">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">We Went and Checked</span>
+      <h2>A Chart Is Only as Good as the Sky It Was Cast From.</h2>
+      <p>The planets in yours come from VSOP87, the planetary theory published by Bretagnon and Francou at the Paris Observatory. The Moon comes from the published lunar theory that goes with it. Neither was typed in from memory and taken on trust — the planets are generated straight from the observatory's own data files.</p>
+      <p>Then we checked them against an independent ephemeris, a source with no reason to agree with us: the planets at six and a half thousand moments spanning 1850 to 2400, the Moon at a hundred thousand more. Every body in your chart lands within a sixtieth of a degree. The planets land within a hundredth.</p>
+    </div>
+  </div>
+</section>
+
 <section class="feature" id="sky">
   <div class="wrap">
     <div>
@@ -391,6 +404,29 @@
       <p>Hold your phone up and the instrument follows the sky above you — your zodiac sign shown next to the actual constellation in that direction, because they are not the same thing, and this app is honest about the difference.</p>
     </div>
     <div class="shot"><img src="assets/screenshots/07-sky.jpg" alt="The Sky Navigator screen, comparing a zodiac sign to the real constellation overhead" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="feature prose-only">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">When We Don't Know</span>
+      <h2>We'd Rather Tell You We Don't Know.</h2>
+      <p>Most astrology apps take whatever birth time you hand them and answer with total confidence. If all you really knew was "sometime in the morning," that confidence was invented.</p>
+      <p>Astrolabe casts your chart three times — the earliest you could have been born, the middle, and the latest — and compares them. When your rising sign holds across all three, it says so. When it doesn't, it tells you that, instead of picking one and hoping you never find out.</p>
+      <p>Your Moon's sign is the fastest-moving thing in your chart, and the easiest to get quietly wrong. It's settled unless you were born within about two minutes of it changing — and if you were, no birth certificate is precise enough to settle it either. Where your chart is uncertain, it's your birth time, not our arithmetic. We'll tell you which.</p>
+    </div>
+  </div>
+</section>
+
+<section class="feature prose-only">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Written, Not Generated</span>
+      <h2>Nothing Here Was Generated.</h2>
+      <p>Every sentence in this app was written by a person and checked by a person. No language model runs while you read, which means no reading can invent a placement you don't have, contradict the chart it came from, or say something cruel because cruelty tested well.</p>
+      <p>The same birth data always produces the same words — because the words are derived from your chart, not improvised beside it.</p>
+    </div>
   </div>
 </section>
 
