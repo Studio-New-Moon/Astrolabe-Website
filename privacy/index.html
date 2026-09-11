@@ -85,9 +85,9 @@
 <main>
   <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
   <h1>Privacy Policy</h1>
-  <div class="dates">Effective date: August 25, 2026 &middot; Last updated: 2026-08-25</div>
+  <div class="dates">Effective date: August 25, 2026 &middot; Last updated: 2026-09-11</div>
 
-  <p class="lede">Follow My Astrolabe is made by Studio New Moon. The short version: it computes your birth chart and reads the sky on your own device. There are no accounts, no ads, and no analytics, and almost everything this policy describes never leaves your phone. The one exception is ordering a physical print &mdash; that involves a payment and a postal address, and is spelled out below.</p>
+  <p class="lede">Follow My Astrolabe is made by Studio New Moon. The short version: it computes your birth chart and reads the sky on your own device. There are no accounts, no ads, and no analytics tools, and almost everything this policy describes never leaves your phone. There are two exceptions, and both happen only when you choose them: ordering a physical print, which involves a payment and a postal address, and sending us feedback. Both are spelled out below.</p>
 
   <h2>Information the App Uses</h2>
 
@@ -109,23 +109,28 @@
   <p>Things like your chosen color scheme, metal finish, font, and whether you've subscribed are stored locally so the app remembers your preferences between launches. None of this identifies you to us, because we never receive it in the first place.</p>
 
   <h3>Ordering a print, if you choose to</h3>
-  <p>Chart to Canvas turns your chart into a physical print &mdash; and a physical print has to be paid for and posted somewhere. This one feature, alone in the app, involves information leaving your device and other companies handling it. None of it happens unless you start an order.</p>
-  <p>When you begin checkout, the app sends <strong>only the print itself</strong> &mdash; which product, what quantity, the price, and a link to the artwork &mdash; to a small ordering service we run on Cloudflare. That request carries nothing about you, and nothing from the birth details your chart was computed from.</p>
+  <p>Chart to Canvas turns your chart into a physical print &mdash; and a physical print has to be paid for and posted somewhere. Along with sending feedback (described next), this is the only part of the app where information leaves your device. None of it happens unless you start an order.</p>
+  <p>When you begin checkout, the app sends <strong>only the print itself</strong> &mdash; which product, which sign's artwork, what quantity, and the price &mdash; to a small service we run on Cloudflare. That request carries nothing about you, and nothing from the birth details your chart was computed from.</p>
   <p>Payment happens on <strong>Stripe</strong>'s own hosted checkout page, opened in a secure browser sheet. Your name, email address, shipping address, and card details are entered there, on Stripe's page, and go to Stripe. The app never sees your card number at any point.</p>
-  <p>Once Stripe confirms the payment, our ordering service passes your <strong>name, email address, and shipping address</strong> to <strong>Gelato</strong>, the print partner that produces and ships the poster &mdash; for the same reason any sender needs an address. Our service keeps no database of its own; it holds nothing after the order is placed. What record exists lives with Stripe and Gelato, who handle it under their own privacy policies (<a href="https://stripe.com/privacy">stripe.com/privacy</a>, and Gelato's policy on their own site).</p>
+  <p>Once Stripe confirms the payment, our ordering service passes your <strong>name, email address, and shipping address</strong> to <strong>Gelato</strong>, the print partner that produces and ships the poster &mdash; for the same reason any sender needs an address. Our service keeps one small record of its own: your <strong>email address and the name of the item you ordered</strong>, so it can email you as the print moves through production and shipping. Those updates are sent through <strong>Resend</strong>, an email delivery service. The record deletes itself automatically 120 days after the order's last update. Everything else about the order lives with Stripe and Gelato, who handle it under their own privacy policies (<a href="https://stripe.com/privacy">stripe.com/privacy</a>, and Gelato's policy on their own site).</p>
+
+  <h3>Feedback, if you choose to send it</h3>
+  <p>You can send us feedback in two ways: the feedback form, reachable from every screen, and the thumbs up and down under each reading, which open a short checklist of what worked and what didn't. Nothing is sent until you press Send.</p>
+  <p>What's sent is what you wrote or ticked. A vote on a reading also includes the reading itself, where in your chart it came from (for example, the sign and house), and the app version, so we can find and fix the exact line you're telling us about. None of it includes your name, email address, birth details, or anything that identifies your device, unless you type something like that into the message yourself. It reaches us with no way of telling who sent it.</p>
+  <p>Your feedback travels through the same small service we run on Cloudflare, which hands it to Resend to deliver as an email to our own inbox. We keep it there for as long as it helps us improve the app, and use it for nothing else. Feedback like this is the only way we learn which readings work: the app never reports anything about how you use it.</p>
 
   <h2>What We Don't Do</h2>
   <ul>
-    <li><strong>We don't run an account system.</strong> There is no login, no cloud sync, and no profile of you anywhere but on your own phone. The one service we do operate &mdash; the print-ordering service described above &mdash; is only reachable when you place an order, and stores nothing.</li>
+    <li><strong>We don't run an account system.</strong> There is no login, no cloud sync, and no profile of you anywhere but on your own phone. The one service we do operate &mdash; the small service described above &mdash; only handles print orders and feedback you choose to send, and the only thing it keeps is the short-lived order record.</li>
     <li><strong>We don't use analytics or crash-reporting SDKs.</strong></li>
     <li><strong>We don't show ads</strong>, and we don't use any advertising or tracking SDKs.</li>
-    <li><strong>We don't sell or rent your information to anyone.</strong> The only information we ever pass on is the name and address a print has to be shipped to, and it goes only to the printer who ships it.</li>
+    <li><strong>We don't sell or rent your information to anyone.</strong> The only information we pass on is what's needed to deliver what you asked for: the name and address a print is shipped to, which goes only to the printer, and the email address your order updates go to, which goes only to the service that sends them.</li>
     <li><strong>We don't use App Tracking Transparency</strong> because the app doesn't track you across other companies' apps or websites.</li>
   </ul>
 
   <h2>Third Parties</h2>
   <p><strong>Apple</strong> is involved in the ordinary running of the app: MapKit for birth-place search (described above), and the App Store itself for distribution and for subscriptions, which are handled entirely by Apple's own StoreKit &mdash; we never see or store your payment information.</p>
-  <p><strong>Stripe</strong> and <strong>Gelato</strong> are involved only if you order a print, exactly as described above, and <strong>Cloudflare</strong> hosts the small ordering service that connects the two along with the print artwork itself.</p>
+  <p><strong>Stripe</strong> and <strong>Gelato</strong> are involved only if you order a print, exactly as described above, and <strong>Cloudflare</strong> hosts the small service that connects the two, along with the print artwork itself. <strong>Resend</strong> delivers the emails that service sends: your order updates, and any feedback you send us.</p>
   <p>Beyond those, we integrate no third-party service, SDK, or library &mdash; in particular none for analytics, advertising, or crash reporting.</p>
 
   <h2>Children's Privacy</h2>
@@ -136,7 +141,8 @@
   <ul>
     <li><strong>To remove your birth details, photo, or preferences:</strong> edit or clear them from within the app, or delete the app entirely &mdash; deleting the app removes everything Follow My Astrolabe stored on your device.</li>
     <li><strong>To revoke location, motion, or notification permissions:</strong> use your device's Settings app at any time; the app degrades gracefully (a manual sky-pointing slider, or simply no future notification) rather than breaking.</li>
-    <li><strong>For a print you ordered:</strong> the record of it sits with Stripe and Gelato rather than with us, so write to us and we'll help you reach the right one.</li>
+    <li><strong>For a print you ordered:</strong> most of the record sits with Stripe and Gelato, and the email-and-item record our own service keeps deletes itself 120 days after the order's last update. Write to us and we'll help with either.</li>
+    <li><strong>For feedback you sent:</strong> it carries nothing that identifies you, so we can only find yours if you tell us roughly when you sent it and what it said. Write to us and we'll delete it.</li>
   </ul>
 
   <h2>Changes to This Policy</h2>
@@ -146,7 +152,7 @@
   <p>If you have questions about this policy or how Follow My Astrolabe handles information, contact us at:</p>
   <p><strong><a href="mailto:morgan@followmyastrolabe.com">morgan@followmyastrolabe.com</a></strong></p>
 
-  <footer><a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a><br><br>This policy is written to be genuinely accurate to how the app works today, not boilerplate &mdash; when a feature changes what the app does, as print ordering did, this document is revised alongside it rather than after the fact.</footer>
+  <footer><a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a><br><br>This policy is written to be genuinely accurate to how the app works today, not boilerplate &mdash; when a feature changes what the app does, as print ordering and feedback did, this document is revised alongside it rather than after the fact.</footer>
 </main>
 </body>
 </html>
