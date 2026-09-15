@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chart to Canvas — Follow My Astrolabe</title>
+<meta name="description" content="Your birth chart, printed. Chart to Canvas turns the sign art from Follow My Astrolabe into a physical print, made to order and shipped to you.">
+<meta name="robots" content="index">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root{
+    --ground: #f7f1e3;
+    --panel: #eee2c4;
+    --ink: #241a10;
+    --muted: #6c5a3d;
+    --brass: #9c7436;
+    --rule: rgba(156,116,54,0.3);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground: #17110a;
+      --panel: #221a10;
+      --ink: #ede0c4;
+      --muted: #a6926c;
+      --brass: #c8993f;
+      --rule: rgba(200,153,63,0.3);
+    }
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    padding: clamp(28px, 6vw, 72px) 20px 90px;
+  }
+  main{ max-width: 660px; margin: 0 auto; }
+  .eyebrow a{ color: var(--brass); text-decoration: none; }
+  .eyebrow a:hover{ text-decoration: underline; }
+  .eyebrow{
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 8px;
+  }
+  h1{
+    font-size: clamp(28px, 5vw, 36px);
+    line-height: 1.15;
+    margin: 0 0 14px;
+  }
+  .dates{ color: var(--muted); font-size: 14.5px; margin-bottom: 26px; }
+  .lede{
+    font-size: 18px;
+    padding: 18px 20px;
+    background: var(--panel);
+    border-radius: 10px;
+    border: 1px solid var(--rule);
+    margin-bottom: 8px;
+  }
+  h2{
+    font-size: 22px;
+    margin: 46px 0 4px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px;
+  }
+  h3{ font-size: 17px; margin: 26px 0 6px; color: var(--brass); }
+  p, li{ margin: 10px 0; }
+  ul{ padding-left: 22px; }
+  a{ color: var(--brass); }
+  strong{ color: var(--ink); }
+  .contact{
+    font-size: 19px;
+    padding: 20px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    margin: 22px 0 8px;
+  }
+  .contact strong{ display: block; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brass); margin-bottom: 6px; }
+  footer{
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
+  <h1>Chart to Canvas.</h1>
+
+  <p class="lede">Something from Follow My Astrolabe, off the screen and onto
+  a wall &mdash; printed to order on real paper and shipped to you flat.</p>
+
+  <h2>The object</h2>
+
+  <p>Prints are produced on 170&nbsp;gsm coated silk stock, in landscape, at the
+  proportions the image was composed in &mdash; so nothing is cropped to fit a
+  frame it was never meant for. Each one is made when it's ordered rather than
+  pulled from a shelf, by a print partner who produces it and ships it directly
+  to you.</p>
+
+  <p>Three sizes, from one that suits a shelf to one that takes a wall:</p>
+
+  <ul>
+    <li><strong>12 &times; 16 in</strong> &mdash; 300 &times; 400 mm</li>
+    <li><strong>18 &times; 24 in</strong> &mdash; 450 &times; 600 mm</li>
+    <li><strong>24 &times; 32 in</strong> &mdash; 600 &times; 800 mm</li>
+  </ul>
+
+  <p>Prices are shown at checkout.</p>
+
+  <h2>Ordering</h2>
+
+  <p>Prints are ordered from inside Follow My Astrolabe, which is where the
+  chart they come from already lives. <strong>The app isn't on the App Store
+  yet</strong> &mdash; when it arrives, this is where the prints live.</p>
+
+  <p>Buying directly from this page is something we're building. It isn't
+  ready, and we'd rather say so than leave a button here that doesn't work.</p>
+
+  <h2>Questions</h2>
+
+  <p>Anything about an order that's already placed &mdash; where it is, or
+  something wrong with it &mdash; goes to the same address as everything else.</p>
+
+  <div class="contact">
+    <strong>Email</strong>
+    <a href="mailto:support@followmyastrolabe.com">support@followmyastrolabe.com</a>
+  </div>
+
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+  </footer>
+</main>
+</body>
+</html>
