@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cast a Chart — Follow My Astrolabe</title>
+<meta name="description" content="Cast a real birth chart on a working astrolabe, in your browser. Nothing you type leaves your device.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
+<style>
+  :root{
+    --ground: #f7f1e3;
+    --panel: #eee2c4;
+    --ink: #241a10;
+    --muted: #6c5a3d;
+    --brass: #9c7436;
+    --rule: rgba(156,116,54,0.3);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground: #17110a;
+      --panel: #221a10;
+      --ink: #ede0c4;
+      --muted: #a6926c;
+      --brass: #c8993f;
+      --rule: rgba(200,153,63,0.3);
+    }
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    padding: clamp(28px, 6vw, 64px) 20px 90px;
+  }
+  main{ max-width: 960px; margin: 0 auto; }
+  h1, h2{ font-family: "Cinzel", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
+  h1{ font-size: clamp(27px, 4.6vw, 40px); margin-bottom: 10px; }
+  h2{ font-size: 21px; margin: 38px 0 12px; }
+  .eyebrow{
+    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px;
+  }
+  .eyebrow a{ color: inherit; }
+  .lede{ max-width: 60ch; margin: 0 0 6px; }
+  .quiet{ color: var(--muted); font-size: 15px; max-width: 62ch; }
+
+  form{ margin: 26px 0 0; }
+  fieldset{ border: 0; margin: 0 0 18px; padding: 0; }
+  legend{
+    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); padding: 0; margin-bottom: 10px;
+  }
+  .row{ display: flex; flex-wrap: wrap; gap: 14px; }
+  label.field{ display: flex; flex-direction: column; gap: 5px; font-size: 15px; color: var(--muted); }
+  input, select{
+    font-family: inherit; font-size: 16px; color: var(--ink);
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+    padding: 9px 11px; min-width: 0;
+  }
+  input:invalid{ border-color: #b4472f; }
+  button.cast{
+    font-family: inherit; font-size: 17px; font-weight: 600;
+    padding: 13px 24px; border: 1px solid var(--brass); border-radius: 8px;
+    background: var(--brass); color: var(--ground); cursor: pointer;
+  }
+  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  .result{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 30px; align-items: start; margin-top: 30px; }
+  @media (max-width: 760px){ .result{ grid-template-columns: 1fr; } }
+  .wheel{ width: 100%; }
+  .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
+
+  table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
+  th{ text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted); padding: 0 0 7px; }
+  td{ padding: 5px 0; border-top: 1px solid var(--rule); }
+  td.body{ width: 38%; }
+  td.pos{ font-variant-numeric: tabular-nums; }
+  td .rx{ color: var(--brass); font-size: 13px; }
+
+  .problem{
+    padding: 13px 15px; border: 1px solid var(--brass); border-radius: 8px;
+    background: var(--panel); margin: 18px 0 0;
+  }
+  .problem[hidden]{ display: none !important; }
+  footer{ margin-top: 54px; padding-top: 20px; border-top: 1px solid var(--rule);
+          color: var(--muted); font-size: 15px; }
+  footer a{ color: var(--brass); }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
+  <h1>Cast a Chart.</h1>
+
+  <p class="lede">The same instrument the app draws — a real astrolabe, with the
+  houses cut into the fixed limb, the sky over your own latitude on the plate
+  beneath, and the zodiac turning on the rete above.</p>
+
+  <p class="quiet"><strong>Nothing you type here leaves your device.</strong> The
+  chart is worked out in this page, by your own browser. There is no server to
+  send it to.</p>
+
+  <form id="chartForm">
+    <fieldset>
+      <legend>When</legend>
+      <div class="row">
+        <label class="field">Date of birth
+          <input type="date" id="date" value="1990-03-16" required>
+        </label>
+        <label class="field">Time
+          <input type="time" id="time" value="14:15" required>
+        </label>
+        <label class="field">Time zone there, then
+          <select id="zone"></select>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Where</legend>
+      <div class="row">
+        <label class="field">Latitude &mdash; north positive
+          <input type="number" id="lat" value="40.7128" step="0.0001" min="-89.9" max="89.9" required>
+        </label>
+        <label class="field">Longitude &mdash; east positive
+          <input type="number" id="lon" value="-74.0060" step="0.0001" min="-180" max="180" required>
+        </label>
+      </div>
+      <p class="quiet" style="margin-top:10px">Coordinates rather than a place name,
+      for now. Looking a town up means asking someone else's service where it is,
+      which is a cost and a dependency this page does not have yet.</p>
+    </fieldset>
+
+    <button class="cast" type="submit">Cast it</button>
+  </form>
+
+  <div class="problem" id="problem" hidden></div>
+
+  <div class="result" id="result" hidden>
+    <div class="wheel" id="wheel"></div>
+    <div>
+      <h2 id="placementsTitle">Placements</h2>
+      <table>
+        <thead><tr><th>Body</th><th>Position</th><th>House</th></tr></thead>
+        <tbody id="placements"></tbody>
+      </table>
+      <h2>Angles</h2>
+      <table>
+        <thead><tr><th>Angle</th><th>Position</th><th>House</th></tr></thead>
+        <tbody id="anglesBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot;
+    <a href="/prints/">Prints</a> &middot;
+    <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+  </footer>
+</main>
+
+<script type="module">
+import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "./src/angles.js";
+import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
+import { wheelSVG } from "./src/wheel.js";
+
+const $ = (id) => document.getElementById(id);
+const problem = (msg) => { $("problem").textContent = msg; $("problem").hidden = false; };
+
+// The browser carries the same tz database the app does, so the list is the
+// real one rather than a shortlist someone curated and let go stale.
+const zoneSelect = $("zone");
+const zones = (typeof Intl.supportedValuesOf === "function")
+  ? Intl.supportedValuesOf("timeZone")
+  : ["UTC", "America/New_York", "America/Chicago", "America/Denver",
+     "America/Los_Angeles", "Europe/London", "Europe/Berlin", "Asia/Tokyo",
+     "Australia/Sydney"];
+for (const z of zones) {
+  const o = document.createElement("option");
+  o.value = z; o.textContent = z.replace(/_/g, " ");
+  zoneSelect.appendChild(o);
+}
+zoneSelect.value = zones.includes("America/New_York") ? "America/New_York" : zones[0];
+
+const title = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const dms = (lon) => {
+  const d = normalizedDegrees(lon) % 30;
+  const deg = Math.floor(d);
+  const min = Math.round((d - deg) * 60);
+  return min === 60 ? `${deg + 1}°00′` : `${deg}°${String(min).padStart(2, "0")}′`;
+};
+const position = (lon) => `${dms(lon)} ${SIGNS[signIndex(lon)]}`;
+
+function cast() {
+  $("problem").hidden = true;
+  const [y, m, d] = $("date").value.split("-").map(Number);
+  const [hh, mm] = $("time").value.split(":").map(Number);
+  const lat = Number($("lat").value);
+  const lon = Number($("lon").value);
+  const zone = zoneSelect.value;
+
+  if (!y || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+    problem("Please fill in the date, the time and both coordinates.");
+    return;
+  }
+
+  const jd = julianDayFromLocal(y, m, d, hh, mm, zone);
+  const angles = anglesFor(jd, lat, lon);
+  const asc = angles[0].longitude;
+
+  const bodies = PLANETS.map((name) => ({
+    name,
+    longitude: longitudeOf(name, jd),
+    retrograde: isRetrograde(name, jd),
+  }));
+
+  $("wheel").innerHTML = wheelSVG(
+    { ascendantLongitude: asc, midheavenLongitude: angles[1].longitude, latitude: lat, bodies },
+    { size: 1000, title: `Birth chart for ${$("date").value}` },
+  );
+
+  const rows = bodies.map((b) =>
+    `<tr><td class="body">${title(b.name)}</td>` +
+    `<td class="pos">${position(b.longitude)}${b.retrograde ? ' <span class="rx">℞</span>' : ""}</td>` +
+    `<td class="pos">${wholeSignHouse(b.longitude, asc)}</td></tr>`).join("");
+  $("placements").innerHTML = rows;
+
+  const NAMES = { ascendant: "Ascendant", midheaven: "Midheaven",
+                  descendant: "Descendant", imumCoeli: "Imum Coeli" };
+  $("anglesBody").innerHTML = angles.map((a) =>
+    `<tr><td class="body">${NAMES[a.kind]}</td>` +
+    `<td class="pos">${position(a.longitude)}</td>` +
+    `<td class="pos">${a.house}</td></tr>`).join("");
+
+  $("result").hidden = false;
+}
+
+$("chartForm").addEventListener("submit", (e) => { e.preventDefault(); cast(); });
+
+// Cast once on load, so the page opens showing what it does rather than an
+// empty frame waiting to be told.
+cast();
+</script>
+</body>
+</html>
