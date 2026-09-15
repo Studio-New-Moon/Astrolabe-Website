@@ -91,6 +91,62 @@
     font-size: 14px;
     font-style: italic;
   }
+
+  /* ---- ordering ---- */
+  .order{ margin: 26px 0 8px; }
+  .order[hidden]{ display: none !important; }
+  fieldset{ border: 0; padding: 0; margin: 0 0 22px; }
+  legend{
+    font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--brass); padding: 0; margin-bottom: 10px;
+  }
+  .signs{ display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
+  .signs label{
+    display: flex; align-items: baseline; gap: 7px;
+    padding: 9px 11px; border: 1px solid var(--rule); border-radius: 8px;
+    background: var(--panel); cursor: pointer; font-size: 15.5px;
+  }
+  .signs .glyph{ color: var(--brass); font-size: 17px; }
+  .sizes{ display: flex; flex-direction: column; gap: 8px; }
+  .sizes label{
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+    padding: 12px 14px; border: 1px solid var(--rule); border-radius: 8px;
+    background: var(--panel); cursor: pointer;
+  }
+  .sizes .dim{ color: var(--muted); font-size: 15px; }
+  .sizes .price{ margin-left: auto; font-variant-numeric: tabular-nums; }
+  input[type=radio]{ accent-color: var(--brass); margin: 0; flex: none; }
+  .signs label:has(:checked), .sizes label:has(:checked){
+    border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass);
+  }
+  .qty{ display: flex; align-items: center; gap: 10px; }
+  .qty select{
+    font-family: inherit; font-size: 16px; padding: 7px 10px;
+    border: 1px solid var(--rule); border-radius: 8px;
+    background: var(--panel); color: var(--ink);
+  }
+  button.buy{
+    font-family: inherit; font-size: 17px; font-weight: 600;
+    padding: 13px 22px; border: 1px solid var(--brass); border-radius: 8px;
+    background: var(--brass); color: var(--ground); cursor: pointer;
+  }
+  button.buy:disabled{ opacity: 0.55; cursor: default; }
+  .note{ color: var(--muted); font-size: 15px; margin-top: 12px; }
+  .problem{
+    padding: 14px 16px; border: 1px solid var(--brass); border-radius: 8px;
+    background: var(--panel); margin: 18px 0;
+  }
+  .problem[hidden]{ display: none !important; }
+  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  figure.look{ margin: 26px 0 8px; }
+  figure.look img{
+    display: block; width: 100%; height: auto;
+    border-radius: 10px; border: 1px solid var(--rule);
+  }
+  figure.look figcaption{
+    color: var(--muted); font-size: 15px; font-style: italic; margin-top: 10px;
+  }
 </style>
 </head>
 <body>
@@ -100,6 +156,13 @@
 
   <p class="lede">Something from Follow My Astrolabe, off the screen and onto
   a wall &mdash; printed to order on real paper and shipped to you flat.</p>
+
+  <figure class="look">
+    <img src="/assets/screenshots/06-signs.jpg" alt="The twelve signs in Follow My Astrolabe, each illustrated in a batik style" loading="lazy" width="1200" height="900">
+    <figcaption>The twelve, as they appear in the app. A print is one of these,
+    at a size where the resist lines and the wash detail are actually
+    visible.</figcaption>
+  </figure>
 
   <h2>The object</h2>
 
@@ -119,14 +182,56 @@
 
   <p>Prices are shown at checkout.</p>
 
-  <h2>Ordering</h2>
+  <h2>Order one</h2>
 
-  <p>Prints are ordered from inside Follow My Astrolabe, which is where the
-  chart they come from already lives. <strong>The app isn't on the App Store
-  yet</strong> &mdash; when it arrives, this is where the prints live.</p>
+  <div class="problem" id="problem" hidden></div>
 
-  <p>Buying directly from this page is something we're building. It isn't
-  ready, and we'd rather say so than leave a button here that doesn't work.</p>
+  <noscript>
+    <p class="problem" style="display:block">Ordering needs JavaScript, because
+    the sizes and prices are read live rather than written into this page.
+    Email us and we'll take the order by hand.</p>
+  </noscript>
+
+  <form class="order" id="order" hidden>
+    <fieldset>
+      <legend>Sign</legend>
+      <div class="signs">
+        <label><input type="radio" name="sign" value="aries" checked><span class="glyph" aria-hidden="true">♈</span>Aries</label>
+        <label><input type="radio" name="sign" value="taurus"><span class="glyph" aria-hidden="true">♉</span>Taurus</label>
+        <label><input type="radio" name="sign" value="gemini"><span class="glyph" aria-hidden="true">♊</span>Gemini</label>
+        <label><input type="radio" name="sign" value="cancer"><span class="glyph" aria-hidden="true">♋</span>Cancer</label>
+        <label><input type="radio" name="sign" value="leo"><span class="glyph" aria-hidden="true">♌</span>Leo</label>
+        <label><input type="radio" name="sign" value="virgo"><span class="glyph" aria-hidden="true">♍</span>Virgo</label>
+        <label><input type="radio" name="sign" value="libra"><span class="glyph" aria-hidden="true">♎</span>Libra</label>
+        <label><input type="radio" name="sign" value="scorpio"><span class="glyph" aria-hidden="true">♏</span>Scorpio</label>
+        <label><input type="radio" name="sign" value="sagittarius"><span class="glyph" aria-hidden="true">♐</span>Sagittarius</label>
+        <label><input type="radio" name="sign" value="capricorn"><span class="glyph" aria-hidden="true">♑</span>Capricorn</label>
+        <label><input type="radio" name="sign" value="aquarius"><span class="glyph" aria-hidden="true">♒</span>Aquarius</label>
+        <label><input type="radio" name="sign" value="pisces"><span class="glyph" aria-hidden="true">♓</span>Pisces</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Size</legend>
+      <div class="sizes" id="sizes"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Quantity</legend>
+      <div class="qty">
+        <label for="qty">How many</label>
+        <select id="qty" name="qty"></select>
+      </div>
+    </fieldset>
+
+    <button class="buy" type="submit" id="buy">Continue to checkout</button>
+    <p class="note">Payment is handled by Stripe on their own page &mdash; we
+    never see your card. Shipping address is collected there too.</p>
+  </form>
+
+  <p>Prints can also be ordered from inside Follow My Astrolabe, which is where
+  the chart they come from already lives. <strong>The app isn't on the App
+  Store yet.</strong></p>
 
   <h2>Questions</h2>
 
@@ -142,5 +247,111 @@
     <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
   </footer>
 </main>
+
+<script>
+"use strict";
+(function () {
+  var BROKER = "https://astrolabe-gelato-broker.astrolabe-gelato-broker.workers.dev";
+  var form = document.getElementById("order");
+  var sizesEl = document.getElementById("sizes");
+  var qtyEl = document.getElementById("qty");
+  var buyEl = document.getElementById("buy");
+  var problemEl = document.getElementById("problem");
+
+  function problem(msg) {
+    problemEl.textContent = msg;
+    problemEl.hidden = false;
+  }
+  function money(cents, currency) {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency", currency: (currency || "usd").toUpperCase()
+      }).format(cents / 100);
+    } catch (e) { return "$" + (cents / 100).toFixed(2); }
+  }
+
+  // Sizes and prices are read from the order service, never written into this
+  // page — one source of truth, so a price here can never drift from the one
+  // actually charged.
+  fetch(BROKER + "/catalogue")
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (data) {
+      var prints = (data && data.prints) || [];
+      if (!prints.length) throw new Error("empty catalogue");
+
+      prints.forEach(function (p, i) {
+        var label = document.createElement("label");
+        var input = document.createElement("input");
+        input.type = "radio";
+        input.name = "productUid";
+        input.value = p.productUid;
+        if (i === 0) input.checked = true;
+        label.appendChild(input);
+        var name = document.createElement("span");
+        name.textContent = p.label;
+        label.appendChild(name);
+        var dim = document.createElement("span");
+        dim.className = "dim";
+        dim.textContent = p.dimensions;
+        label.appendChild(dim);
+        var price = document.createElement("span");
+        price.className = "price";
+        price.textContent = money(p.unitCents, p.currency);
+        label.appendChild(price);
+        sizesEl.appendChild(label);
+      });
+
+      var max = Math.min(Number(data.maxQuantity) || 1, 10);
+      for (var q = 1; q <= max; q++) {
+        var opt = document.createElement("option");
+        opt.value = String(q);
+        opt.textContent = String(q);
+        qtyEl.appendChild(opt);
+      }
+
+      form.hidden = false;
+    })
+    .catch(function () {
+      problem("Ordering is temporarily unavailable — we can't reach the order " +
+              "service, and we'd rather show you nothing than a price we can't " +
+              "honour. Please try again shortly, or email us.");
+    });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    problemEl.hidden = true;
+    buyEl.disabled = true;
+    buyEl.textContent = "Taking you to checkout…";
+
+    var body = {
+      productUid: form.elements.productUid.value,
+      sign: form.elements.sign.value,
+      quantity: Number(qtyEl.value),
+      channel: "web"
+    };
+
+    fetch(BROKER + "/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    })
+      .then(function (r) {
+        return r.json().then(function (j) {
+          if (!r.ok) throw new Error(j && j.error ? j.error : "Couldn't start checkout.");
+          return j;
+        });
+      })
+      .then(function (j) {
+        if (!j.url) throw new Error("Couldn't start checkout.");
+        window.location.href = j.url;
+      })
+      .catch(function (err) {
+        problem(err.message || "Couldn't start checkout. Please try again.");
+        buyEl.disabled = false;
+        buyEl.textContent = "Continue to checkout";
+      });
+  });
+})();
+</script>
 </body>
 </html>
