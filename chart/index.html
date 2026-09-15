@@ -175,6 +175,7 @@
 <script type="module">
 import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "./src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
+import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "./src/points.js";
 import { wheelSVG } from "./src/wheel.js";
 
 const $ = (id) => document.getElementById(id);
@@ -227,16 +228,29 @@ function cast() {
     retrograde: isRetrograde(name, jd),
   }));
 
+  // Selena is the same axis as Lilith read from the other end, so it is always
+  // exactly 180° away and adds a glyph without adding a fact. The app carries
+  // it; this page leaves it out rather than drawing the same line twice.
+  const points = POINTS.filter((p) => p !== "whiteMoonSelena").map((name) => ({
+    name,
+    isPoint: true,
+    glyph: POINT_GLYPHS[name],
+    longitude: pointLongitude(name, jd),
+    retrograde: pointIsRetrograde(name, jd),
+  }));
+
   $("wheel").innerHTML = wheelSVG(
-    { ascendantLongitude: asc, midheavenLongitude: angles[1].longitude, latitude: lat, bodies },
+    { ascendantLongitude: asc, midheavenLongitude: angles[1].longitude, latitude: lat, bodies, points },
     { size: 1000, title: `Birth chart for ${$("date").value}` },
   );
 
-  const rows = bodies.map((b) =>
-    `<tr><td class="body">${title(b.name)}</td>` +
-    `<td class="pos">${position(b.longitude)}${b.retrograde ? ' <span class="rx">℞</span>' : ""}</td>` +
-    `<td class="pos">${wholeSignHouse(b.longitude, asc)}</td></tr>`).join("");
-  $("placements").innerHTML = rows;
+  const row = (label, lon, retro) =>
+    `<tr><td class="body">${label}</td>` +
+    `<td class="pos">${position(lon)}${retro ? ' <span class="rx">℞</span>' : ""}</td>` +
+    `<td class="pos">${wholeSignHouse(lon, asc)}</td></tr>`;
+  $("placements").innerHTML =
+    bodies.map((b) => row(title(b.name), b.longitude, b.retrograde)).join("") +
+    points.map((p) => row(POINT_NAMES[p.name], p.longitude, p.retrograde)).join("");
 
   const NAMES = { ascendant: "Ascendant", midheaven: "Midheaven",
                   descendant: "Descendant", imumCoeli: "Imum Coeli" };

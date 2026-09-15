@@ -43,7 +43,7 @@ const EARTH = el(1.00000261, 0.01671123, -0.00001531, 100.46457166, 102.93768193
  * sits a degree past where the sky had it — enough to put a cusp-hugging
  * planet in the wrong sign.
  */
-function precessedToDate(longitudeJ2000, jd) {
+export function precessedToDate(longitudeJ2000, jd) {
   const t = (jd - 2451545.0) / 36525.0;
   return normalizedDegrees(longitudeJ2000 + 1.3968878 * t);
 }
@@ -150,6 +150,18 @@ function moonLongitude(jd) {
     + 318 * Math.sin(jupiterBeat * D2R);
 
   return normalizedDegrees(meanLong + sum / 1_000_000);
+}
+
+/**
+ * The Earth's heliocentric rectangular position from the Keplerian elements.
+ *
+ * Exported for `points.js`: Chiron's geocentric longitude is its tabulated
+ * heliocentric position minus the Earth's, and it has to be the *same* Earth
+ * the eight planets are subtracted from, in the same J2000 frame, or the two
+ * would sit in subtly different skies.
+ */
+export function heliocentricEarth(centuries) {
+  return heliocentric(EARTH, centuries);
 }
 
 /**

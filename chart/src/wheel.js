@@ -223,7 +223,10 @@ export function wheelSVG(chart, { size = 1000, title = "" } = {}) {
   // ring order and any label closer than the minimum separation to the one
   // before is pushed further out, cascading, with a leader line back to its
   // own stud so no glyph is ever orphaned from the mark it names.
-  const bodies = chart.bodies ?? [];
+  // Points ride the rete alongside the planets, and are labelled the same way,
+  // but struck smaller: a node is not a body, and the drawing should not imply
+  // it is one.
+  const bodies = [...(chart.bodies ?? []), ...(chart.points ?? [])];
   if (bodies.length) {
     const placed = bodies.map((b) => {
       const [x, y] = atLongitude(b.longitude);
@@ -272,13 +275,15 @@ export function wheelSVG(chart, { size = 1000, title = "" } = {}) {
         `x2="${n(lx - p.nx * size * 0.016)}" y2="${n(ly - p.ny * size * 0.016)}" ` +
         `stroke="${BRASS.brass}" stroke-width="${n(size * 0.0012)}" stroke-opacity="0.55"/>`,
       );
-      out.push(circle(p.x, p.y, size * 0.010,
-        `fill="${BRASS.bright}" stroke="${BRASS.ground}" stroke-width="${n(size * 0.0018)}"`));
+      const minor = p.body.isPoint === true;
+      out.push(circle(p.x, p.y, size * (minor ? 0.0068 : 0.010),
+        `fill="${minor ? BRASS.brass : BRASS.bright}" stroke="${BRASS.ground}" ` +
+        `stroke-width="${n(size * 0.0016)}"`));
       out.push(
         `<text x="${n(lx)}" y="${n(ly)}" fill="${BRASS.resist}" font-size="${n(size * 0.026)}" ` +
         `font-family="Georgia, 'Times New Roman', serif" font-variant-emoji="text" ` +
         `text-anchor="middle" dominant-baseline="central">` +
-        `${PLANET_GLYPHS[p.body.name] ?? "?"}` +
+        `${p.body.glyph ?? PLANET_GLYPHS[p.body.name] ?? "?"}` +
         `${p.body.retrograde ? `<tspan font-size="${n(size * 0.015)}" dy="${n(-size * 0.006)}">℞</tspan>` : ""}` +
         `</text>`,
       );
