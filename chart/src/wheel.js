@@ -206,14 +206,83 @@ export function wheelSVG(chart, { size = 1000, title = "" } = {}) {
   }
 
   // ---- the bodies, as studs on the rete ----
-  for (const b of chart.bodies ?? []) {
-    const [x, y] = atLongitude(b.longitude);
-    out.push(circle(x, y, size * 0.011, `fill="${BRASS.bright}" stroke="${BRASS.ground}" stroke-width="${n(size*0.002)}"`));
-    out.push(
-      `<text x="${x}" y="${n(y - size * 0.028)}" fill="${BRASS.resist}" font-size="${n(size*0.024)}" ` +
-      `font-family="Georgia, 'Times New Roman', serif" font-variant-emoji="text" text-anchor="middle" dominant-baseline="central">` +
-      `${PLANET_GLYPHS[b.name] ?? "?"}${b.retrograde ? "<tspan font-size=\"" + n(size*0.014) + "\">℞</tspan>" : ""}</text>`,
-    );
+  //
+  // Labels sit radially *inside* the ecliptic band, measured from the ring's
+  // own centre rather than the plate's — the ring is off-centre, so a label
+  // pushed from the plate's middle drifts off the band it belongs to.
+  //
+  // Inward, because outward is where the limb is. The ring runs close to the
+  // limb on the ascendant side, so labels pushed out collide with the Roman
+  // numerals cut into it — and a stellium, which needs the most room, is
+  // exactly what pushes furthest. Inside the ring is plate: dark, and carrying
+  // nothing but almucantars a glyph can sit over.
+  //
+  // Then they are spread. A stellium is not a drawing problem to be avoided:
+  // three planets inside a few degrees is a real and meaningful thing for the
+  // chart to say, and the drawing has to say it legibly. Bodies are walked in
+  // ring order and any label closer than the minimum separation to the one
+  // before is pushed further out, cascading, with a leader line back to its
+  // own stud so no glyph is ever orphaned from the mark it names.
+  const bodies = chart.bodies ?? [];
+  if (bodies.length) {
+    const placed = bodies.map((b) => {
+      const [x, y] = atLongitude(b.longitude);
+      const vx = x - ringCx, vy = y - ringCy;
+      const len = Math.hypot(vx, vy) || 1;
+      return {
+        body: b, x, y,
+        nx: -vx / len, ny: -vy / len,
+        // Angle around the ring, for ordering and for separation.
+        theta: Math.atan2(-vy, vx),
+      };
+    });
+    placed.sort((a, b) => a.theta - b.theta);
+
+    const base = size * 0.036;         // clear of the band
+    const step = size * 0.030;         // one label's height
+    const minGap = size * 0.042;       // how close two labels may sit
+    for (let i = 0; i < placed.length; i++) {
+      placed[i].out = base;
+      // Compare against every label already placed, not just the previous
+      // one: the ring wraps, and three bodies within a few degrees each need
+      // clearing the two before them rather than only the last.
+      let bumped = true, guard = 0;
+      while (bumped && guard++ < 24) {
+        bumped = false;
+        const px = placed[i].x + placed[i].nx * placed[i].out;
+        const py = placed[i].y + placed[i].ny * placed[i].out;
+        for (let j = 0; j < i; j++) {
+          const qx = placed[j].x + placed[j].nx * placed[j].out;
+          const qy = placed[j].y + placed[j].ny * placed[j].out;
+          if (Math.hypot(px - qx, py - qy) < minGap) {
+            placed[i].out += step;
+            bumped = true;
+            break;
+          }
+        }
+      }
+    }
+
+    for (const p of placed) {
+      const lx = p.x + p.nx * p.out;
+      const ly = p.y + p.ny * p.out;
+      // Leader from the stud to a displaced label.
+      out.push(
+        `<line x1="${n(p.x + p.nx * size * 0.012)}" y1="${n(p.y + p.ny * size * 0.012)}" ` +
+        `x2="${n(lx - p.nx * size * 0.016)}" y2="${n(ly - p.ny * size * 0.016)}" ` +
+        `stroke="${BRASS.brass}" stroke-width="${n(size * 0.0012)}" stroke-opacity="0.55"/>`,
+      );
+      out.push(circle(p.x, p.y, size * 0.010,
+        `fill="${BRASS.bright}" stroke="${BRASS.ground}" stroke-width="${n(size * 0.0018)}"`));
+      out.push(
+        `<text x="${n(lx)}" y="${n(ly)}" fill="${BRASS.resist}" font-size="${n(size * 0.026)}" ` +
+        `font-family="Georgia, 'Times New Roman', serif" font-variant-emoji="text" ` +
+        `text-anchor="middle" dominant-baseline="central">` +
+        `${PLANET_GLYPHS[p.body.name] ?? "?"}` +
+        `${p.body.retrograde ? `<tspan font-size="${n(size * 0.015)}" dy="${n(-size * 0.006)}">℞</tspan>` : ""}` +
+        `</text>`,
+      );
+    }
   }
 
   // ---- the rule: the ascendant–descendant axis, and the meridian ----
