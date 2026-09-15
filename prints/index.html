@@ -102,9 +102,18 @@
   }
   .signs{ display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
   .signs label{
-    display: flex; align-items: baseline; gap: 7px;
-    padding: 9px 11px; border: 1px solid var(--rule); border-radius: 8px;
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 8px; border: 1px solid var(--rule); border-radius: 8px;
     background: var(--panel); cursor: pointer; font-size: 15.5px;
+  }
+  .signs label .row{ display: flex; align-items: baseline; gap: 7px; }
+  /* 4:3, the proportion the art is composed in and the print is cut to.
+     `height: auto` is load-bearing: the width/height attributes are there so
+     the row reserves space before the image arrives, and without this the
+     attribute height wins and aspect-ratio is ignored. */
+  .signs label img{
+    display: block; width: 100%; height: auto; aspect-ratio: 4 / 3;
+    object-fit: cover; border-radius: 5px; background: var(--rule);
   }
   .signs .glyph{ color: var(--brass); font-size: 17px; }
   .sizes{ display: flex; flex-direction: column; gap: 8px; }
@@ -141,8 +150,9 @@
 
   figure.look{ margin: 26px 0 8px; }
   figure.look img{
-    display: block; width: 100%; height: auto;
+    display: block; width: 100%; height: auto; aspect-ratio: 4 / 3;
     border-radius: 10px; border: 1px solid var(--rule);
+    background: var(--panel);
   }
   figure.look figcaption{
     color: var(--muted); font-size: 15px; font-style: italic; margin-top: 10px;
@@ -158,10 +168,12 @@
   a wall &mdash; printed to order on real paper and shipped to you flat.</p>
 
   <figure class="look">
-    <img src="/assets/screenshots/06-signs.jpg" alt="The twelve signs in Follow My Astrolabe, each illustrated in a batik style" loading="lazy" width="1200" height="900">
-    <figcaption>The twelve, as they appear in the app. A print is one of these,
-    at a size where the resist lines and the wash detail are actually
-    visible.</figcaption>
+    <img id="preview" src="/assets/signs/aries.jpg"
+         alt="Aries, illustrated in a batik style"
+         width="1600" height="1200" fetchpriority="high">
+    <figcaption><strong id="previewName">Aries</strong> &mdash; the image a
+    print is made from, shown here at a fraction of its printed size. Pick
+    another below and this changes.</figcaption>
   </figure>
 
   <h2>The object</h2>
@@ -196,18 +208,18 @@
     <fieldset>
       <legend>Sign</legend>
       <div class="signs">
-        <label><input type="radio" name="sign" value="aries" checked><span class="glyph" aria-hidden="true">♈</span>Aries</label>
-        <label><input type="radio" name="sign" value="taurus"><span class="glyph" aria-hidden="true">♉</span>Taurus</label>
-        <label><input type="radio" name="sign" value="gemini"><span class="glyph" aria-hidden="true">♊</span>Gemini</label>
-        <label><input type="radio" name="sign" value="cancer"><span class="glyph" aria-hidden="true">♋</span>Cancer</label>
-        <label><input type="radio" name="sign" value="leo"><span class="glyph" aria-hidden="true">♌</span>Leo</label>
-        <label><input type="radio" name="sign" value="virgo"><span class="glyph" aria-hidden="true">♍</span>Virgo</label>
-        <label><input type="radio" name="sign" value="libra"><span class="glyph" aria-hidden="true">♎</span>Libra</label>
-        <label><input type="radio" name="sign" value="scorpio"><span class="glyph" aria-hidden="true">♏</span>Scorpio</label>
-        <label><input type="radio" name="sign" value="sagittarius"><span class="glyph" aria-hidden="true">♐</span>Sagittarius</label>
-        <label><input type="radio" name="sign" value="capricorn"><span class="glyph" aria-hidden="true">♑</span>Capricorn</label>
-        <label><input type="radio" name="sign" value="aquarius"><span class="glyph" aria-hidden="true">♒</span>Aquarius</label>
-        <label><input type="radio" name="sign" value="pisces"><span class="glyph" aria-hidden="true">♓</span>Pisces</label>
+        <label><input type="radio" name="sign" value="aries" checked><img src="/assets/signs/aries-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♈</span>Aries</span></label>
+        <label><input type="radio" name="sign" value="taurus"><img src="/assets/signs/taurus-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♉</span>Taurus</span></label>
+        <label><input type="radio" name="sign" value="gemini"><img src="/assets/signs/gemini-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♊</span>Gemini</span></label>
+        <label><input type="radio" name="sign" value="cancer"><img src="/assets/signs/cancer-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♋</span>Cancer</span></label>
+        <label><input type="radio" name="sign" value="leo"><img src="/assets/signs/leo-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♌</span>Leo</span></label>
+        <label><input type="radio" name="sign" value="virgo"><img src="/assets/signs/virgo-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♍</span>Virgo</span></label>
+        <label><input type="radio" name="sign" value="libra"><img src="/assets/signs/libra-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♎</span>Libra</span></label>
+        <label><input type="radio" name="sign" value="scorpio"><img src="/assets/signs/scorpio-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♏</span>Scorpio</span></label>
+        <label><input type="radio" name="sign" value="sagittarius"><img src="/assets/signs/sagittarius-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♐</span>Sagittarius</span></label>
+        <label><input type="radio" name="sign" value="capricorn"><img src="/assets/signs/capricorn-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♑</span>Capricorn</span></label>
+        <label><input type="radio" name="sign" value="aquarius"><img src="/assets/signs/aquarius-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♒</span>Aquarius</span></label>
+        <label><input type="radio" name="sign" value="pisces"><img src="/assets/signs/pisces-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♓</span>Pisces</span></label>
       </div>
     </fieldset>
 
@@ -257,6 +269,42 @@
   var qtyEl = document.getElementById("qty");
   var buyEl = document.getElementById("buy");
   var problemEl = document.getElementById("problem");
+  var previewEl = document.getElementById("preview");
+  var previewNameEl = document.getElementById("previewName");
+
+  // The preview is outside the form on purpose: the form stays hidden until
+  // the catalogue loads, and the art should carry the page whether or not the
+  // order service is reachable. The picker updates it when there is one.
+  var SIGN_NAMES = {
+    aries: "Aries", taurus: "Taurus", gemini: "Gemini", cancer: "Cancer",
+    leo: "Leo", virgo: "Virgo", libra: "Libra", scorpio: "Scorpio",
+    sagittarius: "Sagittarius", capricorn: "Capricorn",
+    aquarius: "Aquarius", pisces: "Pisces"
+  };
+
+  function showSign(sign) {
+    var name = SIGN_NAMES[sign];
+    if (!name) return;
+    previewEl.src = "/assets/signs/" + sign + ".jpg";
+    previewEl.alt = name + ", illustrated in a batik style";
+    previewNameEl.textContent = name;
+  }
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll('input[name="sign"]'),
+    function (input) {
+      input.addEventListener("change", function () {
+        if (input.checked) showSign(input.value);
+      });
+    }
+  );
+
+  // A browser restoring a previous selection on reload fires no change event,
+  // so read the checked radio once rather than assuming it is still Aries.
+  (function () {
+    var checked = document.querySelector('input[name="sign"]:checked');
+    if (checked && checked.value !== "aries") showSign(checked.value);
+  })();
 
   function problem(msg) {
     problemEl.textContent = msg;
