@@ -7,6 +7,13 @@
 <meta name="description" content="Cast a real birth chart on a working astrolabe, in your browser. Nothing you type leaves your device.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/assets/favicon.png">
+<link rel="manifest" href="/chart/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/chart/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Astrolabe">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f7f1e3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
@@ -90,6 +97,19 @@
     background: var(--panel); margin: 18px 0 0;
   }
   .problem[hidden]{ display: none !important; }
+  .install{
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    padding: 13px 15px; border: 1px solid var(--rule); border-radius: 8px;
+    background: var(--panel); margin: 22px 0 0; font-size: 15.5px;
+  }
+  .install[hidden]{ display: none !important; }
+  .install p{ margin: 0; flex: 1 1 26ch; }
+  .install button{
+    font-family: inherit; font-size: 15px; cursor: pointer; border-radius: 8px;
+    padding: 8px 14px; border: 1px solid var(--brass);
+  }
+  .install .go{ background: var(--brass); color: var(--ground); font-weight: 600; }
+  .install .later{ background: transparent; color: var(--muted); border-color: var(--rule); }
   footer{ margin-top: 54px; padding-top: 20px; border-top: 1px solid var(--rule);
           color: var(--muted); font-size: 15px; }
   footer a{ color: var(--brass); }
@@ -112,6 +132,20 @@
   person, 16 March 1990, 2:15 PM, New York &mdash; so the page shows what it
   does before you type anything. The defaults here are fictional on purpose:
   a real birth time, to the minute, with a place, identifies someone.</p>
+
+  <div class="install" id="installIos" hidden>
+    <p>Keep it on your Home Screen: tap <strong>Share</strong>, then
+    <strong>Add to Home Screen</strong>. It opens like an app, and it works with
+    no signal.</p>
+    <button class="later" type="button" data-dismiss>Not now</button>
+  </div>
+
+  <div class="install" id="installPrompt" hidden>
+    <p>Install Astrolabe on this device. It opens like an app, and it works with
+    no signal.</p>
+    <button class="go" type="button" id="installGo">Install</button>
+    <button class="later" type="button" data-dismiss>Not now</button>
+  </div>
 
   <form id="chartForm">
     <fieldset>
@@ -267,6 +301,55 @@ $("chartForm").addEventListener("submit", (e) => { e.preventDefault(); cast(); }
 // Cast once on load, so the page opens showing what it does rather than an
 // empty frame waiting to be told.
 cast();
+
+// ---- installing it ----
+//
+// Offline first, because it is what makes installing worth offering: every
+// part of casting a chart already runs on the device.
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/chart/sw.js", { scope: "/chart/" }).catch(() => {
+    // Not fatal. The page works exactly as before; it just will not open
+    // offline, and there is nothing useful to tell a visitor about that.
+  });
+}
+
+const installed =
+  window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+const DISMISS_KEY = "astrolabe.installHint.dismissed";
+const dismissed = () => { try { return localStorage.getItem(DISMISS_KEY) === "1"; } catch { return false; } };
+const dismiss = () => { try { localStorage.setItem(DISMISS_KEY, "1"); } catch {} };
+
+document.querySelectorAll("[data-dismiss]").forEach((b) =>
+  b.addEventListener("click", () => {
+    dismiss();
+    $("installIos").hidden = true;
+    $("installPrompt").hidden = true;
+  }));
+
+// iPhone and iPad never offer to install a web app, so unless the page says so
+// nobody finds the Share-sheet route. iPadOS reports itself as a Mac; a Mac
+// with a touchscreen is the tell.
+const ua = navigator.userAgent;
+const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+if (isIOS && !installed && !dismissed()) $("installIos").hidden = false;
+
+// Chrome on Android does offer, but only once the page asks, so hold the
+// browser's own prompt until someone presses Install.
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!installed && !dismissed()) $("installPrompt").hidden = false;
+});
+$("installGo").addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  $("installPrompt").hidden = true;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice.catch(() => {});
+  deferredPrompt = null;
+});
+window.addEventListener("appinstalled", () => { $("installPrompt").hidden = true; });
 </script>
 </body>
 </html>
