@@ -85,14 +85,33 @@
 <main>
   <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
   <h1>Privacy Policy</h1>
-  <div class="dates">Effective date: August 25, 2026 &middot; Last updated: September 12, 2026</div>
+  <div class="dates">Effective date: August 25, 2026 &middot; Last updated: September 17, 2026</div>
 
-  <p class="lede">Follow My Astrolabe is made by Studio New Moon. The short version: it computes your birth chart and reads the sky on your own device. There are no accounts, no ads, and no analytics tools, and almost everything this policy describes never leaves your phone. There are two exceptions, and both happen only when you choose them: ordering a physical print, which involves a payment and a postal address, and sending us feedback. Both are spelled out below.</p>
+  <p class="lede">Follow My Astrolabe is made by Studio New Moon, and it comes two ways: this website, and an iPhone and iPad app that's in testing and isn't on the App Store. The short version for both: your chart is worked out on your own device. There are no accounts, no ads, no cookies, and no analytics tools, and your birth details never leave your device. Beyond the ordinary requests any website makes to load its pages and fonts, information leaves your device only when you choose: ordering a print, which involves a payment and a postal address, and sending us feedback from the app. All of it is spelled out below.</p>
 
-  <h2>Information the App Uses</h2>
+  <h2>The Website</h2>
+
+  <h3>Casting a chart</h3>
+  <p>When you cast a chart on this site, your birth date, time, and place are used by the page, in your own browser, to work out the chart. None of it is sent to us or to anyone else.</p>
+  <p>Birthplace search runs in your browser too. The list of places is a file the page downloads from this site, split by first letter, so the only thing a request can show is which letter's file was fetched &mdash; never what you typed. Place names come from GeoNames, but their servers are never contacted.</p>
+
+  <h3>Charts you save</h3>
+  <p>Where the site lets you save people's charts, their names, birth details, and places are stored in your browser's own storage on that device. They're never uploaded, they don't sync to your other devices, and we can't see them. Clearing this site's data from your browser deletes them.</p>
+  <p>The site also remembers, in the same storage, whether you've dismissed the note about adding it to your Home Screen, and it keeps a copy of its own pages so it can open without a signal. Neither contains anything about you.</p>
+
+  <h3>Loading the site</h3>
+  <p>Like any website, loading a page sends a request from your device, with its internet address and browser type, to the services that deliver it: <strong>GitHub Pages</strong>, which hosts the site, and <strong>Google Fonts</strong>, which serves its typefaces. The homepage and the print shop also ask our order service on <strong>Cloudflare</strong> for current print prices. These requests carry nothing you've typed. We don't receive logs from GitHub or Google. Cloudflare keeps short-lived technical logs of requests to our service, for up to a week, which we look at only to diagnose a problem with an order.</p>
+
+  <h2>Ordering a Print</h2>
+  <p>Chart to Canvas prints can be ordered from this site, or from the app. A physical print has to be paid for and posted somewhere, so this is where information about you does change hands. None of it happens unless you start an order.</p>
+  <p>When you begin checkout, the site or the app sends only the print itself &mdash; which product, which sign's artwork, and what quantity &mdash; to a small service we run on Cloudflare. That request carries nothing about you, and nothing from any birth details.</p>
+  <p>Payment happens on Stripe's own hosted checkout page. Your <strong>name, email address, shipping address, and card details</strong> are entered there, on Stripe's page, and go to <strong>Stripe</strong>. We never see your card number at any point.</p>
+  <p>Once Stripe confirms the payment, our ordering service passes your <strong>name, email address, and shipping address</strong> to <strong>Gelato</strong>, the print partner that produces and ships the print &mdash; for the same reason any sender needs an address. Our service keeps one small record of its own: your email address and the name of the item you ordered, so it can email you as the print moves through production and shipping. Those updates are sent through <strong>Resend</strong>, an email delivery service. The record deletes itself automatically 120 days after the order's last update. Everything else about the order lives with Stripe and Gelato, who handle it under their own privacy policies (<a href="https://stripe.com/privacy">stripe.com/privacy</a>, and Gelato's policy on their own site).</p>
+
+  <h2>The iPhone App</h2>
 
   <h3>Birth details you enter</h3>
-  <p>Your name, birth date, birth time (or an approximate time window, if you don't know it exactly), and birth place are used to compute your natal chart &mdash; the core function of the app. This is done entirely on your device. Nothing about your birth details is transmitted to us, and nothing about them reaches the print-ordering service described below either, even when you order a print.</p>
+  <p>Your name, birth date, birth time (or an approximate time window, if you don't know it exactly), and birth place are used to compute your natal chart &mdash; the core function of the app. This is done entirely on your device. Nothing about your birth details is transmitted to us, and nothing about them reaches the print-ordering service described above either, even when you order a print.</p>
   <p>Looking up your birth place uses Apple's MapKit, which sends your search text to Apple's own map servers to find matching places and resolve the correct time zone &mdash; the same way typing an address into Apple Maps does. That exchange is between your device and Apple directly; we never see it, store it, or have access to it. Apple's own privacy practices govern that part of the lookup, described at <a href="https://www.apple.com/legal/privacy/">apple.com/legal/privacy</a>.</p>
   <p>Your birth details are stored locally on your device only, and stay there unless you delete the app.</p>
 
@@ -108,51 +127,43 @@
   <h3>Appearance and app settings</h3>
   <p>Things like your chosen color scheme, metal finish, font, and whether you've subscribed are stored locally so the app remembers your preferences between launches. None of this identifies you to us, because we never receive it in the first place.</p>
 
-  <h3>Ordering a print, if you choose to</h3>
-  <p>Chart to Canvas turns your chart into a physical print &mdash; and a physical print has to be paid for and posted somewhere. Along with sending feedback (described next), this is the only part of the app where information leaves your device. None of it happens unless you start an order.</p>
-  <p>When you begin checkout, the app sends <strong>only the print itself</strong> &mdash; which product, which sign's artwork, what quantity, and the price &mdash; to a small service we run on Cloudflare. That request carries nothing about you, and nothing from the birth details your chart was computed from.</p>
-  <p>Payment happens on <strong>Stripe</strong>'s own hosted checkout page, opened in a secure browser sheet. Your name, email address, shipping address, and card details are entered there, on Stripe's page, and go to Stripe. The app never sees your card number at any point.</p>
-  <p>Once Stripe confirms the payment, our ordering service passes your <strong>name, email address, and shipping address</strong> to <strong>Gelato</strong>, the print partner that produces and ships the poster &mdash; for the same reason any sender needs an address. Our service keeps one small record of its own: your <strong>email address and the name of the item you ordered</strong>, so it can email you as the print moves through production and shipping. Those updates are sent through <strong>Resend</strong>, an email delivery service. The record deletes itself automatically 120 days after the order's last update. Everything else about the order lives with Stripe and Gelato, who handle it under their own privacy policies (<a href="https://stripe.com/privacy">stripe.com/privacy</a>, and Gelato's policy on their own site).</p>
-
-  <h3>Feedback, if you choose to send it</h3>
-  <p>You can send us feedback in two ways: the feedback form, reachable from every screen, and the thumbs up and down under each reading, which open a short checklist of what worked and what didn't. Nothing is sent until you press Send.</p>
-  <p>What's sent is what you wrote or ticked. A vote on a reading also includes the reading itself, where in your chart it came from (for example, the sign and house), and the app version, so we can find and fix the exact line you're telling us about. None of it includes your name, email address, birth details, or anything that identifies your device, unless you type something like that into the message yourself. It reaches us with no way of telling who sent it.</p>
+  <h3>Feedback from the app, if you choose to send it</h3>
+  <p>In the iPhone app, you can send us feedback in two ways: the feedback form, reachable from every screen, and the thumbs up and down under each reading, which open a short checklist of what worked and what didn't. Nothing is sent until you press Send.</p>
+  <p>What's sent is what you wrote or ticked. A vote on a reading also includes the reading itself, where in your chart it came from (for example, the sign and house), and the app version, so we can find and fix the exact line you're telling us about. None of it includes your name, email address, birth details, or anything that identifies your device, unless you type something like that into the message yourself. It reaches us with no way of telling who sent it. To stop anyone flooding our inbox, the service counts how many messages arrive from each internet address in an hour; that count is kept apart from the feedback itself and deletes itself within two hours.</p>
   <p>Your feedback travels through the same small service we run on Cloudflare, which hands it to Resend to deliver as an email to our own inbox. That service also keeps its own copy &mdash; the same text you sent, with the date it arrived &mdash; so we can work through feedback in bulk rather than one message at a time, and that copy deletes itself after 180 days. The emailed copy we keep for as long as it helps us improve the app. We use neither for anything else. Feedback like this is the only way we learn which readings work: the app never reports anything about how you use it.</p>
 
   <h2>What We Don't Do</h2>
-  <ul>
-    <li><strong>We don't run an account system.</strong> There is no login, no cloud sync, and no profile of you anywhere but on your own phone. The one service we do operate &mdash; the small service described above &mdash; only handles print orders and feedback you choose to send, and the only things it keeps are the order record and a copy of that feedback, each of which deletes itself on a timer.</li>
-    <li><strong>We don't use analytics or crash-reporting SDKs.</strong></li>
-    <li><strong>We don't show ads</strong>, and we don't use any advertising or tracking SDKs.</li>
-    <li><strong>We don't sell or rent your information to anyone.</strong> The only information we pass on is what's needed to deliver what you asked for: the name and address a print is shipped to, which goes only to the printer, and the email address your order updates go to, which goes only to the service that sends them.</li>
-    <li><strong>We don't use App Tracking Transparency</strong> because the app doesn't track you across other companies' apps or websites.</li>
-  </ul>
+  <p>We don't run an account system. There is no login, no cloud sync, and no profile of you anywhere but on your own device. The one service we operate only handles print orders, print prices, and feedback you choose to send. The only things it keeps are the order record and a copy of that feedback, each of which deletes itself on a timer, plus the short-lived request logs described above.</p>
+  <p>We don't use cookies, analytics, or crash reporting, on the website or in the app.</p>
+  <p>We don't show ads, and we don't use any advertising or tracking tools.</p>
+  <p>We don't sell or rent your information to anyone. The only information we pass on is what's needed to deliver what you asked for: the name and address a print is shipped to, which goes only to the printer, and the email address your order updates go to, which goes only to the service that sends them.</p>
+  <p>The app doesn't use App Tracking Transparency because it doesn't track you across other companies' apps or websites.</p>
 
   <h2>Third Parties</h2>
-  <p><strong>Apple</strong> is involved in the ordinary running of the app: MapKit for birth-place search (described above), and the App Store itself for distribution and for subscriptions, which are handled entirely by Apple's own StoreKit &mdash; we never see or store your payment information.</p>
-  <p><strong>Stripe</strong> and <strong>Gelato</strong> are involved only if you order a print, exactly as described above, and <strong>Cloudflare</strong> hosts the small service that connects the two, along with the print artwork itself. <strong>Resend</strong> delivers the emails that service sends: your order updates, and any feedback you send us.</p>
-  <p>Beyond those, we integrate no third-party service, SDK, or library &mdash; in particular none for analytics, advertising, or crash reporting.</p>
+  <p><strong>GitHub Pages</strong> hosts this website, and <strong>Google Fonts</strong> serves its typefaces, as described above.</p>
+  <p><strong>Stripe</strong> and <strong>Gelato</strong> are involved only if you order a print, exactly as described above, and <strong>Cloudflare</strong> hosts the small service that connects the two, along with the print artwork itself. <strong>Resend</strong> delivers the emails that service sends: your order updates, and any feedback you send from the app.</p>
+  <p>In the app, <strong>Apple</strong> provides MapKit for birthplace search, as described above, and TestFlight and StoreKit for testing and subscriptions. We never see or store payment information.</p>
+  <p>Beyond those, we use no third-party service, SDK, or library &mdash; in particular none for analytics, advertising, or crash reporting.</p>
 
   <h2>Children's Privacy</h2>
-  <p>Follow My Astrolabe is not directed at children under 13, and we don't knowingly collect personal information from anyone in that age group. The app asks for nothing that identifies you, and the one place personal information does change hands &mdash; ordering a print &mdash; requires a payment card in the first place.</p>
+  <p>Follow My Astrolabe is not directed at children under 13, and we don't knowingly collect personal information from anyone in that age group. Neither the website nor the app sends us anything that identifies you, and the one place personal information does change hands &mdash; ordering a print &mdash; requires a payment card in the first place.</p>
 
   <h2>Your Choices</h2>
   <p>Because your information lives on your device rather than in an account on a server, you're always in direct control of it:</p>
-  <ul>
-    <li><strong>To remove your birth details, photo, or preferences:</strong> edit or clear them from within the app, or delete the app entirely &mdash; deleting the app removes everything Follow My Astrolabe stored on your device.</li>
-    <li><strong>To revoke location, motion, or notification permissions:</strong> use your device's Settings app at any time; the app degrades gracefully (a manual sky-pointing slider, or simply no future notification) rather than breaking.</li>
-    <li><strong>For a print you ordered:</strong> most of the record sits with Stripe and Gelato, and the email-and-item record our own service keeps deletes itself 120 days after the order's last update. Write to us and we'll help with either.</li>
-    <li><strong>For feedback you sent:</strong> it carries nothing that identifies you, so we can only find yours if you tell us roughly when you sent it and what it said. Write to us and we'll delete it, from our inbox and from the service's own copy &mdash; and that copy deletes itself after 180 days regardless.</li>
-  </ul>
+  <p><strong>To remove charts you saved on the website:</strong> delete them on the site, or clear this site's data in your browser's settings.</p>
+  <p><strong>To remove your birth details, photo, or preferences from the app:</strong> edit or clear them from within the app, or delete the app entirely &mdash; deleting it removes everything Follow My Astrolabe stored on your device.</p>
+  <p><strong>To revoke location, motion, or notification permissions in the app:</strong> use your device's Settings app at any time; the app degrades gracefully (a manual sky-pointing slider, or simply no future notification) rather than breaking.</p>
+  <p><strong>For a print you ordered:</strong> most of the record sits with Stripe and Gelato, and the email-and-item record our own service keeps deletes itself 120 days after the order's last update. Write to us and we'll help with either.</p>
+  <p><strong>For feedback you sent from the app:</strong> it carries nothing that identifies you, so we can only find yours if you tell us roughly when you sent it and what it said. Write to us and we'll delete it, from our inbox and from the service's own copy &mdash; and that copy deletes itself after 180 days regardless.</p>
 
   <h2>Changes to This Policy</h2>
-  <p>If this policy changes &mdash; for example, if the friend-sharing feature described in our own product plans is eventually built, since sharing something with a friend necessarily involves sending it somewhere &mdash; we'll update this document and its effective date before that feature ships, and describe plainly what's new.</p>
+  <p>If this policy changes &mdash; for example, if the website starts sending anything about a chart to a server, or if the friend-sharing feature in our product plans is built, since sharing something with a friend necessarily involves sending it somewhere &mdash; we'll update this document and its date before that change goes live, and describe plainly what's new.</p>
 
   <h2>Contact Us</h2>
   <p>If you have questions about this policy or how Follow My Astrolabe handles information, contact us at:</p>
   <p><strong><a href="mailto:morgan@followmyastrolabe.com">morgan@followmyastrolabe.com</a></strong></p>
 
-  <footer><a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a><br><br>This policy is written to be genuinely accurate to how the app works today, not boilerplate &mdash; when a feature changes what the app does, as print ordering and feedback did, this document is revised alongside it rather than after the fact.</footer>
+  <footer><a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a><br><br>This policy is written to be genuinely accurate to how the website and the app work today, not boilerplate &mdash; when a feature changes what either does, as print ordering and feedback did, this document is revised alongside it rather than after the fact.</footer>
 </main>
 </body>
 </html>
