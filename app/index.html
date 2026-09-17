@@ -16,7 +16,7 @@
 <meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
 <style>
   :root{
     --ground: #f7f1e3;
@@ -83,6 +83,10 @@
   .result{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 22px; }
   @media (max-width: 780px){ .result{ grid-template-columns: 1fr; } }
   .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
+  /* The instrument is Brass & Ink whatever the page's own scheme, so it sits
+     on the app's ink ground in both light and dark. */
+  .wheel canvas{ display: block; width: 100%; aspect-ratio: 1; border-radius: 12px;
+                 border: 1px solid var(--rule); background: #14100A; }
   table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
   th{ text-align: left; font-weight: 600; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 0 6px; }
   td{ padding: 5px 0; border-top: 1px solid var(--rule); }
@@ -262,6 +266,7 @@ import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normal
 import { longitudeOf, isRetrograde, PLANETS } from "../chart/src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "../chart/src/points.js";
 import { wheelSVG } from "../chart/src/wheel.js";
+import { drawInstrument } from "../chart/src/instrument.js";
 import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId, selectProfile, requestPersistentStorage } from "./src/profiles.js";
 import { loadPlaces, searchPlaces } from "../chart/src/places.js";
 
@@ -318,10 +323,6 @@ function showChart(profile) {
     `${longDate(profile.date)} · ${clock(profile.time)} · ${profile.place.name || "coordinates entered by hand"}`;
   $("editPerson").hidden = !profile.id;
 
-  $("wheel").innerHTML = wheelSVG(
-    { ascendantLongitude: c.asc, midheavenLongitude: c.angles[1].longitude, latitude: c.lat, bodies: c.bodies, points: c.points },
-    { size: 1000, title: `Birth chart for ${profile.name}` },
-  );
   const row = (label, lon, retro) =>
     `<tr><td class="body">${esc(label)}</td><td class="num">${position(lon)}${retro ? ' <span class="rx">℞</span>' : ""}</td>` +
     `<td class="num">${wholeSignHouse(lon, c.asc)}</td></tr>`;
@@ -333,7 +334,70 @@ function showChart(profile) {
 
   $("chartView").hidden = false;
   $("empty").hidden = true;
+  // Drawn once the view is showing, because a hidden canvas has no width.
+  showWheel(
+    { ascendantLongitude: c.asc, midheavenLongitude: c.angles[1].longitude, latitude: c.lat, bodies: c.bodies, points: c.points },
+    `Birth chart for ${profile.name}: ${SIGNS[signIndex(c.asc)]} rising, Sun in ${SIGNS[signIndex(c.bodies[0].longitude)]}`,
+  );
 }
+
+// ---------- the instrument ----------
+//
+// The chart is drawn as the app draws it, a brass astrolabe on a canvas
+// (chart/src/instrument.js), exactly as /chart/ does. A browser without conic
+// gradients, which the metal is built from, gets the flat SVG wheel instead.
+const canInstrument = (() => {
+  try { return typeof document.createElement("canvas").getContext("2d").createConicGradient === "function"; }
+  catch { return false; }
+})();
+
+let shown = null;
+let drawnWidth = 0;
+
+function drawShown() {
+  if (!shown) return;
+  const canvas = $("wheel").querySelector("canvas");
+  if (!canvas) return;
+  const width = Math.round(canvas.getBoundingClientRect().width);
+  if (!width) return;
+  drawnWidth = width;
+  try {
+    drawInstrument(canvas, shown.chart, { size: width, dpr: window.devicePixelRatio || 1, keepStyleSize: true });
+  } catch (err) {
+    // A failure part way leaves half an instrument, so fall back cleanly.
+    console.error(err);
+    $("wheel").innerHTML = wheelSVG(shown.chart, { size: 1000, title: shown.label });
+  }
+}
+
+function showWheel(chart, label) {
+  shown = { chart, label };
+  if (!canInstrument) {
+    $("wheel").innerHTML = wheelSVG(chart, { size: 1000, title: label });
+    return;
+  }
+  let canvas = $("wheel").querySelector("canvas");
+  if (!canvas) {
+    $("wheel").innerHTML = "";
+    canvas = document.createElement("canvas");
+    canvas.setAttribute("role", "img");
+    $("wheel").appendChild(canvas);
+    new ResizeObserver(() => {
+      const width = Math.round(canvas.getBoundingClientRect().width);
+      if (width && width !== drawnWidth) requestAnimationFrame(drawShown);
+    }).observe(canvas);
+  }
+  canvas.setAttribute("aria-label", label);
+  drawnWidth = 0;
+  drawShown();
+}
+
+// The hub's lettering is Cinzel and Spectral. If they arrive after the first
+// draw, draw again so the instrument isn't left in a fallback face.
+Promise.all([
+  document.fonts.load("700 18px Cinzel"),
+  document.fonts.load("400 11px Spectral"),
+]).then(drawShown).catch(() => {});
 
 // ---------- people ----------
 let current = null;
