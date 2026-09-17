@@ -143,28 +143,6 @@
   a.shop-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
   a.shop-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
 
-  /* ---------- App Store call to action ---------- */
-  /* Both states are in the markup at once — the pre-launch pill and the
-     real badge — and `body.prelaunch` decides which one is shown, so
-     release day is one word deleted rather than a rewrite. */
-  body.prelaunch .cta-live{display:none;}
-  body:not(.prelaunch) .cta-soon{display:none;}
-
-  .store-link{
-    display:inline-block;
-    /* Apple asks for clear space around the badge of at least a tenth of
-       its height on every side. That is what this padding is — nothing
-       may be moved into it. */
-    padding:6px;
-    border-radius:12px;
-    transition:transform .2s ease, filter .2s ease;
-  }
-  .store-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
-  .store-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
-  /* Sized by height only, so the artwork keeps Apple's proportions. 54px
-     clears their 40px web minimum with room to spare. */
-  .store-badge{height:54px;width:auto;}
-
   .pricing .cta{
     margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:12px;
   }
@@ -339,21 +317,7 @@
   }
 </style>
 </head>
-<body class="prelaunch">
-
-<!-- ============================================================
-     ON RELEASE DAY, TWO EDITS:
-
-       1. Delete  class="prelaunch"  from the <body> tag above.
-       2. Replace both occurrences of  idAPPLE_ID  with the real
-          Apple ID, e.g.  id6740000000 . It is in App Store Connect
-          under the app's General > App Information, labelled
-          "Apple ID" — a ten-digit number, not the bundle ID.
-
-     Doing only the first is caught: the script at the bottom of the
-     page puts the "Coming Soon" pill back rather than shipping a
-     link to nowhere.
-     ============================================================ -->
+<body>
 
 <header class="nav">
   <div class="nav-inner">
@@ -371,10 +335,10 @@
 <section class="hero" id="top">
   <div class="stars" aria-hidden="true"></div>
   <div class="wrap">
-    <!-- The actual rendered wordmark, cropped straight out of the app's
-         own welcome-screen screenshot rather than redrawn in CSS/SVG —
-         after two redraw attempts still didn't read as the same mark,
-         so this is the real pixels instead of an approximation of them. -->
+    <!-- The app's own rendered wordmark rather than a CSS/SVG redraw,
+         which after two attempts still didn't read as the same mark.
+         Captured from the welcome screen on black and on white, so the
+         transparency is exact instead of keyed out of a starfield. -->
     <img class="hero-mark" src="assets/wordmark-follow-my-astrolabe.png" alt="Follow My Astrolabe" width="882" height="272">
     <p class="subtitle">Your Path, Cast in Metal</p>
     <div class="hero-cta">
@@ -382,11 +346,6 @@
       <span class="hero-note chart-note">Free, right here in your browser</span>
       <a class="badge shop-link" href="/prints/">Shop the Prints</a>
       <span class="hero-note">Sign art, printed to order and shipped to you</span>
-      <a class="store-link cta-live" href="https://apps.apple.com/app/follow-my-astrolabe/idAPPLE_ID">
-        <img class="store-badge" src="assets/app-store-badge.svg" alt="Download on the App Store"
-             width="162" height="54">
-      </a>
-      <span class="hero-note cta-live">iPhone &amp; iPad &middot; Free, with an optional subscription</span>
     </div>
   </div>
 </section>
@@ -617,16 +576,6 @@
       html += '<span style="left:' + x + '%;top:' + y + '%;width:' + s + 'px;height:' + s + 'px;opacity:' + o + '"></span>';
     }
     field.innerHTML = html;
-  })();
-
-  // Release-day safety net. If the page has been switched live but the
-  // Apple ID placeholder is still sitting in the link, fall back to the
-  // "Coming Soon" pill rather than sending anyone to a dead App Store URL.
-  (function () {
-    var link = document.querySelector('a.store-link');
-    if (link && link.getAttribute('href').indexOf('APPLE_ID') !== -1) {
-      document.body.classList.add('prelaunch');
-    }
   })();
 </script>
 
