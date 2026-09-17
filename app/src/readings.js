@@ -17,6 +17,22 @@ import { natalPositions } from "./positions.js";
 /// which is how a work-in-progress server is tried without touching the site.
 const DEFAULT_ENDPOINT = "https://astrolabe-readings.astrolabe-gelato-broker.workers.dev/readings";
 
+/// A subscriber's pass, or null. It is an opaque token: it proves a
+/// subscription without saying whose, and the reading server checks its
+/// signature without looking anything up. Written by /account/unlock/ when a
+/// sign-in link is opened.
+///
+/// Reading it can throw rather than return null — a private window, storage
+/// switched off — and that has to mean the free reading, not a broken page.
+/// Temporary: chart/src/pass.js will own this key, and this becomes an import.
+export function readPass() {
+  try {
+    return localStorage.getItem("astrolabe.pass") || null;
+  } catch {
+    return null;
+  }
+}
+
 export function endpoint() {
   try {
     return localStorage.getItem("astrolabe.readings.endpoint") || DEFAULT_ENDPOINT;
@@ -53,11 +69,18 @@ export async function fetchReadings(profile, { rulers = "modern", areas, periods
   if (areas) body.areas = areas;
   if (periods) body.periods = periods;
 
+  // The pass rides along when there is one. The server verifies it and
+  // composes the paid readings; without it, the paid words are never written,
+  // so there is nothing in the reply for anyone to dig out.
+  const headers = { "Content-Type": "application/json" };
+  const pass = readPass();
+  if (pass) headers["X-Astrolabe-Pass"] = pass;
+
   let response;
   try {
     response = await fetch(endpoint(), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
       signal,
     });

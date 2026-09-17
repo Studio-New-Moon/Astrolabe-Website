@@ -127,6 +127,11 @@
   .area .detail{ color: var(--muted); font-size: 15.5px; margin: 6px 0 0; }
   .area .clause{ font-size: 15px; font-style: italic; margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--rule); }
   .area.waiting{ opacity: .55; }
+  .periods button[data-locked="yes"]{ color: var(--muted); }
+  .periods button[data-locked="yes"]::after{ content: " ·"; }
+  .locked{ margin: 10px 0 0; font-size: 15px; color: var(--muted); }
+  .locked a{ color: var(--brass); }
+  .area .plateNote{ color: var(--muted); font-size: 15px; margin: 6px 0 0; }
   table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
   th{ text-align: left; font-weight: 600; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 0 6px; }
   td{ padding: 5px 0; border-top: 1px solid var(--rule); }
@@ -306,6 +311,7 @@
         <div class="periods" role="tablist" aria-labelledby="readingsHeading" id="periods"></div>
       </div>
       <p class="readingsNote" id="readingsNote" hidden></p>
+      <p class="locked" id="lockedNote" hidden></p>
       <div class="areaGrid" id="areaGrid"></div>
     </section>
   </section>
@@ -375,15 +381,24 @@ function cast(profile) {
 
 // ---------- readings ----------
 const PERIODS = ["daily", "weekly", "monthly", "yearly"];
+// What a reading costs, as in the app: the daily is free in every Life Area,
+// and the week, the month and the year come with a subscription. The server
+// decides this — it simply never writes what a reader hasn't paid for — and
+// the page only has to show the door rather than guard it.
+const FREE_PERIODS = new Set(["daily"]);
 let shownPeriod = "daily";
+let entitled = false;
 let readings = null;          // the last answer from the reading server
 let readingsFor = null;       // the profile it was asked for
 let inFlight = null;          // so a fast switch between people cannot land twice
 
 function periodButtons() {
-  $("periods").innerHTML = PERIODS.map((p) =>
-    `<button type="button" role="tab" data-period="${p}" aria-selected="${p === shownPeriod}">${title(p)}</button>`
-  ).join("");
+  $("periods").innerHTML = PERIODS.map((p) => {
+    const locked = !entitled && !FREE_PERIODS.has(p);
+    return `<button type="button" role="tab" data-period="${p}" data-locked="${locked ? "yes" : "no"}"` +
+      ` aria-selected="${p === shownPeriod}"` +
+      `${locked ? ' aria-label="' + title(p) + ', with a subscription"' : ""}>${title(p)}</button>`;
+  }).join("");
 }
 
 function note(message) {
@@ -395,6 +410,18 @@ function note(message) {
 function drawReadings() {
   const grid = $("areaGrid");
   if (!readings) { grid.innerHTML = ""; return; }
+  // A locked period shows the door rather than an empty grid: the words for
+  // it were never written, so there is nothing here to reveal.
+  if (!entitled && !FREE_PERIODS.has(shownPeriod)) {
+    grid.innerHTML = "";
+    note(null);
+    $("lockedNote").hidden = false;
+    $("lockedNote").innerHTML =
+      `The ${esc(shownPeriod)} reading comes with a subscription. ` +
+      `<a href="/plans/">See what a subscription opens</a>.`;
+    return;
+  }
+  $("lockedNote").hidden = true;
   const areas = readings.areas ?? [];
   grid.innerHTML = areas.map((area) => {
     const h = (readings.horoscopes ?? []).find((x) => x.area === area.area && x.period === shownPeriod);
@@ -402,6 +429,9 @@ function drawReadings() {
       `<p class="which">${esc(title(area.area))}</p>`,
       `<p class="plate">${esc(area.nameplate)}</p>`,
     ];
+    if (area.nameplateDescription) {
+      lines.push(`<p class="plateNote">${esc(area.nameplateDescription)}</p>`);
+    }
     if (h) {
       lines.push(`<p class="strip">${esc(h.stripLine)}</p>`);
       lines.push(`<p class="instruction">${esc(h.instruction)}</p>`);
@@ -429,6 +459,8 @@ async function loadReadings(profile) {
     if (controller !== inFlight) return;     // a newer request is on its way
     if (!answer) { note("Readings need an exact birth time."); return; }
     readings = answer;
+    entitled = answer.entitled === true;
+    periodButtons();
     note(null);
     drawReadings();
   } catch (e) {
