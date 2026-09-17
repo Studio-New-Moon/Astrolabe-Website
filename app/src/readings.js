@@ -11,6 +11,10 @@
 // before, and a reading that calls itself today's should not.
 
 import { natalPositions } from "./positions.js";
+// One place knows where a pass lives and how it is refreshed: /account/unlock/
+// writes it, this only reads it. Reading never throws — a private window, or
+// storage switched off, means the free reading rather than a broken page.
+import { readPass } from "../../chart/src/pass.js";
 
 /// Where the readings come from. A different one can be set in this browser —
 /// `localStorage.setItem("astrolabe.readings.endpoint", "http://localhost:8791/readings")` —
