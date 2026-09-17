@@ -79,6 +79,8 @@
   /* ---- the chart ---- */
   .chartHead{ margin: 26px 0 4px; }
   .summary{ color: var(--muted); font-size: 15.5px; margin: 4px 0 0; }
+  .motionLink{ margin: 8px 0 0; font-size: 15.5px; }
+  .motionLink a{ color: var(--brass); }
   .editLink{ font-size: 14.5px; color: var(--brass); background: none; border: 0; padding: 0; text-decoration: underline; }
   .result{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 22px; }
   @media (max-width: 780px){ .result{ grid-template-columns: 1fr; } }
@@ -239,6 +241,7 @@
       <h2 id="chartName"></h2>
       <p class="summary"><span id="chartSummary"></span>
         <button class="editLink" type="button" id="editPerson">Edit</button></p>
+      <p class="motionLink"><a href="/app/motion/">Chart in Motion: watch the real sky move around this chart</a></p>
     </div>
     <div class="result">
       <div class="wheel" id="wheel"></div>
