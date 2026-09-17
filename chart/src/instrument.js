@@ -13,8 +13,10 @@
 //   shadows before it. Canvas `shadowColor` applied while drawing an image of
 //   a finished layer does exactly that, so stacked shadows are built one layer
 //   at a time.
-// - `drawLayer` with an outer opacity becomes an offscreen layer composited at
-//   `globalAlpha`. See `strokeWire` for why that difference matters.
+// - The app bands a translucent wire inside a `drawLayer` so its overlapping
+//   caps don't composite twice. Here each wire is one path filled once with
+//   the nonzero rule, which gets the same result with no layer. See
+//   `strokeWire`.
 // - Text is centred by its measured ink, not its line box, which is what the
 //   app has to measure CoreText to get.
 //
@@ -155,15 +157,6 @@ function makeLayer(width, height, dpr) {
   return { canvas: c, ctx: x };
 }
 
-/** Composite a full-size layer onto `ctx` at an opacity, in device pixels. */
-function composite(ctx, layer, opacity = 1) {
-  ctx.save();
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = opacity;
-  ctx.drawImage(layer.canvas, 0, 0);
-  ctx.restore();
-}
-
 // ---------------------------------------------------------------------------
 // Geometry.
 
@@ -228,17 +221,6 @@ export function drawInstrument(canvas, chart, options = {}) {
     return { x: g.c.x + p.radius * Math.cos(a), y: g.c.y - p.radius * Math.sin(a) };
   };
 
-  // One scratch layer, cleared and reused: every use composites straight
-  // back before the next begins, so nothing ever needs two at once.
-  const scratch = makeLayer(size, size, dpr);
-  const layer = () => {
-    scratch.ctx.save();
-    scratch.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    scratch.ctx.clearRect(0, 0, scratch.canvas.width, scratch.canvas.height);
-    scratch.ctx.restore();
-    return scratch;
-  };
-
   // ---- stroking and filling in the app's vocabulary ----
 
   const circlePath = (cx, cy, r) => {
@@ -268,35 +250,53 @@ export function drawInstrument(canvas, chart, options = {}) {
   };
 
   /**
-   * `strokeWire`. A partly transparent wire is banded inside its own layer
-   * and faded once as a whole, or each overlapping round cap composites
-   * twice and the thread breaks into a row of bright pips.
+   * `strokeWire`: a sampled wire whose thickness varies along its run.
+   *
+   * The app strokes it in short round-capped bands, and a partly transparent
+   * wire has to be banded inside a layer and faded as a whole, or each
+   * overlapping cap composites twice and the thread breaks into bright pips.
+   *
+   * Here the whole wire is one path instead: a disc at every station and a
+   * quad joining each pair, every piece wound the same way, filled once with
+   * the nonzero rule. A single fill paints each pixel once however many
+   * pieces cover it, so a translucent wire needs no layer at all — and
+   * copying layers back was nearly all of the drawing time. The thickness
+   * also follows each station rather than a band's average.
    */
   const strokeWire = (c, samples, base, shading, opacity = 1) => {
     if (samples.length < 2) return;
-    if (opacity >= 1) return bands(c, samples, base, shading);
-    const l = layer();
-    bands(l.ctx, samples, base, shading);
-    composite(c, l, opacity);
+    c.save();
+    c.globalAlpha = opacity;
+    c.fillStyle = shading(c);
+    c.fill(ribbon(samples, base), "nonzero");
+    c.restore();
   };
 
-  const bands = (c, s, base, shading) => {
-    const minLen = Math.max(base * 1.6, 2.0);
-    let i = 0;
-    while (i < s.length - 1) {
-      let hi = i + 1;
-      let run = hypot(s[hi].p.x - s[i].p.x, s[hi].p.y - s[i].p.y);
-      while (hi < s.length - 1 && run < minLen) {
-        hi += 1;
-        run += hypot(s[hi].p.x - s[hi - 1].p.x, s[hi].p.y - s[hi - 1].p.y);
-      }
-      const p = new Path2D();
-      p.moveTo(s[i].p.x, s[i].p.y);
-      for (let k = i + 1; k <= hi; k++) p.lineTo(s[k].p.x, s[k].p.y);
-      const w = (s[i].w + s[hi].w) / 2;
-      stroke(c, p, shading, base * w, { cap: "round", join: "round" });
-      i = hi;
+  const ribbon = (s, base) => {
+    const path = new Path2D();
+    const half = (i) => Math.max(base * s[i].w, 0) / 2;
+    for (let i = 0; i < s.length; i++) {
+      const { x, y } = s[i].p;
+      const r = half(i);
+      path.moveTo(x + r, y);
+      path.arc(x, y, r, 0, Math.PI * 2, false);
     }
+    for (let i = 0; i < s.length - 1; i++) {
+      const a = s[i].p, b = s[i + 1].p;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 1e-6) continue;
+      const nx = -dy / len, ny = dx / len;
+      const ra = half(i), rb = half(i + 1);
+      // With y growing down, this order is clockwise on screen, the same
+      // way `arc(..., false)` winds the discs.
+      path.moveTo(a.x + nx * ra, a.y + ny * ra);
+      path.lineTo(a.x - nx * ra, a.y - ny * ra);
+      path.lineTo(b.x - nx * rb, b.y - ny * rb);
+      path.lineTo(b.x + nx * rb, b.y + ny * rb);
+      path.closePath();
+    }
+    return path;
   };
 
   /** Draws text with its measured ink centred on a point. */
@@ -614,18 +614,25 @@ export function drawInstrument(canvas, chart, options = {}) {
     const sr = r * 1.08;
     fill(c, circlePath(ptr.tip.x + r * 0.34, ptr.tip.y + r * 0.34, sr), solid(rgba(m.deep, 0.5)));
 
-    const l = layer();
+    // Four needles, one fill: overlapping at the centre, so they are wound
+    // alike and filled once rather than layered, for the same reason wires are.
+    const glint = new Path2D();
     for (const [deg, reach] of [[0, 3.0], [180, 3.0], [90, 2.2], [270, 2.2]]) {
       const a = deg * D2R;
       const dx = Math.cos(a), dy = Math.sin(a);
       const len = r * reach, halfW = r * 0.20;
-      fill(l.ctx, polyPath([
-        { x: ptr.tip.x - dy * halfW, y: ptr.tip.y + dx * halfW },
-        { x: ptr.tip.x + dx * len, y: ptr.tip.y + dy * len },
-        { x: ptr.tip.x + dy * halfW, y: ptr.tip.y - dx * halfW },
-      ], true), solid(m.spec));
+      const p0 = { x: ptr.tip.x - dy * halfW, y: ptr.tip.y + dx * halfW };
+      const p1 = { x: ptr.tip.x + dx * len, y: ptr.tip.y + dy * len };
+      const p2 = { x: ptr.tip.x + dy * halfW, y: ptr.tip.y - dx * halfW };
+      const clockwise = (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x) > 0;
+      const [q1, q2] = clockwise ? [p1, p2] : [p2, p1];
+      glint.moveTo(p0.x, p0.y); glint.lineTo(q1.x, q1.y); glint.lineTo(q2.x, q2.y); glint.closePath();
     }
-    composite(c, l, 0.45);
+    c.save();
+    c.globalAlpha = 0.45;
+    c.fillStyle = m.spec;
+    c.fill(glint, "nonzero");
+    c.restore();
     drawBead(c, ptr.tip, r);
   }
 
@@ -933,9 +940,11 @@ export function drawInstrument(canvas, chart, options = {}) {
     const r = g.hub;
     fill(c, circlePath(g.c.x, g.c.y, r), solid(rgba(pal.ground, 0.96)));
     // strokeBorder: the 2pt line sits inside the circle's edge
-    const l = layer();
-    stroke(l.ctx, circlePath(g.c.x, g.c.y, r - 1), conic(spunStops(m, false), g.c.x, g.c.y, -135), 2);
-    composite(c, l, 0.7);
+    // A single stroked circle has no overlaps, so plain alpha is exact.
+    c.save();
+    c.globalAlpha = 0.7;
+    stroke(c, circlePath(g.c.x, g.c.y, r - 1), conic(spunStops(m, false), g.c.x, g.c.y, -135), 2);
+    c.restore();
 
     const signName = SIGNS[signIndex(asc)];
     const lines = [

@@ -16,7 +16,7 @@
 <meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
 <style>
   :root{
     --ground: #f7f1e3;
@@ -83,6 +83,10 @@
   @media (max-width: 760px){ .result{ grid-template-columns: 1fr; } }
   .wheel{ width: 100%; }
   .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
+  /* The instrument is Brass & Ink whatever the page's own scheme, so it sits
+     on the app's ink ground in both light and dark. */
+  .wheel canvas{ display: block; width: 100%; aspect-ratio: 1; border-radius: 12px;
+                 border: 1px solid var(--rule); background: #14100A; }
 
   table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
   th{ text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
@@ -230,6 +234,7 @@ import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normal
 import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "./src/points.js";
 import { wheelSVG } from "./src/wheel.js";
+import { drawInstrument } from "./src/instrument.js";
 import { searchPlaces } from "./src/places.js";
 
 const $ = (id) => document.getElementById(id);
@@ -295,6 +300,64 @@ const dms = (lon) => {
 };
 const position = (lon) => `${dms(lon)} ${SIGNS[signIndex(lon)]}`;
 
+// ---- the instrument ----
+//
+// The chart is drawn the way the app draws it, as a brass astrolabe on a
+// canvas (src/instrument.js). A browser without conic gradients, which the
+// metal is built from, gets the flat SVG wheel instead.
+const canInstrument = (() => {
+  try { return typeof document.createElement("canvas").getContext("2d").createConicGradient === "function"; }
+  catch { return false; }
+})();
+
+let shown = null;
+let drawnWidth = 0;
+
+function drawShown() {
+  if (!shown) return;
+  const canvas = $("wheel").querySelector("canvas");
+  if (!canvas) return;
+  const width = Math.round(canvas.getBoundingClientRect().width);
+  if (!width) return;
+  drawnWidth = width;
+  try {
+    drawInstrument(canvas, shown.chart, { size: width, dpr: window.devicePixelRatio || 1, keepStyleSize: true });
+  } catch (err) {
+    // A failure part way leaves half an instrument, so fall back cleanly.
+    console.error(err);
+    $("wheel").innerHTML = wheelSVG(shown.chart, { size: 1000, title: shown.label });
+  }
+}
+
+function showWheel(chart, label) {
+  shown = { chart, label };
+  $("result").hidden = false;
+  if (!canInstrument) {
+    $("wheel").innerHTML = wheelSVG(chart, { size: 1000, title: label });
+    return;
+  }
+  let canvas = $("wheel").querySelector("canvas");
+  if (!canvas) {
+    $("wheel").innerHTML = "";
+    canvas = document.createElement("canvas");
+    canvas.setAttribute("role", "img");
+    $("wheel").appendChild(canvas);
+    new ResizeObserver(() => {
+      const width = Math.round(canvas.getBoundingClientRect().width);
+      if (width && width !== drawnWidth) requestAnimationFrame(drawShown);
+    }).observe(canvas);
+  }
+  canvas.setAttribute("aria-label", label);
+  drawShown();
+}
+
+// The hub's lettering is Cinzel and Spectral. If they arrive after the first
+// draw, draw again so the instrument isn't left in a fallback face.
+Promise.all([
+  document.fonts.load("700 18px Cinzel"),
+  document.fonts.load("400 11px Spectral"),
+]).then(drawShown).catch(() => {});
+
 function cast() {
   $("problem").hidden = true;
   const [y, m, d] = $("date").value.split("-").map(Number);
@@ -329,9 +392,9 @@ function cast() {
     retrograde: pointIsRetrograde(name, jd),
   }));
 
-  $("wheel").innerHTML = wheelSVG(
+  showWheel(
     { ascendantLongitude: asc, midheavenLongitude: angles[1].longitude, latitude: lat, bodies, points },
-    { size: 1000, title: `Birth chart for ${$("date").value}` },
+    `Birth chart for ${$("date").value}: ${SIGNS[signIndex(asc)]} rising, Sun in ${SIGNS[signIndex(bodies[0].longitude)]}`,
   );
 
   const row = (label, lon, retro) =>
