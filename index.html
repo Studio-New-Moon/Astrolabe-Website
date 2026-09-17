@@ -171,6 +171,11 @@
   }
   /* Sections that carry no screenshot: one column, held to a reading measure. */
   .feature.prose-only .wrap{grid-template-columns:1fr;max-width:760px;}
+  .feature .section-cta{margin-top:26px;}
+  /* Chart in Motion is for tablets and computers: its page tells a phone
+     screen so, and this section isn't offered on one at all. Same line as
+     the page, 600px each way, so a phone on its side doesn't qualify. */
+  @media (max-width:599.98px), (max-height:599.98px){ #motion{display:none;} }
   .shot{
     border-radius:18px;overflow:hidden;
     border:1px solid var(--panel-line);
@@ -434,6 +439,18 @@
       <h2>A Chart Is Only as Good as the Sky It Was Cast From.</h2>
       <p>The planets in yours come from VSOP87, the planetary theory published by Bretagnon and Francou at the Paris Observatory — all but Pluto, which the theory doesn't reach and which keeps orbital elements of its own. The Moon comes from the published lunar theory that goes with it. Neither was typed in from memory and taken on trust — the planets are generated straight from the observatory's own data files.</p>
       <p>Then we checked them against an independent ephemeris, a source with no reason to agree with us: nearly half a million positions across the last century, every planet sampled every day and the Moon more often still. Chiron crosses two planets' orbits, so no tidy formula holds it; its positions come from JPL's own tracking. Every body in your chart lands within a fiftieth of a degree. The Sun and the seven planets the theory covers land within a hundredth.</p>
+    </div>
+  </div>
+</section>
+
+<section class="feature prose-only" id="motion">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Chart in Motion</span>
+      <h2>Watch the Real Sky Move Around a Chart.</h2>
+      <p>A birth chart holds still inside the zodiac band while the actual sky runs past it, at anything from a day to a year each second. A line lights up the moment a moving planet makes an aspect to one in the chart, and when two planets meet, they pass each other the way they do overhead.</p>
+      <p>Or take a single day at the birthplace and watch the zodiac and the planets turn through the houses, minute by minute, pausing on the minute of birth. It all runs in your browser, on a tablet or a computer.</p>
+      <div class="section-cta"><a class="chart-link" href="/app/motion/">Open Chart in Motion</a></div>
     </div>
   </div>
 </section>
