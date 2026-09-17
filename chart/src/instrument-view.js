@@ -65,6 +65,7 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
   let label = "";
   let selected = { house: null, planet: null };
   let drawnWidth = 0;
+  let hits = { houses: [], planets: [] };
   let stage = null, canvas = null, targets = null, readout = null;
 
   const houseSign = (h) => SIGNS[(signIndex(chart.ascendantLongitude) + h - 1) % 12];
@@ -101,6 +102,9 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
     readout.className = "instrument-readout hint";
     readout.setAttribute("aria-live", "polite");
     container.append(stage, readout);
+    // Taps are handled here rather than on each button, so one that lands
+    // near a target still counts — see `nearest`.
+    stage.addEventListener("click", onStageClick);
     new ResizeObserver(() => {
       const width = Math.round(canvas.getBoundingClientRect().width);
       if (width && width !== drawnWidth) requestAnimationFrame(draw);
@@ -112,6 +116,58 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
     container.innerHTML = wheelSVG(chart, { size: 1000, title: label });
   }
 
+  /**
+   * The target a tap at (x, y) means, or null.
+   *
+   * The buttons are the size of what's drawn: a planet stud is about 24px
+   * across and a house numeral about 37px, where a finger wants nearer 48.
+   * Ten studs can't each be 48px on a wheel a few hundred across without
+   * overlapping, so the buttons stay put and the tolerance lives here: a tap
+   * is allowed to miss by a finger's width, and the nearest target within
+   * that wins. Planets are tested first, because a stud sits on the rim it
+   * shares with a house numeral and the stud is the finer thing to hit.
+   *
+   * Distances are measured to each target's true centre, the one
+   * `drawInstrument` reports, not to anything drawn over it.
+   */
+  const TOLERANCE = 24;
+
+  function nearest(x, y) {
+    let best = null;
+    for (const p of hits.planets) {
+      const d = Math.hypot(x - p.x, y - p.y);
+      if (d <= Math.max(p.r, TOLERANCE) && (!best || d < best.d)) {
+        best = { d, pick: { house: null, planet: p.name } };
+      }
+    }
+    if (best) return best.pick;
+    for (const h of hits.houses) {
+      const d = Math.hypot(x - h.x, y - h.y);
+      if (d <= Math.max(h.r, TOLERANCE) && (!best || d < best.d)) {
+        best = { d, pick: { house: h.house, planet: null } };
+      }
+    }
+    return best ? best.pick : null;
+  }
+
+  function onStageClick(event) {
+    // A button's own click carries what it is, so a keyboard or a screen
+    // reader activating one is exact rather than going through the tolerance.
+    const button = event.target.closest?.("button[data-kind]");
+    if (button) {
+      const { kind, key } = button.dataset;
+      return choose(kind === "planet" ? { house: null, planet: key } : { house: Number(key), planet: null });
+    }
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return;
+    const scale = drawnWidth / rect.width;
+    const pick = nearest((event.clientX - rect.left) * scale, (event.clientY - rect.top) * scale);
+    // A tap on open plate means "never mind", which is how the readout's own
+    // invitation reads once something is lit.
+    if (pick) return choose(pick);
+    if (selected.house || selected.planet) choose(selected);
+  }
+
   function choose(next) {
     const same = next.house === selected.house && next.planet === selected.planet;
     selected = same ? { house: null, planet: null } : next;
@@ -119,9 +175,9 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
     onSelect({ ...selected });
   }
 
-  function placeTargets(hits) {
+  function placeTargets() {
     targets.innerHTML = "";
-    const add = (x, y, r, aria, pressed, onClick) => {
+    const add = (x, y, r, aria, pressed, kind, key) => {
       const b = document.createElement("button");
       b.type = "button";
       b.style.left = `${x - r}px`;
@@ -130,18 +186,19 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
       b.style.height = `${r * 2}px`;
       b.setAttribute("aria-label", aria);
       b.setAttribute("aria-pressed", String(pressed));
-      b.addEventListener("click", onClick);
+      b.dataset.kind = kind;
+      b.dataset.key = String(key);
       targets.appendChild(b);
     };
     for (const h of hits.houses) {
       add(h.x, h.y, h.r, `House ${ROMAN[h.house - 1]}, ${houseSign(h.house)}`,
-        selected.house === h.house, () => choose({ house: h.house, planet: null }));
+        selected.house === h.house, "house", h.house);
     }
-    // Studs after houses, so a stud sitting over a numeral is the one tapped.
+    // Studs after houses, so a stud sitting over a numeral is in front of it.
     for (const p of hits.planets) {
       const b = chart.bodies.find((x) => x.name === p.name);
       add(p.x, p.y, p.r, `${title(p.name)}, ${dms(b.longitude)} ${SIGNS[signIndex(b.longitude)]}, house ${houseOf(b.longitude)}`,
-        selected.planet === p.name, () => choose({ house: null, planet: p.name }));
+        selected.planet === p.name, "planet", p.name);
     }
   }
 
@@ -151,11 +208,11 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
     if (!width) return;
     drawnWidth = width;
     try {
-      const hits = drawInstrument(canvas, chart, {
+      hits = drawInstrument(canvas, chart, {
         size: width, dpr: window.devicePixelRatio || 1, keepStyleSize: true,
         selectedHouse: selected.house, selectedPlanet: selected.planet,
       });
-      placeTargets(hits);
+      placeTargets();
       readout.textContent = describe();
       readout.classList.toggle("hint", !selected.house && !selected.planet);
     } catch (err) {
