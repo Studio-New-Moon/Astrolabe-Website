@@ -94,6 +94,9 @@
   td{ padding: 5px 0; border-top: 1px solid var(--rule); }
   td.body{ width: 40%; }
   td.num{ font-variant-numeric: tabular-nums; }
+  /* Rows lit by a tap on the instrument. */
+  tr.picked td{ background: color-mix(in srgb, var(--brass) 16%, transparent); }
+  tr.picked td:first-child{ box-shadow: inset 3px 0 0 var(--brass); padding-left: 8px; }
   td .rx{ color: var(--brass); font-size: 13px; }
 
   /* ---- empty state ---- */
@@ -268,8 +271,7 @@
 import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "../chart/src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "../chart/src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "../chart/src/points.js";
-import { wheelSVG } from "../chart/src/wheel.js";
-import { drawInstrument } from "../chart/src/instrument.js";
+import { mountInstrument } from "../chart/src/instrument-view.js";
 import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId, selectProfile, requestPersistentStorage } from "./src/profiles.js";
 import { loadPlaces, searchPlaces } from "../chart/src/places.js";
 
@@ -326,12 +328,12 @@ function showChart(profile) {
     `${longDate(profile.date)} · ${clock(profile.time)} · ${profile.place.name || "coordinates entered by hand"}`;
   $("editPerson").hidden = !profile.id;
 
-  const row = (label, lon, retro) =>
-    `<tr><td class="body">${esc(label)}</td><td class="num">${position(lon)}${retro ? ' <span class="rx">℞</span>' : ""}</td>` +
+  const row = (label, lon, retro, key = "") =>
+    `<tr data-body="${key}" data-house="${wholeSignHouse(lon, c.asc)}"><td class="body">${esc(label)}</td><td class="num">${position(lon)}${retro ? ' <span class="rx">℞</span>' : ""}</td>` +
     `<td class="num">${wholeSignHouse(lon, c.asc)}</td></tr>`;
   $("placements").innerHTML =
-    c.bodies.map((b) => row(title(b.name), b.longitude, b.retrograde)).join("") +
-    c.points.map((p) => row(POINT_NAMES[p.name], p.longitude, p.retrograde)).join("");
+    c.bodies.map((b) => row(title(b.name), b.longitude, b.retrograde, b.name)).join("") +
+    c.points.map((p) => row(POINT_NAMES[p.name], p.longitude, p.retrograde, p.name)).join("");
   const NAMES = { ascendant: "Ascendant", midheaven: "Midheaven", descendant: "Descendant", imumCoeli: "Imum Coeli" };
   $("anglesBody").innerHTML = c.angles.map((a) => row(NAMES[a.kind], a.longitude, false)).join("");
 
@@ -346,61 +348,19 @@ function showChart(profile) {
 
 // ---------- the instrument ----------
 //
-// The chart is drawn as the app draws it, a brass astrolabe on a canvas
-// (chart/src/instrument.js), exactly as /chart/ does. A browser without conic
-// gradients, which the metal is built from, gets the flat SVG wheel instead.
-const canInstrument = (() => {
-  try { return typeof document.createElement("canvas").getContext("2d").createConicGradient === "function"; }
-  catch { return false; }
-})();
-
-let shown = null;
-let drawnWidth = 0;
-
-function drawShown() {
-  if (!shown) return;
-  const canvas = $("wheel").querySelector("canvas");
-  if (!canvas) return;
-  const width = Math.round(canvas.getBoundingClientRect().width);
-  if (!width) return;
-  drawnWidth = width;
-  try {
-    drawInstrument(canvas, shown.chart, { size: width, dpr: window.devicePixelRatio || 1, keepStyleSize: true });
-  } catch (err) {
-    // A failure part way leaves half an instrument, so fall back cleanly.
-    console.error(err);
-    $("wheel").innerHTML = wheelSVG(shown.chart, { size: 1000, title: shown.label });
-  }
+// Drawn the way the app draws it, as a brass astrolabe, by the shared
+// chart/src/instrument-view.js, exactly as /chart/ does: tappable houses and
+// planets, a readout under it, and the flat SVG wheel as a fallback.
+// Taps on the instrument light the matching rows: a planet's own row, or
+// every row that falls in a house.
+function lightRows({ house, planet }) {
+  document.querySelectorAll("tr.picked").forEach((tr) => tr.classList.remove("picked"));
+  const selector = planet ? `tr[data-body="${planet}"]` : house ? `tr[data-house="${house}"]` : null;
+  if (selector) document.querySelectorAll(selector).forEach((tr) => tr.classList.add("picked"));
 }
 
-function showWheel(chart, label) {
-  shown = { chart, label };
-  if (!canInstrument) {
-    $("wheel").innerHTML = wheelSVG(chart, { size: 1000, title: label });
-    return;
-  }
-  let canvas = $("wheel").querySelector("canvas");
-  if (!canvas) {
-    $("wheel").innerHTML = "";
-    canvas = document.createElement("canvas");
-    canvas.setAttribute("role", "img");
-    $("wheel").appendChild(canvas);
-    new ResizeObserver(() => {
-      const width = Math.round(canvas.getBoundingClientRect().width);
-      if (width && width !== drawnWidth) requestAnimationFrame(drawShown);
-    }).observe(canvas);
-  }
-  canvas.setAttribute("aria-label", label);
-  drawnWidth = 0;
-  drawShown();
-}
-
-// The hub's lettering is Cinzel and Spectral. If they arrive after the first
-// draw, draw again so the instrument isn't left in a fallback face.
-Promise.all([
-  document.fonts.load("700 18px Cinzel"),
-  document.fonts.load("400 11px Spectral"),
-]).then(drawShown).catch(() => {});
+const instrument = mountInstrument($("wheel"), { onSelect: lightRows });
+const showWheel = (chart, label) => instrument.show(chart, label);
 
 // ---------- people ----------
 let current = null;

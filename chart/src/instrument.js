@@ -65,7 +65,7 @@ const METALS = {
 };
 
 const BRASS_AND_INK = {
-  ground: "#14100A", brass: "#B8963F", resist: "#F3E6C4", muted: "#9A8A66",
+  ground: "#14100A", brass: "#B8963F", resist: "#F3E6C4", muted: "#9A8A66", fire: "#DD6440",
   plate: "#150F07", engraving: "#6F6A52", horizonLine: "#8FB0A8",
 };
 
@@ -377,7 +377,7 @@ export function drawInstrument(canvas, chart, options = {}) {
       const r = (g.mater + g.limbInner) / 2;
       // The app asks for semibold, but only Spectral's regular face ships with
       // it, so regular is what it actually draws.
-      boxText(c, ROMAN[h - 1], `400 ${g.size * 0.032}px ${font.body}`, m.deep,
+      boxText(c, ROMAN[h - 1], `400 ${g.size * 0.032}px ${font.body}`, options.selectedHouse === h ? m.spec : m.deep,
         g.c.x + Math.cos(mid) * r, g.c.y + Math.sin(mid) * r);
     }
     stroke(c, circlePath(g.c.x, g.c.y, g.limbInner), solid(m.deep), 1.4);
@@ -1086,6 +1086,18 @@ export function drawInstrument(canvas, chart, options = {}) {
   drawPlate(ctx);
   drawRete(ctx, ring, pointers);
   drawRule(ctx);
+
+  // A selected house, lit where its numeral is cut: the app's tap target
+  // shows a faint disc of specular metal with a brighter ring round it.
+  if (options.selectedHouse >= 1 && options.selectedHouse <= 12) {
+    const a = houseMidAngle(options.selectedHouse);
+    const lr = (g.mater + g.limbInner) / 2;
+    const hx = g.c.x + Math.cos(a) * lr, hy = g.c.y + Math.sin(a) * lr;
+    const d = g.size * 0.11;
+    fill(ctx, circlePath(hx, hy, d / 2), solid(rgba(m.spec, 0.16)));
+    stroke(ctx, circlePath(hx, hy, d / 2 - 0.75), solid(rgba(m.spec, 0.6)), 1.5);
+  }
+
   for (const cluster of groups) drawArmature(ctx, cluster, pointers, ring);
   drawHub(ctx);
 
@@ -1101,6 +1113,18 @@ export function drawInstrument(canvas, chart, options = {}) {
 
   const studs = groups.flat();
   for (const { body, pos } of studs) drawStud(ctx, body, pos);
+
+  // A selected planet: the app rings its stud in the palette's fire colour,
+  // with a soft glow of the same.
+  const picked = studs.find(({ body }) => body.name === options.selectedPlanet);
+  if (picked) {
+    const d = g.size * 0.072;
+    ctx.save();
+    ctx.shadowColor = rgba(pal.fire, 0.7);
+    ctx.shadowBlur = 5 * dpr;
+    stroke(ctx, circlePath(picked.pos.x, picked.pos.y, d / 2 - 1), solid(pal.fire), 2);
+    ctx.restore();
+  }
 
   const limbR = (g.mater + g.limbInner) / 2;
   return {
