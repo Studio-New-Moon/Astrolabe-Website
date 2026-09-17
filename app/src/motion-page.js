@@ -326,10 +326,35 @@ document.querySelectorAll("[data-day]").forEach((b) => b.onclick = () => {
 });
 
 // ---- start ----
-const people = listProfiles();
-show(people.find((p) => p.id === selectedProfileId()) ?? people[0] ?? EXAMPLE, people);
-// Motion is opt-in for anyone who has asked their system for less of it.
-if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(true);
+//
+// Tablets and computers only. On a phone the moving sky needs lanes the wheel
+// has no room for, and the birth chart inside the band is squeezed to a size
+// nobody could read, so a screen under 600px either way gets a note instead,
+// and nothing is cast or animated. Both sides are checked so a phone turned
+// on its side doesn't qualify. Turning a tablet or widening a window past the
+// line brings the instrument in.
+const ROOMY = matchMedia("(min-width: 600px) and (min-height: 600px)");
+let started = false;
+function applyRoom() {
+  const roomy = ROOMY.matches;
+  $("tooSmall").hidden = roomy;
+  $("roomy").hidden = !roomy;
+  if (!roomy) {
+    setPlaying(false);
+    return;
+  }
+  if (started) {
+    fit();
+    return;
+  }
+  started = true;
+  const people = listProfiles();
+  show(people.find((p) => p.id === selectedProfileId()) ?? people[0] ?? EXAMPLE, people);
+  // Motion is opt-in for anyone who has asked their system for less of it.
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(true);
+}
+ROOMY.addEventListener("change", applyRoom);
+applyRoom();
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/app/sw.js", { scope: "/app/" }).catch(() => {

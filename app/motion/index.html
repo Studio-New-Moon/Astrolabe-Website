@@ -119,6 +119,7 @@
   .notice{ margin: 22px 0 0; padding: 18px 20px; border: 1px solid var(--rule); border-radius: 12px; background: var(--panel); }
   .notice p{ margin: 0; }
   .notice a{ color: var(--brass); }
+  .notice .back{ margin-top: 10px; }
 
   footer{ margin-top: 54px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14.5px; }
   footer a{ color: var(--brass); }
@@ -132,67 +133,75 @@
   <h2>Chart in Motion</h2>
   <p class="for">for <span id="who"></span></p>
 
-  <nav class="people" id="people" aria-label="People"></nav>
-  <p class="quiet" id="exampleNote" hidden>This is an invented example.
-  <a href="/app/">Add yourself on the Chart page</a> to see your own sky move.</p>
-
-  <section class="notice" id="cantCast" hidden>
-    <p>Chart in Motion needs an exact birth time, and this person's time is
-    saved as uncertain. <a href="/app/">Edit them on the Chart page</a> to
-    add one.</p>
+  <section class="notice" id="tooSmall" hidden>
+    <p>Chart in Motion needs more room than a phone screen has. Open this page
+    on a tablet or a computer to watch the sky move around a chart.</p>
+    <p class="back"><a href="/app/">Back to the Chart page</a></p>
   </section>
 
-  <section id="sky">
-    <div class="seg tabs" role="tablist" aria-label="View">
-      <button type="button" role="tab" id="tabTransits" aria-selected="true">Transits</button>
-      <button type="button" role="tab" id="tabDay" aria-selected="false">A Day</button>
-    </div>
-    <p class="quiet" id="subTransits">The birth chart sits inside the zodiac band,
-    and the real sky travels around the outside. A line lights up whenever a moving
-    planet makes an aspect to one in the chart.</p>
-    <p class="quiet" id="subDay" hidden><span id="subDayWho"></span> birthplace,
-    minute by minute through one day. The houses stay fixed in the rim while the
-    zodiac and the planets turn through them as the Earth rotates.</p>
+  <div id="roomy" hidden>
+    <nav class="people" id="people" aria-label="People"></nav>
+    <p class="quiet" id="exampleNote" hidden>This is an invented example.
+    <a href="/app/">Add yourself on the Chart page</a> to see your own sky move.</p>
 
-    <div class="result">
-      <div class="stage" id="stage">
-        <svg id="motion" role="img" aria-label="The sky in motion over this chart"></svg>
+    <section class="notice" id="cantCast" hidden>
+      <p>Chart in Motion needs an exact birth time, and this person's time is
+      saved as uncertain. <a href="/app/">Edit them on the Chart page</a> to
+      add one.</p>
+    </section>
+
+    <section id="sky">
+      <div class="seg tabs" role="tablist" aria-label="View">
+        <button type="button" role="tab" id="tabTransits" aria-selected="true">Transits</button>
+        <button type="button" role="tab" id="tabDay" aria-selected="false">A Day</button>
       </div>
+      <p class="quiet" id="subTransits">The birth chart sits inside the zodiac band,
+      and the real sky travels around the outside. A line lights up whenever a moving
+      planet makes an aspect to one in the chart.</p>
+      <p class="quiet" id="subDay" hidden><span id="subDayWho"></span> birthplace,
+      minute by minute through one day. The houses stay fixed in the rim while the
+      zodiac and the planets turn through them as the Earth rotates.</p>
 
-      <div>
-        <p class="date" id="date"></p>
-        <p class="note" id="note" aria-live="polite"></p>
-        <div class="controls">
-          <button type="button" class="play" id="play" aria-pressed="false">Play</button>
-          <button type="button" id="reverse" aria-pressed="false">Reverse</button>
-          <button type="button" id="reset"></button>
+      <div class="result">
+        <div class="stage" id="stage">
+          <svg id="motion" role="img" aria-label="The sky in motion over this chart"></svg>
         </div>
 
-        <p class="label">Speed, per second</p>
-        <div class="seg" role="group" aria-label="Speed" id="speeds"></div>
-
-        <div id="transitPanel">
-          <div class="key">
-            <span><i style="background:var(--fused)"></i>Conjunct</span>
-            <span><i style="background:var(--flow)"></i>Trine, sextile</span>
-            <span><i style="background:var(--friction)"></i>Square, opposite</span>
+        <div>
+          <p class="date" id="date"></p>
+          <p class="note" id="note" aria-live="polite"></p>
+          <div class="controls">
+            <button type="button" class="play" id="play" aria-pressed="false">Play</button>
+            <button type="button" id="reverse" aria-pressed="false">Reverse</button>
+            <button type="button" id="reset"></button>
           </div>
-          <p class="label">Tightest right now</p>
-          <ul class="list aspects" id="aspects"></ul>
-        </div>
 
-        <div id="dayPanel" hidden>
-          <p class="label">Which day</p>
-          <div class="seg" role="group" aria-label="Which day">
-            <button type="button" data-day="birth" aria-pressed="true" id="dayBirth">The day they were born</button>
-            <button type="button" data-day="today" aria-pressed="false">Today</button>
+          <p class="label">Speed, per second</p>
+          <div class="seg" role="group" aria-label="Speed" id="speeds"></div>
+
+          <div id="transitPanel">
+            <div class="key">
+              <span><i style="background:var(--fused)"></i>Conjunct</span>
+              <span><i style="background:var(--flow)"></i>Trine, sextile</span>
+              <span><i style="background:var(--friction)"></i>Square, opposite</span>
+            </div>
+            <p class="label">Tightest right now</p>
+            <ul class="list aspects" id="aspects"></ul>
           </div>
-          <p class="label">On the wheel now</p>
-          <ul class="list" id="angles"></ul>
+
+          <div id="dayPanel" hidden>
+            <p class="label">Which day</p>
+            <div class="seg" role="group" aria-label="Which day">
+              <button type="button" data-day="birth" aria-pressed="true" id="dayBirth">The day they were born</button>
+              <button type="button" data-day="today" aria-pressed="false">Today</button>
+            </div>
+            <p class="label">On the wheel now</p>
+            <ul class="list" id="angles"></ul>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
   <footer>
     <a href="/">Follow My Astrolabe</a> &middot; <a href="/app/">Chart</a> &middot; <a href="/prints/">Prints</a> &middot;

@@ -79,7 +79,10 @@
   /* ---- the chart ---- */
   .chartHead{ margin: 26px 0 4px; }
   .summary{ color: var(--muted); font-size: 15.5px; margin: 4px 0 0; }
-  .motionLink{ margin: 8px 0 0; font-size: 15.5px; }
+  /* Chart in Motion is for tablets and computers; its page tells a phone so,
+     so the link isn't offered on a phone-sized screen at all. */
+  .motionLink{ display: none; margin: 8px 0 0; font-size: 15.5px; }
+  @media (min-width: 600px) and (min-height: 600px){ .motionLink{ display: block; } }
   .motionLink a{ color: var(--brass); }
   .editLink{ font-size: 14.5px; color: var(--brass); background: none; border: 0; padding: 0; text-decoration: underline; }
   .result{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 22px; }
