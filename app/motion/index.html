@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chart in Motion — Follow My Astrolabe</title>
+<meta name="description" content="A birth chart with the real sky moving around it, and a birthplace turning through one day. Everything is worked out on your device.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="manifest" href="/app/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/chart/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Astrolabe">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f7f1e3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
+<style>
+  :root{
+    --ground: #f7f1e3;
+    --panel: #eee2c4;
+    --ink: #241a10;
+    --muted: #6c5a3d;
+    --brass: #9c7436;
+    --rule: rgba(156,116,54,0.3);
+    --danger: #a3402a;
+    /* Aspect tones for the list beside the instrument. The instrument itself
+       is always dark brass, so its lines keep their own colours. */
+    --fused: #8a6420;
+    --flow: #3f5a73;
+    --friction: #a3402a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground: #17110a;
+      --panel: #221a10;
+      --ink: #ede0c4;
+      --muted: #a6926c;
+      --brass: #c8993f;
+      --rule: rgba(200,153,63,0.3);
+      --danger: #d4775f;
+      --fused: #e8c87a;
+      --flow: #f3e6c4;
+      --friction: #d4775f;
+    }
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 17px; line-height: 1.6;
+    padding: clamp(22px, 5vw, 54px) 18px 80px;
+  }
+  main{ max-width: 980px; margin: 0 auto; }
+  h1, h2, h3{ font-family: "Cinzel", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
+  h1{ font-size: clamp(26px, 4.4vw, 38px); }
+  /* The app's own wordmark, as on /app/. */
+  h1.wordmark{ font-family: "Metamorphous", Georgia, serif; font-weight: 400; text-transform: uppercase;
+               letter-spacing: .06em; margin-bottom: 14px; }
+  h1.wordmark a{ color: var(--brass); text-decoration: none;
+                 display: inline-flex; flex-direction: column; align-items: center; line-height: 1.05; }
+  h1.wordmark .wm-follow{ font-size: .375em; letter-spacing: .27em; padding-left: .27em; margin-bottom: .12em; }
+  h2{ font-size: clamp(22px, 3.4vw, 30px); }
+  .for{ font-family: "Cinzel", Georgia, serif; font-size: clamp(17px, 2.4vw, 20px); color: var(--muted); margin: 2px 0 0; }
+  .eyebrow{ font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  .eyebrow a{ color: var(--brass); }
+  .quiet{ color: var(--muted); font-size: 15.5px; max-width: 64ch; margin: 8px 0 0; }
+  .quiet a{ color: var(--brass); }
+  button{ font-family: inherit; cursor: pointer; }
+  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+  [hidden]{ display: none !important; }
+
+  /* ---- people, as on /app/ ---- */
+  .people{ display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 6px; align-items: center; }
+  .person{ font-size: 15.5px; padding: 7px 14px; border-radius: 999px;
+           border: 1px solid var(--rule); background: var(--panel); color: var(--ink); }
+  .person[aria-pressed="true"]{ border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass); font-weight: 600; }
+  .person .rel{ color: var(--muted); font-weight: 400; }
+  .people a{ font-size: 15.5px; color: var(--brass); }
+
+  /* ---- controls ---- */
+  .seg{ display: inline-flex; flex-wrap: wrap; }
+  .seg button{ font-size: 15px; color: var(--ink); background: var(--panel); border: 1px solid var(--rule);
+               padding: 7px 13px; margin-left: -1px; border-radius: 0; }
+  .seg button:first-child{ border-radius: 8px 0 0 8px; margin-left: 0; }
+  .seg button:last-child{ border-radius: 0 8px 8px 0; }
+  .seg button[aria-pressed="true"], .seg button[aria-selected="true"]{
+    background: var(--brass); border-color: var(--brass); color: var(--ground); font-weight: 600; }
+  .tabs{ margin: 22px 0 0; }
+  .tabs button{ font-family: "Cinzel", Georgia, serif; font-size: 15.5px; padding: 8px 20px; }
+  .controls{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .controls button{ font-size: 15.5px; padding: 8px 15px; border-radius: 8px;
+                    border: 1px solid var(--rule); background: var(--panel); color: var(--ink); }
+  .controls button[aria-pressed="true"]{ border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass); }
+  .controls .play{ min-width: 90px; font-weight: 600; background: var(--brass); border-color: var(--brass); color: var(--ground); }
+
+  /* ---- the instrument and its readouts ---- */
+  .result{ display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 18px; }
+  @media (max-width: 780px){ .result{ grid-template-columns: 1fr; } }
+  .stage{ position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 1px solid var(--rule); }
+  .stage svg{ position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .date{ font-family: "Cinzel", Georgia, serif; font-size: 22px; letter-spacing: .03em; margin: 0;
+         font-variant-numeric: tabular-nums; }
+  .note{ color: var(--brass); font-style: italic; margin: 2px 0 0; min-height: 1.6em; }
+  .label{ font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }
+  ul.list{ list-style: none; padding: 0; margin: 0; }
+  ul.aspects{ min-height: 13em; }
+  ul.list li{ display: flex; justify-content: space-between; gap: 10px; padding: 5px 0;
+              border-top: 1px solid var(--rule); font-size: 15.5px; }
+  ul.list .val{ color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .fused{ color: var(--fused); }
+  .flow{ color: var(--flow); }
+  .friction{ color: var(--friction); }
+  .key{ display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 14px; color: var(--muted); margin-top: 14px; }
+  .key i{ display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+
+  .notice{ margin: 22px 0 0; padding: 18px 20px; border: 1px solid var(--rule); border-radius: 12px; background: var(--panel); }
+  .notice p{ margin: 0; }
+  .notice a{ color: var(--brass); }
+
+  footer{ margin-top: 54px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14.5px; }
+  footer a{ color: var(--brass); }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="wordmark"><a href="/" aria-label="Follow My Astrolabe, home"><span class="wm-follow">Follow My</span>Astrolabe</a></h1>
+
+  <p class="eyebrow"><a href="/app/">Chart</a> &rsaquo; Chart in Motion</p>
+  <h2>Chart in Motion</h2>
+  <p class="for">for <span id="who"></span></p>
+
+  <nav class="people" id="people" aria-label="People"></nav>
+  <p class="quiet" id="exampleNote" hidden>This is an invented example.
+  <a href="/app/">Add yourself on the Chart page</a> to see your own sky move.</p>
+
+  <section class="notice" id="cantCast" hidden>
+    <p>Chart in Motion needs an exact birth time, and this person's time is
+    saved as uncertain. <a href="/app/">Edit them on the Chart page</a> to
+    add one.</p>
+  </section>
+
+  <section id="sky">
+    <div class="seg tabs" role="tablist" aria-label="View">
+      <button type="button" role="tab" id="tabTransits" aria-selected="true">Transits</button>
+      <button type="button" role="tab" id="tabDay" aria-selected="false">A Day</button>
+    </div>
+    <p class="quiet" id="subTransits">The birth chart sits inside the zodiac band,
+    and the real sky travels around the outside. A line lights up whenever a moving
+    planet makes an aspect to one in the chart.</p>
+    <p class="quiet" id="subDay" hidden><span id="subDayWho"></span> birthplace,
+    minute by minute through one day. The houses stay fixed in the rim while the
+    zodiac and the planets turn through them as the Earth rotates.</p>
+
+    <div class="result">
+      <div class="stage" id="stage">
+        <svg id="motion" role="img" aria-label="The sky in motion over this chart"></svg>
+      </div>
+
+      <div>
+        <p class="date" id="date"></p>
+        <p class="note" id="note" aria-live="polite"></p>
+        <div class="controls">
+          <button type="button" class="play" id="play" aria-pressed="false">Play</button>
+          <button type="button" id="reverse" aria-pressed="false">Reverse</button>
+          <button type="button" id="reset"></button>
+        </div>
+
+        <p class="label">Speed, per second</p>
+        <div class="seg" role="group" aria-label="Speed" id="speeds"></div>
+
+        <div id="transitPanel">
+          <div class="key">
+            <span><i style="background:var(--fused)"></i>Conjunct</span>
+            <span><i style="background:var(--flow)"></i>Trine, sextile</span>
+            <span><i style="background:var(--friction)"></i>Square, opposite</span>
+          </div>
+          <p class="label">Tightest right now</p>
+          <ul class="list aspects" id="aspects"></ul>
+        </div>
+
+        <div id="dayPanel" hidden>
+          <p class="label">Which day</p>
+          <div class="seg" role="group" aria-label="Which day">
+            <button type="button" data-day="birth" aria-pressed="true" id="dayBirth">The day they were born</button>
+            <button type="button" data-day="today" aria-pressed="false">Today</button>
+          </div>
+          <p class="label">On the wheel now</p>
+          <ul class="list" id="angles"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot; <a href="/app/">Chart</a> &middot; <a href="/prints/">Prints</a> &middot;
+    <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+  </footer>
+</main>
+
+<script type="module" src="/app/src/motion-page.js"></script>
+</body>
+</html>
