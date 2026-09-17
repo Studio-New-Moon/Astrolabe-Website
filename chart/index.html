@@ -98,6 +98,17 @@
     background: var(--panel); margin: 18px 0 0;
   }
   .problem[hidden]{ display: none !important; }
+  .placeSearch{ margin-bottom: 14px; max-width: 520px; }
+  .placeSearch input{ width: 100%; }
+  .results{ list-style: none; margin: 6px 0 0; padding: 0; border: 1px solid var(--rule);
+            border-radius: 8px; overflow: hidden; background: var(--panel); }
+  .results[hidden]{ display: none !important; }
+  .results button{ display: block; width: 100%; text-align: left; font-family: inherit;
+                   font-size: 15.5px; color: var(--ink); background: transparent; border: 0;
+                   border-top: 1px solid var(--rule); padding: 9px 12px; cursor: pointer; }
+  .results li:first-child button{ border-top: 0; }
+  .results button:hover, .results button:focus-visible{ background: var(--ground); }
+  .results .zone{ color: var(--muted); font-size: 13.5px; }
   .install{
     display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
     padding: 13px 15px; border: 1px solid var(--rule); border-radius: 8px;
@@ -165,6 +176,12 @@
 
     <fieldset>
       <legend>Where</legend>
+      <div class="placeSearch">
+        <label class="field" for="place">Town or city where you were born</label>
+        <input id="place" autocomplete="off" value="New York City, New York, United States"
+               role="combobox" aria-controls="placeResults" aria-expanded="false">
+        <ul class="results" id="placeResults" role="listbox" hidden></ul>
+      </div>
       <div class="row">
         <label class="field">Latitude &mdash; north positive
           <input type="number" id="lat" value="40.7128" step="0.0001" min="-89.9" max="89.9" required>
@@ -173,9 +190,9 @@
           <input type="number" id="lon" value="-74.0060" step="0.0001" min="-180" max="180" required>
         </label>
       </div>
-      <p class="quiet" style="margin-top:10px">Don't know them? Open a map app,
-      press and hold on the town where you were born, and it'll show you both
-      numbers. South and west are negative.</p>
+      <p class="quiet" style="margin-top:10px">Choosing a town fills in the
+      numbers and the time zone for you. If yours is too small to be listed, type
+      its coordinates instead. South and west are negative.</p>
     </fieldset>
 
     <button class="cast" type="submit">Cast it</button>
@@ -203,6 +220,8 @@
     <a href="/">Follow My Astrolabe</a> &middot;
     <a href="/prints/">Prints</a> &middot;
     <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+    <p>Place names from <a href="https://www.geonames.org/">GeoNames</a>, used
+    under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
   </footer>
 </main>
 
@@ -211,6 +230,7 @@ import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normal
 import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "./src/points.js";
 import { wheelSVG } from "./src/wheel.js";
+import { searchPlaces } from "./src/places.js";
 
 const $ = (id) => document.getElementById(id);
 const problem = (msg) => { $("problem").textContent = msg; $("problem").hidden = false; };
@@ -297,6 +317,44 @@ function cast() {
 }
 
 $("chartForm").addEventListener("submit", (e) => { e.preventDefault(); cast(); });
+
+// ---- finding the place ----
+//
+// Search runs over a list of towns carried with the site, so a birth place is
+// never sent anywhere either. Choosing one fills in the coordinates and the
+// time zone, and casts.
+const escHTML = (t) => String(t).replace(/[&<>"]/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let placeTimer = 0;
+$("place").addEventListener("input", () => {
+  clearTimeout(placeTimer);
+  placeTimer = setTimeout(async () => {
+    const list = $("placeResults");
+    const hits = await searchPlaces($("place").value);
+    list.innerHTML = "";
+    for (const h of hits ?? []) {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "option");
+      b.innerHTML = `${escHTML(h.label)} <span class="zone">· ${escHTML(h.timeZoneID.replace(/_/g, " "))}</span>`;
+      b.addEventListener("click", () => {
+        $("place").value = h.label;
+        $("lat").value = h.latitude;
+        $("lon").value = h.longitude;
+        if ([...zoneSelect.options].some((o) => o.value === h.timeZoneID)) zoneSelect.value = h.timeZoneID;
+        list.hidden = true;
+        $("place").setAttribute("aria-expanded", "false");
+        cast();
+      });
+      li.appendChild(b);
+      list.appendChild(li);
+    }
+    const open = (hits?.length ?? 0) > 0;
+    list.hidden = !open;
+    $("place").setAttribute("aria-expanded", String(open));
+  }, 120);
+});
 
 // Cast once on load, so the page opens showing what it does rather than an
 // empty frame waiting to be told.

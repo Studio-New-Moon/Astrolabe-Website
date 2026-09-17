@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Astrolabe — Follow My Astrolabe</title>
+<meta name="description" content="Your birth chart on a working astrolabe, and the people you keep charts for. Everything stays on your device.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/chart/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#f7f1e3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
+<style>
+  :root{
+    --ground: #f7f1e3;
+    --panel: #eee2c4;
+    --ink: #241a10;
+    --muted: #6c5a3d;
+    --brass: #9c7436;
+    --rule: rgba(156,116,54,0.3);
+    --danger: #a3402a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground: #17110a;
+      --panel: #221a10;
+      --ink: #ede0c4;
+      --muted: #a6926c;
+      --brass: #c8993f;
+      --rule: rgba(200,153,63,0.3);
+      --danger: #d4775f;
+    }
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 17px; line-height: 1.6;
+    padding: clamp(22px, 5vw, 54px) 18px 80px;
+  }
+  main{ max-width: 980px; margin: 0 auto; }
+  h1, h2, h3{ font-family: "Cinzel", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
+  h1{ font-size: clamp(26px, 4.4vw, 38px); }
+  h2{ font-size: clamp(20px, 3vw, 26px); }
+  h3{ font-size: 17px; margin: 30px 0 10px; }
+  .eyebrow{ font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .eyebrow a{ color: inherit; }
+  .quiet{ color: var(--muted); font-size: 15px; max-width: 62ch; }
+  button{ font-family: inherit; cursor: pointer; }
+  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  /* ---- people ---- */
+  .people{ display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 6px; align-items: center; }
+  .person{
+    font-size: 15.5px; padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--rule); background: var(--panel); color: var(--ink);
+  }
+  .person[aria-pressed="true"]{ border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass); font-weight: 600; }
+  .person .rel{ color: var(--muted); font-weight: 400; }
+  .add{
+    font-size: 15.5px; padding: 7px 14px; border-radius: 999px;
+    border: 1px dashed var(--brass); background: transparent; color: var(--brass);
+  }
+
+  /* ---- the chart ---- */
+  .chartHead{ margin: 26px 0 4px; }
+  .summary{ color: var(--muted); font-size: 15.5px; margin: 4px 0 0; }
+  .editLink{ font-size: 14.5px; color: var(--brass); background: none; border: 0; padding: 0; text-decoration: underline; }
+  .result{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 22px; }
+  @media (max-width: 780px){ .result{ grid-template-columns: 1fr; } }
+  .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
+  table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
+  th{ text-align: left; font-weight: 600; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 0 6px; }
+  td{ padding: 5px 0; border-top: 1px solid var(--rule); }
+  td.body{ width: 40%; }
+  td.num{ font-variant-numeric: tabular-nums; }
+  td .rx{ color: var(--brass); font-size: 13px; }
+
+  /* ---- empty state ---- */
+  .empty{ margin: 30px 0; padding: 26px; border: 1px solid var(--rule); border-radius: 12px; background: var(--panel); }
+  .empty .row{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+  /* ---- editor ---- */
+  .editor{ margin: 26px 0; padding: clamp(18px, 3vw, 28px); border: 1px solid var(--brass); border-radius: 12px; background: var(--panel); }
+  .editor[hidden]{ display: none !important; }
+  .grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 16px; }
+  label.field{ display: flex; flex-direction: column; gap: 5px; font-size: 14.5px; color: var(--muted); }
+  input, select{
+    font-family: inherit; font-size: 16px; color: var(--ink);
+    background: var(--ground); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 11px; min-width: 0; width: 100%;
+  }
+  .place{ margin-top: 16px; position: relative; }
+  .results{ list-style: none; margin: 6px 0 0; padding: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--ground); }
+  .results[hidden]{ display: none !important; }
+  .results button{
+    display: block; width: 100%; text-align: left; font-size: 15.5px; color: var(--ink);
+    background: transparent; border: 0; border-top: 1px solid var(--rule); padding: 9px 12px;
+  }
+  .results li:first-child button{ border-top: 0; }
+  .results button:hover, .results button:focus-visible{ background: var(--panel); }
+  .results .zone{ color: var(--muted); font-size: 13.5px; }
+  .chosen{ margin: 8px 0 0; font-size: 15px; }
+  .chosen[hidden]{ display: none !important; }
+  details{ margin-top: 12px; font-size: 15px; }
+  summary{ color: var(--brass); cursor: pointer; }
+  .actions{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: center; }
+  .primary{ font-size: 16.5px; font-weight: 600; padding: 11px 22px; border-radius: 8px; border: 1px solid var(--brass); background: var(--brass); color: var(--ground); }
+  .secondary{ font-size: 16px; padding: 11px 18px; border-radius: 8px; border: 1px solid var(--rule); background: transparent; color: var(--ink); }
+  .danger{ margin-left: auto; font-size: 15px; padding: 11px 14px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--danger); }
+  .problem{ padding: 11px 14px; border: 1px solid var(--danger); border-radius: 8px; margin-top: 14px; font-size: 15px; }
+  .problem[hidden]{ display: none !important; }
+
+  footer{ margin-top: 54px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14.5px; }
+  footer a{ color: var(--brass); }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
+  <h1>Astrolabe</h1>
+
+  <p class="quiet">The people you add are kept in this browser, on this device.
+  There's no account, and nothing you type is sent anywhere.</p>
+
+  <nav class="people" id="people" aria-label="People"></nav>
+
+  <!-- First visit, before anyone is saved. -->
+  <section class="empty" id="empty" hidden>
+    <h2>Start with your own chart.</h2>
+    <p>Add your birth date, time, and place. You can add anyone else you keep a
+    chart for afterwards.</p>
+    <div class="row">
+      <button class="primary" type="button" id="startAdd">Add yourself</button>
+      <button class="secondary" type="button" id="showExample">See an example first</button>
+    </div>
+  </section>
+
+  <!-- Add or edit someone. -->
+  <section class="editor" id="editor" hidden aria-labelledby="editorTitle">
+    <h2 id="editorTitle">Add someone</h2>
+    <form id="editForm" novalidate>
+      <div class="grid">
+        <label class="field">Name
+          <input id="fName" autocomplete="off" required>
+        </label>
+        <label class="field">Relationship <span>(optional)</span>
+          <input id="fRel" autocomplete="off" placeholder="Partner, sister, friend">
+        </label>
+        <label class="field">Date of birth
+          <input type="date" id="fDate" required>
+        </label>
+        <label class="field">Time of birth
+          <input type="time" id="fTime" required>
+        </label>
+      </div>
+
+      <div class="place">
+        <label class="field" for="fPlace">Place of birth</label>
+        <input id="fPlace" autocomplete="off" placeholder="Start typing a town or city"
+               role="combobox" aria-controls="placeResults" aria-expanded="false">
+        <ul class="results" id="placeResults" role="listbox" hidden></ul>
+        <p class="chosen" id="placeChosen" hidden></p>
+        <p class="quiet" id="placeNote" hidden></p>
+
+        <details id="manual">
+          <summary>Enter coordinates instead</summary>
+          <p class="quiet">For a place too small for the list, or to be exact about
+          a hospital rather than a town.</p>
+          <div class="grid">
+            <label class="field">Latitude — north positive
+              <input type="number" id="fLat" step="0.0001" min="-89.9" max="89.9">
+            </label>
+            <label class="field">Longitude — east positive
+              <input type="number" id="fLon" step="0.0001" min="-180" max="180">
+            </label>
+            <label class="field">Time zone there
+              <select id="fZone"></select>
+            </label>
+          </div>
+        </details>
+      </div>
+
+      <div class="problem" id="editProblem" hidden></div>
+
+      <div class="actions">
+        <button class="primary" type="submit">Save and cast</button>
+        <button class="secondary" type="button" id="cancelEdit">Cancel</button>
+        <button class="danger" type="button" id="deletePerson" hidden>Delete</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- The chart. -->
+  <section id="chartView" hidden>
+    <div class="chartHead">
+      <h2 id="chartName"></h2>
+      <p class="summary"><span id="chartSummary"></span>
+        <button class="editLink" type="button" id="editPerson">Edit</button></p>
+    </div>
+    <div class="result">
+      <div class="wheel" id="wheel"></div>
+      <div>
+        <h3>Placements</h3>
+        <table><thead><tr><th>Body</th><th>Position</th><th>House</th></tr></thead>
+          <tbody id="placements"></tbody></table>
+        <h3>Angles</h3>
+        <table><thead><tr><th>Angle</th><th>Position</th><th>House</th></tr></thead>
+          <tbody id="anglesBody"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot; <a href="/prints/">Prints</a> &middot;
+    <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+    <p id="attribution" hidden>Place names from <a href="https://www.geonames.org/">GeoNames</a>,
+    used under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+  </footer>
+</main>
+
+<script type="module">
+import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "../chart/src/angles.js";
+import { longitudeOf, isRetrograde, PLANETS } from "../chart/src/ephemeris.js";
+import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "../chart/src/points.js";
+import { wheelSVG } from "../chart/src/wheel.js";
+import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId, selectProfile, requestPersistentStorage } from "./src/profiles.js";
+import { loadPlaces, searchPlaces } from "../chart/src/places.js";
+
+const $ = (id) => document.getElementById(id);
+
+// An invented person, never saved. The page must not open empty, and it must
+// never open on anyone real — see the note on /chart/'s defaults.
+const EXAMPLE = {
+  id: null, name: "Alex Rivera", relationship: "Example — an invented person",
+  date: "1990-03-16", time: "14:15", timeMode: "exact",
+  place: { name: "New York, New York, United States", latitude: 40.7128, longitude: -74.0060, timeZoneID: "America/New_York" },
+};
+
+// ---------- formatting ----------
+const title = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const dms = (lon) => {
+  const d = normalizedDegrees(lon) % 30, deg = Math.floor(d), min = Math.round((d - deg) * 60);
+  return min === 60 ? `${deg + 1}°00′` : `${deg}°${String(min).padStart(2, "0")}′`;
+};
+const position = (lon) => `${dms(lon)} ${SIGNS[signIndex(lon)]}`;
+const longDate = (iso) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+    .format(Date.UTC(y, m - 1, d));
+};
+const clock = (hhmm) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+};
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---------- casting ----------
+function cast(profile) {
+  const [y, m, d] = profile.date.split("-").map(Number);
+  const [hh, mm] = profile.time.split(":").map(Number);
+  const { latitude: lat, longitude: lon, timeZoneID } = profile.place;
+  const jd = julianDayFromLocal(y, m, d, hh, mm, timeZoneID);
+  const angles = anglesFor(jd, lat, lon);
+  const asc = angles[0].longitude;
+  const bodies = PLANETS.map((name) => ({ name, longitude: longitudeOf(name, jd), retrograde: isRetrograde(name, jd) }));
+  // Selena is Lilith's axis read from the other end: always 180° away, so it
+  // would add a glyph without adding a fact.
+  const points = POINTS.filter((p) => p !== "whiteMoonSelena").map((name) => ({
+    name, isPoint: true, glyph: POINT_GLYPHS[name],
+    longitude: pointLongitude(name, jd), retrograde: pointIsRetrograde(name, jd),
+  }));
+  return { jd, angles, asc, bodies, points, lat };
+}
+
+function showChart(profile) {
+  const c = cast(profile);
+  $("chartName").textContent = profile.name;
+  $("chartSummary").textContent =
+    `${longDate(profile.date)} · ${clock(profile.time)} · ${profile.place.name || "coordinates entered by hand"}`;
+  $("editPerson").hidden = !profile.id;
+
+  $("wheel").innerHTML = wheelSVG(
+    { ascendantLongitude: c.asc, midheavenLongitude: c.angles[1].longitude, latitude: c.lat, bodies: c.bodies, points: c.points },
+    { size: 1000, title: `Birth chart for ${profile.name}` },
+  );
+  const row = (label, lon, retro) =>
+    `<tr><td class="body">${esc(label)}</td><td class="num">${position(lon)}${retro ? ' <span class="rx">℞</span>' : ""}</td>` +
+    `<td class="num">${wholeSignHouse(lon, c.asc)}</td></tr>`;
+  $("placements").innerHTML =
+    c.bodies.map((b) => row(title(b.name), b.longitude, b.retrograde)).join("") +
+    c.points.map((p) => row(POINT_NAMES[p.name], p.longitude, p.retrograde)).join("");
+  const NAMES = { ascendant: "Ascendant", midheaven: "Midheaven", descendant: "Descendant", imumCoeli: "Imum Coeli" };
+  $("anglesBody").innerHTML = c.angles.map((a) => row(NAMES[a.kind], a.longitude, false)).join("");
+
+  $("chartView").hidden = false;
+  $("empty").hidden = true;
+}
+
+// ---------- people ----------
+let current = null;
+
+function renderPeople() {
+  const people = listProfiles();
+  const nav = $("people");
+  nav.innerHTML = "";
+  for (const p of people) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "person";
+    b.setAttribute("aria-pressed", String(current?.id === p.id));
+    b.innerHTML = esc(p.name) + (p.relationship ? ` <span class="rel">· ${esc(p.relationship)}</span>` : "");
+    b.addEventListener("click", () => open(p));
+    nav.appendChild(b);
+  }
+  if (people.length) {
+    const add = document.createElement("button");
+    add.type = "button";
+    add.className = "add";
+    add.textContent = "+ Add someone";
+    add.addEventListener("click", () => edit(null));
+    nav.appendChild(add);
+  }
+  return people;
+}
+
+function open(profile) {
+  current = profile;
+  if (profile.id) selectProfile(profile.id);
+  $("editor").hidden = true;
+  renderPeople();
+  showChart(profile);
+}
+
+// ---------- editing ----------
+let chosenPlace = null;
+
+const zoneSelect = $("fZone");
+for (const z of (Intl.supportedValuesOf ? Intl.supportedValuesOf("timeZone") : ["UTC"])) {
+  const o = document.createElement("option"); o.value = z; o.textContent = z.replace(/_/g, " "); zoneSelect.appendChild(o);
+}
+
+function setChosen(place) {
+  chosenPlace = place;
+  $("placeChosen").hidden = !place;
+  if (place) {
+    $("placeChosen").textContent = `${place.label ?? place.name} · ${place.timeZoneID.replace(/_/g, " ")}`;
+    $("fLat").value = place.latitude;
+    $("fLon").value = place.longitude;
+    zoneSelect.value = place.timeZoneID;
+  }
+}
+
+function edit(profile) {
+  const p = profile ?? { name: "", relationship: "", date: "", time: "", place: null };
+  $("editorTitle").textContent = profile ? `Edit ${profile.name}` : (listProfiles().length ? "Add someone" : "Add yourself");
+  $("fName").value = p.name ?? "";
+  $("fRel").value = p.relationship ?? "";
+  $("fDate").value = p.date ?? "";
+  $("fTime").value = p.time ?? "";
+  $("fPlace").value = p.place?.name ?? "";
+  $("placeResults").hidden = true;
+  $("editProblem").hidden = true;
+  $("deletePerson").hidden = !profile;
+  $("editForm").dataset.id = profile?.id ?? "";
+  setChosen(p.place ? { ...p.place, label: p.place.name } : null);
+  if (!p.place) { $("fLat").value = ""; $("fLon").value = ""; zoneSelect.value = Intl.DateTimeFormat().resolvedOptions().timeZone; }
+
+  $("empty").hidden = true;
+  $("chartView").hidden = true;
+  $("editor").hidden = false;
+  $("fName").focus();
+  prepareSearch();
+}
+
+// Place data loads when someone first needs it, not with the page: a small
+// table of zones and region names here, then one alphabetical slice of towns
+// on the first keystroke.
+let placesReady = null;
+function placesUnavailable() {
+  $("placeNote").hidden = false;
+  $("placeNote").textContent = "Place search isn't available right now, so enter the coordinates below.";
+  $("manual").open = true;
+}
+async function prepareSearch() {
+  if (placesReady !== null) return placesReady;
+  placesReady = (await loadPlaces()) !== null;
+  if (placesReady) $("attribution").hidden = false;
+  else placesUnavailable();
+  return placesReady;
+}
+
+let searchTimer = 0;
+$("fPlace").addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  setChosen(null);
+  searchTimer = setTimeout(async () => {
+    if (!(await prepareSearch())) return;
+    const hits = await searchPlaces($("fPlace").value);
+    if (hits === null) return placesUnavailable();
+    const list = $("placeResults");
+    list.innerHTML = "";
+    for (const h of hits) {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "option");
+      b.innerHTML = `${esc(h.label)} <span class="zone">· ${esc(h.timeZoneID.replace(/_/g, " "))}</span>`;
+      b.addEventListener("click", () => {
+        $("fPlace").value = h.label;
+        setChosen(h);
+        list.hidden = true;
+        $("fPlace").setAttribute("aria-expanded", "false");
+      });
+      li.appendChild(b);
+      list.appendChild(li);
+    }
+    list.hidden = hits.length === 0;
+    $("fPlace").setAttribute("aria-expanded", String(hits.length > 0));
+  }, 120);
+});
+
+$("editForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const problem = (msg) => { $("editProblem").textContent = msg; $("editProblem").hidden = false; };
+  const name = $("fName").value.trim();
+  if (!name) return problem("Please give them a name.");
+  if (!$("fDate").value || !$("fTime").value) return problem("Please fill in the date and time of birth.");
+
+  const lat = Number($("fLat").value), lon = Number($("fLon").value);
+  const hasCoords = $("fLat").value !== "" && $("fLon").value !== "" && Number.isFinite(lat) && Number.isFinite(lon);
+  if (!chosenPlace && !hasCoords) return problem("Please choose a place from the list, or enter coordinates.");
+
+  const place = chosenPlace && !$("manual").open
+    ? { name: chosenPlace.label ?? chosenPlace.name, latitude: chosenPlace.latitude, longitude: chosenPlace.longitude, timeZoneID: chosenPlace.timeZoneID }
+    : { name: $("fPlace").value.trim(), latitude: lat, longitude: lon, timeZoneID: zoneSelect.value };
+
+  let saved;
+  try {
+    saved = saveProfile({
+      id: $("editForm").dataset.id || null, name, relationship: $("fRel").value,
+      date: $("fDate").value, time: $("fTime").value, timeMode: "exact", place,
+    });
+  } catch (err) {
+    return problem(err.message);
+  }
+  if (!saved) {
+    // Storage refused. Cast anyway; say plainly that it will not be kept.
+    open({ id: null, name, relationship: $("fRel").value, date: $("fDate").value, time: $("fTime").value, place });
+    $("chartSummary").textContent += " — this browser won't let the page save it";
+    return;
+  }
+  requestPersistentStorage();
+  open(saved);
+});
+
+$("cancelEdit").addEventListener("click", () => { $("editor").hidden = true; boot(); });
+$("editPerson").addEventListener("click", () => current?.id && edit(getProfile(current.id)));
+$("deletePerson").addEventListener("click", () => {
+  const id = $("editForm").dataset.id;
+  const p = getProfile(id);
+  if (!p || !confirm(`Delete ${p.name}? This can't be undone.`)) return;
+  deleteProfile(id);
+  current = null;
+  $("editor").hidden = true;
+  boot();
+});
+$("startAdd").addEventListener("click", () => edit(null));
+$("showExample").addEventListener("click", () => { $("empty").hidden = true; open(EXAMPLE); });
+
+// ---------- start ----------
+function boot() {
+  const people = renderPeople();
+  if (!people.length) {
+    current = null;
+    $("chartView").hidden = true;
+    $("empty").hidden = false;
+    return;
+  }
+  open(people.find((p) => p.id === selectedProfileId()) ?? people[0]);
+}
+boot();
+</script>
+</body>
+</html>
