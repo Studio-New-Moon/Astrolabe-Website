@@ -182,7 +182,7 @@
     box-shadow:0 30px 70px var(--shadow);
     background:var(--panel);
   }
-  .shot img{border-radius:18px;}
+  .shot img{border-radius:18px;width:100%;height:auto;}
 
   /* ---------- Philosophy break ---------- */
   .philosophy{
@@ -201,7 +201,7 @@
 
   /* ---------- Gallery strip ---------- */
   .gallery{padding:104px 0;border-bottom:1px solid var(--panel-line);}
-  .gallery-head{text-align:center;max-width:640px;margin:0 auto 56px;}
+  .gallery-head{text-align:center;max-width:640px;margin:0 auto 56px;padding:0 20px;}
   .gallery-head h2{font-size:clamp(26px,3.2vw,36px);color:var(--resist);margin:10px 0 16px;}
   .gallery-head p{color:var(--muted);}
   .gallery-head .tangible{
@@ -216,6 +216,27 @@
   .strip::-webkit-scrollbar{height:6px;}
   .strip::-webkit-scrollbar-thumb{background:var(--panel-line);border-radius:3px;}
   .strip .shot{flex:0 0 auto;width:260px;scroll-snap-align:start;}
+  /* The twelve signs themselves, each a way into the print shop. */
+  .sign-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;
+    max-width:1080px;margin:0 auto;padding:0 28px;
+  }
+  .sign-tile{display:block;text-decoration:none;color:var(--muted);text-align:center;}
+  .sign-tile img{width:100%;height:auto;border-radius:12px;border:1px solid var(--panel-line);
+    box-shadow:0 14px 34px var(--shadow);transition:transform .2s ease, filter .2s ease;}
+  .sign-tile:hover img{transform:translateY(-2px);filter:brightness(1.06);}
+  .sign-tile span{display:block;margin-top:8px;font-family:'Cinzel',Georgia,serif;font-size:13px;
+    letter-spacing:.1em;text-transform:uppercase;}
+  .sign-tile:hover span{color:var(--brass-bright);}
+  @media (max-width:820px){ .sign-grid{grid-template-columns:repeat(3,1fr);gap:14px;} }
+  @media (max-width:520px){ .sign-grid{grid-template-columns:repeat(2,1fr);gap:12px;padding:0 20px;} }
+  /* A plain text link under a feature, for the one thing it's about. */
+  .section-link{
+    display:inline-block;margin-top:22px;font-family:'Cinzel',Georgia,serif;font-size:13px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--brass-bright);text-decoration:none;
+    border-bottom:1px solid var(--brass);padding-bottom:3px;
+  }
+  .section-link:hover{color:var(--resist);}
 
   /* ---------- Pricing ---------- */
   .pricing{padding:112px 0;text-align:center;}
@@ -361,74 +382,31 @@
       <span class="eyebrow">A Real Instrument</span>
       <h2>A Working Instrument, Engraved in Brass.</h2>
       <p>An astrolabe is the oldest computer built for the sky — a brass instrument astronomers and navigators turned by hand for over a thousand years to read the positions of the stars.</p>
-      <p>Turn it over. Watch the rete track the true positions of the planets at your exact moment of birth, doing real astronomical math the way the instrument always has.</p>
+      <p>Cast your chart and it's struck the way the instrument always was: the houses cut into the rim for the place you were born, the sky over your own latitude engraved on the plate, and every planet riding the rete at its true position. Tap a house or a planet to see what's there.</p>
+      <a class="section-link" href="/chart/">Cast Your Chart</a>
     </div>
-    <div class="shot"><img src="assets/screenshots/01-welcome.jpg" alt="The Astrolabe welcome screen, showing the brass instrument against a starfield" loading="lazy"></div>
-  </div>
-</section>
-
-<section class="feature reverse">
-  <div class="wrap">
-    <div>
-      <span class="eyebrow">Your Chart, Read Six Ways</span>
-      <h2>Every House, Planet, and Angle — In Plain Language.</h2>
-      <p>Love, Friends, Career, Home, Spirit, Purpose — laid out from your actual chart, not jargon. What's happening, and what to do about it.</p>
-      <p>Five are houses, read from your own rising sign, never the generic wheel. The sixth, Purpose, is different: it's the planet ruling your whole chart, not a sector of it — and usually the first reading to change if your birth time is off by a few minutes.</p>
-      <p>Most horoscopes default to your sun sign. This app centers your rising sign instead, on purpose — it's what actually sets your chart ruler. If the sign on your wheel isn't the one you expected, that's not a mistake. It's the more personal one.</p>
-    </div>
-    <div class="shot"><img src="assets/screenshots/03-life-areas.jpg" alt="The Life Areas hub, showing all six areas — Purpose, Love, Friends, Career, Home, and Spirit — each with its ruling sign and planet, and a padlock on the five whose full birth-chart reading opens with a subscription" loading="lazy"></div>
-  </div>
-</section>
-
-<section class="feature">
-  <div class="wrap">
-    <div>
-      <span class="eyebrow">One Word for Each Area</span>
-      <h2>Every Area Opens With a Word of Its Own.</h2>
-      <p>At the top of each life area sits a single word, engraved on a brass plate. Each one comes from the sign that area is read from — Presence when Leo is your rising sign, Freedom when Aquarius is your seventh — so the six words follow your own rising sign rather than the sun sign everyone else is sorted by.</p>
-      <p>Under the plate, the app says where the word came from, then two sentences on what it asks of you. Purpose is open to everyone. On the other five, the opening line shows and a subscription opens the rest.</p>
-    </div>
-    <div class="shot"><img src="assets/screenshots/05-nameplate.jpg" alt="The Purpose area, with a brass nameplate reading Presence above the line 'Leo is your rising sign', and two sentences explaining what it means" loading="lazy"></div>
+    <div class="shot"><img src="assets/screenshots/web-instrument.jpg" alt="A birth chart drawn as a brass astrolabe, with Leo rising, the planets as brass studs on the rete, and the twelve houses numbered around the rim" width="780" height="782" loading="lazy"></div>
   </div>
 </section>
 
 <section class="feature prose-only">
   <div class="wrap">
     <div>
-      <span class="eyebrow">Without Opening the App</span>
-      <h2>Today's Moon, and One Area at a Time.</h2>
-      <p>A widget for the home and lock screens: tonight's moon phase, and a line drawn from your chart that moves through the six life areas across the day instead of repeating one until midnight.</p>
-      <p>It walks all six for everyone, subscriber or not, and redraws itself when you change charts or re-tint the instrument — so it matches whatever the app currently looks like rather than whatever it looked like when you placed it.</p>
+      <span class="eyebrow">Your Rising Sign, First</span>
+      <h2>Laid Out From Your Rising Sign, Not Your Sun.</h2>
+      <p>Most horoscopes start from your sun sign. This chart starts from your rising sign instead, the sign coming up over the horizon at the minute and place you were born, and counts every house from it. That's how whole-sign houses work, the oldest way of reading a chart.</p>
+      <p>If the sign on your wheel isn't the one you expected, that's not a mistake. It's the more personal one.</p>
     </div>
   </div>
 </section>
 
-<section class="feature reverse">
-  <div class="wrap">
-    <div>
-      <span class="eyebrow">One Reading, Not Four</span>
-      <h2>Sun, Moon, Rising, and Ruler — Read as One Chart, Not Four.</h2>
-      <p>Most horoscopes stop at your sun sign. This one reads your Sun, Moon, Rising, and the planet that rules your whole chart together, as a single throughline instead of four separate blurbs.</p>
-      <p>It also ranks all ten planets by how much weight they actually carry in your chart — placement and aspects combined — and opens up the one that comes out on top.</p>
-      <p>It closes by naming your chart's overall lean, so those four signs resolve into one picture instead of sitting side by side as trivia — not a type you share with everyone born under your sun sign, but the imprint that's yours alone, and the path it points you toward.</p>
-      <div class="pullquote">
-        <blockquote>&ldquo;Sun and Moon both in water means identity and instinct are made of the same substance, with almost no membrane between them.&rdquo;</blockquote>
-        <cite>From the reading &middot; How These Connect</cite>
-      </div>
-    </div>
-    <div class="shot"><img src="assets/screenshots/04-whole-chart.jpg" alt="The Whole Chart screen: an At a Glance summary naming a Pisces Sun, Scorpio Moon, and Leo Rising, then Core Identity, Emotional Self, and Outer Persona sections, each opening a few lines of the reading before fading out" loading="lazy"></div>
-  </div>
-</section>
-
-<section class="feature">
+<section class="feature prose-only">
   <div class="wrap">
     <div>
       <span class="eyebrow">The Points Most Charts Skip</span>
-      <h2>Every Point in Your Chart Gets Its Own Explanation.</h2>
-      <p>Alongside the ten planets and four angles, this app plots the North Node, Chiron, Black Moon Lilith, and White Moon Selena — points most apps either omit or list without explaining. Each one gets the same full treatment as a planet: what it means, and what to do about it.</p>
-      <p>Astrologers pair Black Moon Lilith, the Moon's farthest swing from Earth, with White Moon Selena, its closest — and this is the first version of the app to track both by name.</p>
+      <h2>More Than Ten Planets.</h2>
+      <p>Alongside the ten planets and the four angles, your chart places the North Node, Chiron, and Black Moon Lilith, each with its sign, its degree, and its house.</p>
     </div>
-    <div class="shot"><img src="assets/screenshots/09-lilith-detail.jpg" alt="The Black Moon Lilith detail screen, explaining that Lilith is the mean apogee of the Moon's orbit, the text fading out partway down" loading="lazy"></div>
   </div>
 </section>
 
@@ -455,25 +433,22 @@
   </div>
 </section>
 
-<section class="feature" id="sky">
+<section class="feature prose-only">
   <div class="wrap">
     <div>
-      <span class="eyebrow">The Sky, Pointing Back</span>
-      <h2>Your Sign and the Real Sky Are Not the Same Thing.</h2>
-      <p>Hold your phone up and the instrument follows the sky above you — your zodiac sign shown next to the actual constellation in that direction, because they are not the same thing, and this app is honest about the difference.</p>
+      <span class="eyebrow">Yours Alone</span>
+      <h2>Nothing You Type Leaves Your Device.</h2>
+      <p>Your chart is worked out right in your own browser. Your birth date, time, and place are never sent to us or to anyone else, and even finding your birthplace runs on your device. There's no account to make and nothing to sign up for.</p>
     </div>
-    <div class="shot"><img src="assets/screenshots/07-sky.jpg" alt="The Sky Navigator screen, comparing a zodiac sign to the real constellation overhead" loading="lazy"></div>
   </div>
 </section>
 
 <section class="feature prose-only">
   <div class="wrap">
     <div>
-      <span class="eyebrow">When We Don't Know</span>
-      <h2>We'd Rather Tell You We Don't Know.</h2>
-      <p>Most astrology apps take whatever birth time you hand them and answer with total confidence. If all you really knew was "sometime in the morning," that confidence was invented.</p>
-      <p>Astrolabe casts your chart three times — the earliest you could have been born, the middle, and the latest — and compares them. When your rising sign holds across all three, it says so. When it doesn't, it tells you that, instead of picking one and hoping you never find out.</p>
-      <p>Your Moon's sign is the fastest-moving thing in your chart, and the easiest to get quietly wrong. It's settled unless you were born within about two minutes of it changing — and if you were, no birth certificate is precise enough to settle it either. Where your chart is uncertain, it's your birth time, not our arithmetic. We'll tell you which.</p>
+      <span class="eyebrow">Keep It Close</span>
+      <h2>On Your Home Screen, With or Without a Signal.</h2>
+      <p>On an iPhone or iPad, open the <a href="/chart/">chart page</a>, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. On Android, choose <strong>Install</strong> when your browser offers it. It opens like an app, and once it's there it works with no signal at all.</p>
     </div>
   </div>
 </section>
@@ -492,11 +467,19 @@
     <p>Every sign rendered in a warm, wax-resist batik style — digital art, created skillfully under the close, wash-by-wash direction of a real-life artist's eye, not left to run on its own. Worth exploring on their own, and available as real prints on real paper.</p>
     <p class="tangible">Astrology, Made Tangible.</p>
   </div>
-  <div class="strip">
-    <div class="shot"><img src="assets/screenshots/06-signs.jpg" alt="The gallery of twelve zodiac signs illustrated in a batik style" loading="lazy"></div>
-    <div class="shot"><img src="assets/screenshots/08-prints.jpg" alt="Ordering a real print of a sign's batik-style illustration" loading="lazy"></div>
-    <div class="shot"><img src="assets/screenshots/02-chart-instrument.jpg" alt="The birth chart instrument, showing planetary placements on the wheel with the Whole Chart reading above it" loading="lazy"></div>
-    <div class="shot"><img src="assets/screenshots/11-wheel-angles.jpg" alt="The chart wheel view, with the four angles marked directly on the rim" loading="lazy"></div>
+  <div class="sign-grid">
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/aries-thumb.jpg" alt="Aries, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Aries</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/taurus-thumb.jpg" alt="Taurus, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Taurus</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/gemini-thumb.jpg" alt="Gemini, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Gemini</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/cancer-thumb.jpg" alt="Cancer, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Cancer</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/leo-thumb.jpg" alt="Leo, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Leo</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/virgo-thumb.jpg" alt="Virgo, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Virgo</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/libra-thumb.jpg" alt="Libra, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Libra</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/scorpio-thumb.jpg" alt="Scorpio, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Scorpio</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/sagittarius-thumb.jpg" alt="Sagittarius, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Sagittarius</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/capricorn-thumb.jpg" alt="Capricorn, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Capricorn</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/aquarius-thumb.jpg" alt="Aquarius, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Aquarius</span></a>
+    <a class="sign-tile" href="/prints/"><img src="assets/signs/pisces-thumb.jpg" alt="Pisces, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Pisces</span></a>
   </div>
 </section>
 
@@ -548,7 +531,7 @@
     <div class="footer-top">
       <div class="footer-brand">
         <div class="wordmark" aria-label="Follow My Astrolabe"><span class="wm-follow">FOLLOW MY</span>ASTROLABE</div>
-        <p>A working brass instrument, in your pocket.</p>
+        <p>A working brass instrument, in your browser.</p>
         <div class="studio-credit">
           <span>Built by</span>
           <img src="assets/beetle-logo.png" alt="" class="beetle" loading="lazy">
@@ -557,7 +540,7 @@
       </div>
       <div class="footer-links">
         <div class="footer-col">
-          <h4>App</h4>
+          <h4>Explore</h4>
           <a href="/chart/">Cast a Chart</a>
           <a href="#instrument">The Instrument</a>
           <a href="#signs">The Signs</a>
@@ -566,6 +549,7 @@
         <div class="footer-col">
           <h4>Legal</h4>
           <a href="/privacy/">Privacy Policy</a>
+          <a href="/support/">Support</a>
           <a href="mailto:morgan@followmyastrolabe.com">Contact</a>
         </div>
       </div>
