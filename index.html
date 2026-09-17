@@ -249,6 +249,8 @@
   .plan .price{font-family:'Cinzel',Georgia,serif;font-size:34px;color:var(--resist);margin:10px 0 4px;}
   .plan .price sub{font-family:'Spectral',serif;font-size:14px;color:var(--muted);}
   .plan .desc{font-size:14px;color:var(--muted);margin-top:10px;}
+  .plans.sizes{grid-template-columns:repeat(3,1fr);max-width:860px;}
+  .plans.sizes .plan{text-align:center;}
   /* The one claim about what a subscription is *not* buying. Sits between
      the button and the legal fine print: louder than the fine print, since
      it is a reason to trust the price, quieter than the pitch above it. */
@@ -316,7 +318,7 @@
   @media (max-width:820px){
     .feature .wrap{grid-template-columns:1fr;gap:36px;}
     .feature.reverse .wrap{direction:ltr;}
-    .plans{grid-template-columns:1fr;}
+    .plans, .plans.sizes{grid-template-columns:1fr;}
     .nav-links{gap:18px;}
   }
   @media (max-width:600px){
@@ -350,7 +352,7 @@
       <a href="/chart/">Cast a Chart</a>
       <a href="#instrument">Instrument</a>
       <a href="#signs">Signs</a>
-      <a href="#pricing">Pricing</a>
+      <a href="#prints">Prints</a>
       <a href="/privacy/">Privacy</a>
     </nav>
   </div>
@@ -512,35 +514,34 @@
   </div>
 </section>
 
-<section class="pricing" id="pricing">
+<section class="pricing" id="prints">
   <div class="wrap">
     <div class="pricing-head">
-      <span class="eyebrow">Astrolabe Premium</span>
-      <h2>Open the Whole Chart.</h2>
-      <p>Every house, planet, and angle opened out — full advice, not just placement. Plus what each life area's word means for you, and every area's weekly, monthly, and yearly horoscope. There's room to keep more than two charts, too — a partner's, a kid's, a friend's.</p>
+      <span class="eyebrow">Chart to Canvas</span>
+      <h2>Your Sign, Off the Screen and On the Wall.</h2>
+      <p>Any of the twelve signs, printed to order on 170&nbsp;gsm coated silk and shipped to you flat. Every print keeps the proportions the art was drawn in, so nothing gets cropped to fit.</p>
     </div>
-    <div class="plans">
-      <div class="plan">
-        <div class="name">Monthly</div>
-        <div class="price">$6.99<sub>/mo</sub></div>
-        <div class="desc">Billed monthly, cancel anytime.</div>
+    <div class="plans sizes">
+      <div class="plan" data-size="Small">
+        <div class="name">Small</div>
+        <div class="price" hidden></div>
+        <div class="desc">12 &times; 16 in &middot; 300 &times; 400 mm</div>
       </div>
-      <div class="plan yearly">
-        <span class="save">Save ~30%</span>
-        <div class="name">Yearly</div>
-        <div class="price">$58.99<sub>/yr</sub></div>
-        <div class="desc">Billed annually, cancel anytime.</div>
+      <div class="plan" data-size="Medium">
+        <div class="name">Medium</div>
+        <div class="price" hidden></div>
+        <div class="desc">18 &times; 24 in &middot; 450 &times; 600 mm</div>
+      </div>
+      <div class="plan" data-size="Large">
+        <div class="name">Large</div>
+        <div class="price" hidden></div>
+        <div class="desc">24 &times; 32 in &middot; 600 &times; 800 mm</div>
       </div>
     </div>
     <div class="cta">
-      <a class="badge shop-link" href="/prints/">Shop the Prints</a>
-      <a class="store-link cta-live" href="https://apps.apple.com/app/follow-my-astrolabe/idAPPLE_ID">
-        <img class="store-badge" src="assets/app-store-badge.svg" alt="Download on the App Store"
-             width="162" height="54">
-      </a>
+      <a class="chart-link" href="/prints/">Choose Your Print</a>
     </div>
-    <p class="pledge">Anything still being made says so in the app — stamped <em>Coming Soon</em>, not folded quietly into what you're paying for.</p>
-    <p class="fine">Auto-renewable subscription. Cancel anytime in your device's Settings. See our <a href="/privacy/">Privacy Policy</a> for details on what stays on your device.</p>
+    <p class="fine">Ships to addresses in the United States. Checkout is handled by Stripe, and each print is made and mailed by our print partner.</p>
   </div>
 </section>
 
@@ -549,7 +550,7 @@
     <img class="climate-icon" src="assets/stripe-climate-badge.svg" alt="Stripe Climate" width="40" height="40" loading="lazy">
     <span class="eyebrow">Climate Commitment</span>
     <h2>5% of Print Sales, to Carbon Removal.</h2>
-    <p>Studio New Moon is a member of Stripe Climate. On every print ordered in the app, 5% of that Stripe transaction funds permanent carbon removal — not offsets.</p>
+    <p>Studio New Moon is a member of Stripe Climate. On every print ordered, 5% of that Stripe transaction funds permanent carbon removal — not offsets.</p>
     <a class="climate-link" href="https://climate.stripe.com/lMRr5u" target="_blank" rel="noopener">
       See Our Stripe Climate Commitment
     </a>
@@ -574,7 +575,7 @@
           <a href="/chart/">Cast a Chart</a>
           <a href="#instrument">The Instrument</a>
           <a href="#signs">The Signs</a>
-          <a href="#pricing">Pricing</a>
+          <a href="#prints">Prints</a>
         </div>
         <div class="footer-col">
           <h4>Legal</h4>
@@ -619,5 +620,29 @@
   })();
 </script>
 
+<script>
+  // Print prices come from the order service, the same numbers checkout
+  // charges, rather than being typed into this page where they could drift.
+  // If it can't be reached, the sizes still show and the prices stay hidden.
+  (function () {
+    fetch("https://astrolabe-gelato-broker.astrolabe-gelato-broker.workers.dev/catalogue")
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) {
+        ((data && data.prints) || []).forEach(function (p) {
+          var plan = document.querySelector('.plans.sizes .plan[data-size="' + p.label + '"]');
+          if (!plan) return;
+          var el = plan.querySelector(".price");
+          var amount;
+          try {
+            amount = new Intl.NumberFormat("en-US", { style: "currency", currency: p.currency || "usd" })
+              .format(p.unitCents / 100);
+          } catch (e) { amount = "$" + (p.unitCents / 100).toFixed(2); }
+          el.textContent = amount;
+          el.hidden = false;
+        });
+      })
+      .catch(function () {});
+  })();
+</script>
 </body>
 </html>
