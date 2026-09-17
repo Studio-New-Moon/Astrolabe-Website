@@ -332,6 +332,7 @@ import { mountInstrument } from "../chart/src/instrument-view.js";
 import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId, selectProfile, requestPersistentStorage } from "./src/profiles.js";
 import { loadPlaces, searchPlaces } from "../chart/src/places.js";
 import { fetchReadings } from "./src/readings.js";
+import { readPass, refreshPass } from "../chart/src/pass.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -388,6 +389,12 @@ const PERIODS = ["daily", "weekly", "monthly", "yearly"];
 const FREE_PERIODS = new Set(["daily"]);
 let shownPeriod = "daily";
 let entitled = false;
+
+// Asked once when the app opens, not per reading: it extends a pass that is
+// near its end, and drops one the subscription Worker says has finished. A
+// network failure answers `unverified` and keeps the pass — the reading
+// server checks the signature anyway, so a tunnel shouldn't lock anyone out.
+refreshPass().catch(() => {});
 let readings = null;          // the last answer from the reading server
 let readingsFor = null;       // the profile it was asked for
 let inFlight = null;          // so a fast switch between people cannot land twice
@@ -401,9 +408,16 @@ function periodButtons() {
   }).join("");
 }
 
-function note(message) {
+function note(message, link) {
   const el = $("readingsNote");
   el.textContent = message ?? "";
+  if (message && link) {
+    el.append(" ");
+    const a = document.createElement("a");
+    a.href = link.href;
+    a.textContent = link.text;
+    el.append(a);
+  }
   el.hidden = !message;
 }
 
@@ -461,7 +475,15 @@ async function loadReadings(profile) {
     readings = answer;
     entitled = answer.entitled === true;
     periodButtons();
-    note(null);
+    // A pass in this browser that opens nothing is the one failure with no
+    // error in it — an ended subscription, or a pass this server cannot
+    // verify. Say so rather than quietly serving the free reading.
+    if (!entitled && readPass()) {
+      note("This browser has a subscription pass, but the readings came back locked. It may have ended.",
+           { href: "/account/", text: "Ask for a fresh link." });
+    } else {
+      note(null);
+    }
     drawReadings();
   } catch (e) {
     if (controller === inFlight) note(e.message);
