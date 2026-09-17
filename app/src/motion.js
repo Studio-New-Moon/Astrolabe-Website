@@ -13,8 +13,12 @@
 // - The rete carries a band with the zodiac in it. Your birth chart sits
 //   inside the band and the moving sky outside it, so the two sets never
 //   compete for one track.
-// - Labels are spread along their track by a small relaxation each frame, and
-//   joined to their true position by a leader when pushed off it.
+// - The moving sky never leaves its true degree. Real planets pass one another
+//   freely, so when two badges would overlap the faster planet steps outward
+//   into another lane, easing out and back, rather than either being pushed
+//   along the track. Pushing sideways made them look as if they collided.
+// - The birth chart's labels, which never move, are spread along their track
+//   instead, and joined to their true position by a leader when pushed off it.
 //
 // It shares the astronomy (projection.js) with the chart wheel, and nothing
 // else, so a planet lands on the same degree in both.
@@ -28,6 +32,15 @@ const VIEW = 1000;
 const C = VIEW / 2;
 const TEXT = "︎";
 const MIN_STAGE_PX = 300;
+
+// Slowest first. When two badges would overlap, the slower planet keeps the
+// inner lane and the faster one steps out around it, which is also how it
+// looks in the sky: the Moon sweeps past everything, Pluto barely shifts.
+const SPEED_ORDER = ["pluto", "neptune", "uranus", "chiron", "northNode", "saturn",
+  "blackMoonLilith", "jupiter", "mars", "sun", "venus", "mercury", "moon"];
+const speedRank = (key) => { const i = SPEED_ORDER.indexOf(key); return i < 0 ? SPEED_ORDER.length : i; };
+// How long a badge takes to ease most of the way into a new lane, in seconds.
+const LANE_EASE_S = 0.14;
 
 const INK = {
   ground: "#14100A", limb: "#1B1206", line: "#3A2C12", brass: "#B8963F",
@@ -114,6 +127,9 @@ export function createMotionWheel(svg) {
   let g = null;           // the sizes, in viewBox units, for the current stage
   let latitude = 0;
   const pools = { natal: new Map(), sky: new Map(), lines: [] };
+  const laneTarget = new Map();   // key -> the lane a badge is heading for
+  const laneShown = new Map();    // key -> where it is now, eased, in lanes
+  let lastDrawAt = 0;
 
   // ---- sizes, fitted around legible type ----
   function measure(stagePx) {
@@ -128,20 +144,31 @@ export function createMotionWheel(svg) {
     const glyph = u(15, 32);
     const signGlyph = u(12, 26);
     const bandW = signGlyph * 1.55;
-    const medalR = glyph * 0.72;
+    // Glyph-sized badges: a thin ring round the planet, so a lane costs as
+    // little of the wheel as it can.
+    const medalR = glyph * 0.55;
     const stud = u(2.5, 5);
     const gapU = u(3, 5);
     const mater = 482;
     const limbInner = mater - u(24, 56);
     const plateR = limbInner - u(1.5, 3);
-    // The outermost thing on the rete is a medallion, on the band's outside,
-    // at the ring's furthest reach (Capricorn). Solve for the plate scale that
-    // just clears the rim there.
-    const outer = bandW / 2 + gapU + medalR * 2 + gapU;
+    // Four lanes for the moving sky, outside the band. Chart in Motion is
+    // shown only on screens at least 600px each way, so the stage is about
+    // 560px or more. Measured over ten years of daily skies there, three
+    // lanes left a glyph covered on 65 days and four on 9, almost all the
+    // Moon crossing a cluster, while the zodiac ring keeps a radius of about
+    // 100px or more. A lane step clears two discs with a retrograde tag
+    // between them.
+    const lanes = 4;
+    const laneStep = medalR * 2.2;
+    // The outermost thing on the rete is a medallion in the last lane, at the
+    // ring's furthest reach (Capricorn). Solve for the plate scale that just
+    // clears the rim there.
+    const outer = bandW / 2 + gapU + medalR * 2 + (lanes - 1) * laneStep + gapU;
     const equator = (plateR - outer) / capricornRadius(1);
     const ring = ecliptic(equator);
     return {
-      k, glyph, signGlyph, bandW, medalR, stud, gapU, mater, limbInner, plateR, equator, ring,
+      k, glyph, signGlyph, bandW, medalR, stud, gapU, mater, limbInner, plateR, equator, ring, lanes, laneStep,
       numeral: u(11, 24),
       natalR: ring.radius - bandW / 2 - gapU - glyph * 0.62,
       skyR: ring.radius + bandW / 2 + gapU + medalR,
@@ -259,9 +286,9 @@ export function createMotionWheel(svg) {
     set(m.stud, { r: g.stud });
     set(m.leader, { "stroke-width": g.line });
     set(m.disc, { r, "stroke-width": g.line * 1.6 });
-    set(m.text, { "font-size": g.glyph * (m.minor ? 0.78 : 0.95) });
-    // Tucked onto the rim of the disc, so the spacing allowance above covers it.
-    set(m.rx, { "font-size": g.glyph * 0.5, x: r * 0.82, y: -r * 0.82 });
+    set(m.text, { "font-size": g.glyph * (m.minor ? 0.72 : 0.9) });
+    // Tucked onto the rim of the disc, so the lane step covers it.
+    set(m.rx, { "font-size": g.glyph * 0.42, x: r * 0.9, y: -r * 0.9 });
   }
 
   function linePool(i) {
@@ -284,6 +311,39 @@ export function createMotionWheel(svg) {
     });
   }
 
+  /**
+   * Give each moving badge a lane, keeping every one at its true angle.
+   *
+   * Slowest first, each takes the innermost lane where it clears everything
+   * already there. A badge already out in a lane needs a little more room
+   * before it steps back in, so one hovering at the edge doesn't flicker. If
+   * no lane is clear (a stellium with the Moon passing through it on a small
+   * screen), it takes the lane with the most room and overlaps briefly there,
+   * still at its true degree.
+   */
+  function assignLanes(items) {
+    const order = [...items].sort((a, b) => speedRank(a.key) - speedRank(b.key));
+    const inLane = Array.from({ length: g.lanes }, () => []);
+    for (const it of order) {
+      const was = laneTarget.get(it.key) ?? 0;
+      let chosen = -1, roomiest = 0, most = -Infinity;
+      for (let L = 0; L < g.lanes; L++) {
+        const r = g.skyR + L * g.laneStep;
+        const need = (g.medalR * 2.6) / r * (L < was ? 1.12 : 1);
+        let room = Infinity;
+        for (const o of inLane[L]) {
+          const d = Math.abs(wrap(it.theta - o.theta + Math.PI) - Math.PI);
+          room = Math.min(room, d - need);
+        }
+        if (room >= 0) { chosen = L; break; }
+        if (room > most) { most = room; roomiest = L; }
+      }
+      it.lane = chosen >= 0 ? chosen : roomiest;
+      inLane[it.lane].push(it);
+      laneTarget.set(it.key, it.lane);
+    }
+  }
+
   return {
     /** Fit the instrument to the stage's width in CSS pixels, for a latitude. */
     layout(stagePx, lat) {
@@ -299,9 +359,16 @@ export function createMotionWheel(svg) {
      * `natal` are lists of { key, glyph, longitude, retrograde, minor } and
      * `aspects` is a list of { sky, natal, color, closeness, conjunction }.
      * `natal` may be null, for a sky with no birth chart under it.
+     * `instant` puts every badge straight into its lane rather than easing,
+     * as it also does after a pause: a jump in time is not a movement.
      */
-    draw({ ascendant, midheaven, sky, natal, aspects = [] }) {
+    draw({ ascendant, midheaven, sky, natal, aspects = [], instant = false }) {
       if (!g) return;
+      const now = performance.now();
+      const dt = (now - lastDrawAt) / 1000;
+      lastDrawAt = now;
+      const snap = instant || dt > 0.25;
+      const ease = snap ? 1 : 1 - Math.exp(-dt / LANE_EASE_S);
       const ascAngle = retePoint(ascendant, 0, 1).angle;
       // The rete is turned so the ascendant sits on the left horizon.
       const turn = (-ascAngle + 180) * D2R;
@@ -370,25 +437,30 @@ export function createMotionWheel(svg) {
       const skyAt = new Map();
       const seenSky = new Set();
       const skyItems = sky.map((b) => ({ ...b, theta: thetaOf(b.longitude) }));
-      // Room for a disc, its neighbour, and a retrograde tag between them on
-      // the diagonal: 1.16r + tag + r, with a little over for the track's
-      // curve, since spacing is measured round the arc and discs meet on the chord.
-      placeTrack(skyItems, g.skyR, g.medalR * 2.6, ring, (it, x, y, pushed) => {
+      assignLanes(skyItems);
+      for (const it of skyItems) {
         const m = skyMark(it.key, it.glyph, it.minor === true);
         seenSky.add(it.key);
+        const shown = laneShown.has(it.key) && !snap
+          ? laneShown.get(it.key) + (it.lane - laneShown.get(it.key)) * ease
+          : it.lane;
+        laneShown.set(it.key, shown);
         const [sx, sy] = polar(ring.cx, ring.cy, outer, it.theta);
+        const [x, y] = polar(ring.cx, ring.cy, g.skyR + shown * g.laneStep, it.theta);
         skyAt.set(it.key, [sx, sy, it.theta]);
         set(m.stud, { cx: sx, cy: sy, visibility: "visible" });
         set(m.group, { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)})`, visibility: "visible" });
         set(m.rx, { visibility: it.retrograde ? "visible" : "hidden" });
-        if (pushed) {
-          const dx = x - sx, dy = y - sy, len = Math.hypot(dx, dy) || 1;
-          const stop = len - g.medalR;
-          set(m.leader, { x1: sx, y1: sy, x2: sx + dx * stop / len, y2: sy + dy * stop / len, visibility: stop > 0 ? "visible" : "hidden" });
+        // Out in a lane, a short radial leader runs back to the planet's stud
+        // on the band, so it is plain which degree the badge belongs to.
+        if (shown > 0.05) {
+          const [lx, ly] = polar(ring.cx, ring.cy, outer + g.stud, it.theta);
+          const [ex, ey] = polar(ring.cx, ring.cy, g.skyR + shown * g.laneStep - g.medalR, it.theta);
+          set(m.leader, { x1: lx, y1: ly, x2: ex, y2: ey, visibility: "visible" });
         } else {
           set(m.leader, { visibility: "hidden" });
         }
-      });
+      }
       for (const [key, m] of pools.sky) {
         // The retrograde tag is hidden in its own right: in SVG a child that
         // says visibility="visible" shows through a hidden parent, so a point
