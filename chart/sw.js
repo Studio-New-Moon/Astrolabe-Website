@@ -46,10 +46,21 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+// Clear out this page's own older caches, and nothing else.
+//
+// This used to delete every cache that was not CACHE, which was harmless while
+// /chart/ was the only installable page. Caches are shared across the whole
+// origin, though, so once /app/ installed too, each one's update would have
+// wiped the other's offline copy — and whichever updated last would have left
+// the other unable to open without a signal. Hence the prefix: each service
+// worker owns the caches whose names start with its own.
+const OWN = "astrolabe-chart-";
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(
+        keys.filter((k) => k.startsWith(OWN) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });

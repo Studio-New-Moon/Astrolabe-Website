@@ -7,7 +7,11 @@
 <meta name="description" content="Your birth chart on a working astrolabe, and the people you keep charts for. Everything stays on your device.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/assets/favicon.png">
+<link rel="manifest" href="/app/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/chart/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Astrolabe">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f7f1e3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,6 +117,17 @@
   .problem{ padding: 11px 14px; border: 1px solid var(--danger); border-radius: 8px; margin-top: 14px; font-size: 15px; }
   .problem[hidden]{ display: none !important; }
 
+  .install{
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    padding: 13px 15px; border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--panel); margin: 18px 0 0; font-size: 15.5px;
+  }
+  .install[hidden]{ display: none !important; }
+  .install p{ margin: 0; flex: 1 1 28ch; }
+  .install button{ font-size: 15px; border-radius: 8px; padding: 8px 14px; border: 1px solid var(--brass); }
+  .install .go{ background: var(--brass); color: var(--ground); font-weight: 600; }
+  .install .later{ background: transparent; color: var(--muted); border-color: var(--rule); }
+
   footer{ margin-top: 54px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14.5px; }
   footer a{ color: var(--brass); }
 </style>
@@ -124,6 +139,21 @@
 
   <p class="quiet">The people you add are kept in this browser, on this device.
   There's no account, and nothing you type is sent anywhere.</p>
+
+  <div class="install" id="installIos" hidden>
+    <p><strong>Keep Astrolabe on your Home Screen:</strong> tap Share, then Add to
+    Home Screen. It opens like an app and works with no signal. Do it before you
+    add anyone, because an iPhone keeps the Home Screen app's saved people
+    separate from Safari's.</p>
+    <button class="later" type="button" data-dismiss>Not now</button>
+  </div>
+
+  <div class="install" id="installPrompt" hidden>
+    <p>Install Astrolabe on this device. It opens like an app, and it works with
+    no signal.</p>
+    <button class="go" type="button" id="installGo">Install</button>
+    <button class="later" type="button" data-dismiss>Not now</button>
+  </div>
 
   <nav class="people" id="people" aria-label="People"></nav>
 
@@ -541,6 +571,52 @@ function boot() {
   open(people.find((p) => p.id === selectedProfileId()) ?? people[0]);
 }
 boot();
+
+// ---------- installing it ----------
+//
+// Offline first, because it is what makes installing worth offering: casting a
+// chart, keeping people, and searching a town already searched all run on the
+// device.
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/app/sw.js", { scope: "/app/" }).catch(() => {
+    // Not fatal: the app works as before and simply won't open offline.
+  });
+}
+
+const installed =
+  window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+const HINT_KEY = "astrolabe.app.installHint.dismissed";
+const hintDismissed = () => { try { return localStorage.getItem(HINT_KEY) === "1"; } catch { return false; } };
+document.querySelectorAll("[data-dismiss]").forEach((b) =>
+  b.addEventListener("click", () => {
+    try { localStorage.setItem(HINT_KEY, "1"); } catch {}
+    $("installIos").hidden = true;
+    $("installPrompt").hidden = true;
+  }));
+
+// iPhone and iPad never offer to install a web app, so the page has to say how.
+// iPadOS reports itself as a Mac; a Mac with a touchscreen is the tell.
+const ua = navigator.userAgent;
+const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+if (isIOS && !installed && !hintDismissed()) $("installIos").hidden = false;
+
+// Chrome on Android does offer, once the page asks: hold its prompt until
+// someone presses Install.
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!installed && !hintDismissed()) $("installPrompt").hidden = false;
+});
+$("installGo").addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  $("installPrompt").hidden = true;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice.catch(() => {});
+  deferredPrompt = null;
+});
+window.addEventListener("appinstalled", () => { $("installPrompt").hidden = true; });
 </script>
 </body>
 </html>
