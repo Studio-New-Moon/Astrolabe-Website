@@ -115,6 +115,21 @@
     box-shadow:0 0 8px var(--brass-bright);}
   .hero-note{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
     max-width:36ch;text-wrap:balance;}
+  /* The one thing on the page a visitor can use today, so it's filled
+     brass rather than another outlined pill: the Coming Soon badge below
+     it looks the same as a button and isn't one. */
+  .chart-link{
+    display:inline-flex;align-items:center;
+    font-family:'Cinzel',Georgia,serif;font-weight:600;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--night);text-decoration:none;
+    padding:15px 32px;border-radius:999px;
+    background:linear-gradient(180deg,var(--brass-bright),var(--brass));
+    box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.25);
+    transition:transform .2s ease, filter .2s ease;
+  }
+  .chart-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
+  .chart-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
+  .chart-note{margin:-6px 0 18px;}
 
   /* ---------- App Store call to action ---------- */
   /* Both states are in the markup at once — the pre-launch pill and the
@@ -330,6 +345,7 @@
   <div class="nav-inner">
     <a class="nav-name" href="#top">ASTROLABE</a>
     <nav class="nav-links">
+      <a href="/chart/">Cast a Chart</a>
       <a href="#instrument">Instrument</a>
       <a href="#signs">Signs</a>
       <a href="#pricing">Pricing</a>
@@ -348,6 +364,8 @@
     <img class="hero-mark" src="assets/wordmark-hero.png" alt="ASTROLABE" width="670" height="138">
     <p class="subtitle">Your Path, Cast in Metal</p>
     <div class="hero-cta">
+      <a class="chart-link" href="/chart/">Cast Your Chart</a>
+      <span class="hero-note chart-note">Free, right here in your browser</span>
       <span class="badge cta-soon"><span class="dot"></span> Coming Soon to the App Store</span>
       <a class="store-link cta-live" href="https://apps.apple.com/app/follow-my-astrolabe/idAPPLE_ID">
         <img class="store-badge" src="assets/app-store-badge.svg" alt="Download on the App Store"
@@ -550,6 +568,7 @@
       <div class="footer-links">
         <div class="footer-col">
           <h4>App</h4>
+          <a href="/chart/">Cast a Chart</a>
           <a href="#instrument">The Instrument</a>
           <a href="#signs">The Signs</a>
           <a href="#pricing">Pricing</a>
