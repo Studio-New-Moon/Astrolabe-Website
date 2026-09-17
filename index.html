@@ -75,6 +75,16 @@
     font-size:19px;letter-spacing:.06em;color:var(--brass-bright);
     text-decoration:none;
   }
+  /* "Follow My" over the wordmark, at the proportions the app's welcome
+     screen sets it: 15pt over 40pt, tracked wider. Stacked and centred, so
+     the letter-spacing trailing the last letter is given back on the left. */
+  .nav-name, .footer-brand .wordmark{
+    display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;
+  }
+  .wm-follow{
+    /* Never under 9px, or the small menu wordmark stops being legible. */
+    font-size:max(.375em,9px);letter-spacing:.27em;padding-left:.27em;margin-bottom:.12em;
+  }
   .nav-links{display:flex;gap:28px;align-items:center;}
   .nav-links a{
     font-family:'Cinzel',Georgia,serif;font-size:12.5px;letter-spacing:.1em;
@@ -347,7 +357,7 @@
 
 <header class="nav">
   <div class="nav-inner">
-    <a class="nav-name" href="#top">ASTROLABE</a>
+    <a class="nav-name" href="#top" aria-label="Follow My Astrolabe"><span class="wm-follow">FOLLOW MY</span>ASTROLABE</a>
     <nav class="nav-links">
       <a href="/chart/">Cast a Chart</a>
       <a href="#instrument">Instrument</a>
@@ -365,7 +375,7 @@
          own welcome-screen screenshot rather than redrawn in CSS/SVG —
          after two redraw attempts still didn't read as the same mark,
          so this is the real pixels instead of an approximation of them. -->
-    <img class="hero-mark" src="assets/wordmark-hero.png" alt="ASTROLABE" width="670" height="138">
+    <img class="hero-mark" src="assets/wordmark-follow-my-astrolabe.png" alt="Follow My Astrolabe" width="882" height="272">
     <p class="subtitle">Your Path, Cast in Metal</p>
     <div class="hero-cta">
       <a class="chart-link" href="/chart/">Cast Your Chart</a>
@@ -561,7 +571,7 @@
   <div class="wrap">
     <div class="footer-top">
       <div class="footer-brand">
-        <div class="wordmark">ASTROLABE</div>
+        <div class="wordmark" aria-label="Follow My Astrolabe"><span class="wm-follow">FOLLOW MY</span>ASTROLABE</div>
         <p>A working brass instrument, in your pocket.</p>
         <div class="studio-credit">
           <span>Built by</span>

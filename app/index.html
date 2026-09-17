@@ -16,7 +16,7 @@
 <meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
 <style>
   :root{
     --ground: #f7f1e3;
@@ -48,6 +48,13 @@
   main{ max-width: 980px; margin: 0 auto; }
   h1, h2, h3{ font-family: "Cinzel", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
   h1{ font-size: clamp(26px, 4.4vw, 38px); }
+  /* The app's own wordmark: "Follow My" small over "Astrolabe", both in
+     Metamorphous, at the welcome screen's 15-over-40 proportions. */
+  h1.wordmark{ font-family: "Metamorphous", Georgia, serif; font-weight: 400; text-transform: uppercase;
+               letter-spacing: .06em; margin-bottom: 14px; }
+  h1.wordmark a{ color: var(--brass); text-decoration: none;
+                 display: inline-flex; flex-direction: column; align-items: center; line-height: 1.05; }
+  h1.wordmark .wm-follow{ font-size: .375em; letter-spacing: .27em; padding-left: .27em; margin-bottom: .12em; }
   h2{ font-size: clamp(20px, 3vw, 26px); }
   h3{ font-size: 17px; margin: 30px 0 10px; }
   .eyebrow{ font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
@@ -134,8 +141,7 @@
 </head>
 <body>
 <main>
-  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
-  <h1>Astrolabe</h1>
+  <h1 class="wordmark"><a href="/" aria-label="Follow My Astrolabe, home"><span class="wm-follow">Follow My</span>Astrolabe</a></h1>
 
   <p class="quiet">The people you add are kept in this browser, on this device.
   There's no account, and nothing you type is sent anywhere.</p>
