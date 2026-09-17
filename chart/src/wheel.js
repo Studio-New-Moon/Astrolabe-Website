@@ -166,17 +166,27 @@ export function wheelSVG(chart, { size = 1000, title = "" } = {}) {
 
   // Almucantars — circles of equal altitude, thinning as they climb. `offset`
   // runs toward the zenith and screen y grows downward, so it is subtracted.
+  //
+  // South of the equator the projection hands back a *negative* radius, and
+  // the offset flips sign with it. SVG refuses a negative r outright and drops
+  // the circle, so every southern chart lost its horizon: Sydney, Buenos
+  // Aires, Johannesburg. The Swift draws the same circle through
+  // CGRect(x: cx - r, y: cy - r, width: 2r, height: 2r), and CoreGraphics
+  // normalises a rectangle of negative size into a circle of |r| about the same
+  // centre — so |r| with the signed offset left alone is the faithful
+  // translation, not a patch. The abs() lives here rather than in circle() so
+  // that a negative radius anywhere else still fails visibly.
   for (let alt = 15; alt <= 75; alt += 15) {
     const a = almucantar(alt, lat, g.equator);
     if (!a) continue;
     const fade = 0.34 - (alt / 75) * 0.16;
-    out.push(circle(g.c, g.c - a.offset, a.radius,
+    out.push(circle(g.c, g.c - a.offset, Math.abs(a.radius),
       `fill="none" stroke="${BRASS.muted}" stroke-opacity="${n(fade)}" stroke-width="${n(size*0.0006)}"`));
   }
   // The horizon itself, heavier, because it is the line a plate exists to carry.
   const hz = almucantar(0, lat, g.equator);
   if (hz) {
-    out.push(circle(g.c, g.c - hz.offset, hz.radius,
+    out.push(circle(g.c, g.c - hz.offset, Math.abs(hz.radius),
       `fill="none" stroke="${BRASS.resist}" stroke-opacity="0.85" stroke-width="${n(size*0.0018)}"`));
   }
   out.push(`</g></g>`);
