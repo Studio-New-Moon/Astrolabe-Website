@@ -362,11 +362,25 @@ $("chartForm").addEventListener("submit", (e) => { e.preventDefault(); cast(); }
 const escHTML = (t) => String(t).replace(/[&<>"]/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 let placeTimer = 0;
+// Every keystroke starts a new search and retires the ones before it.
+//
+// Two separate faults lived here. The list stayed on screen through the pause
+// before new results, so a quick tap could pick a place for a query already
+// typed over. Worse, searches finish out of order: the first search on a
+// letter downloads that letter's whole town list, so typing "ork", clearing it
+// and typing "z" could show Orkney after the "z" results had come back — a
+// stale answer painted over a current one.
+let placeSeq = 0;
 $("place").addEventListener("input", () => {
   clearTimeout(placeTimer);
+  const seq = ++placeSeq;
+  const list = $("placeResults");
+  list.hidden = true;
+  list.innerHTML = "";
+  $("place").setAttribute("aria-expanded", "false");
   placeTimer = setTimeout(async () => {
-    const list = $("placeResults");
     const hits = await searchPlaces($("place").value);
+    if (seq !== placeSeq) return;
     list.innerHTML = "";
     for (const h of hits ?? []) {
       const li = document.createElement("li");

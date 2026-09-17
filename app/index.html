@@ -433,14 +433,26 @@ async function prepareSearch() {
 }
 
 let searchTimer = 0;
+// Every keystroke starts a new search and retires the ones before it: the old
+// list is cleared at once, so it cannot be tapped during the pause, and a
+// search that finishes after a newer one began is thrown away. The first search
+// on a letter downloads that letter's town list, so out-of-order finishes are
+// the normal case on a slow connection, not a rare one.
+let searchSeq = 0;
 $("fPlace").addEventListener("input", () => {
   clearTimeout(searchTimer);
   setChosen(null);
+  const seq = ++searchSeq;
+  const list = $("placeResults");
+  list.hidden = true;
+  list.innerHTML = "";
+  $("fPlace").setAttribute("aria-expanded", "false");
   searchTimer = setTimeout(async () => {
     if (!(await prepareSearch())) return;
+    if (seq !== searchSeq) return;
     const hits = await searchPlaces($("fPlace").value);
+    if (seq !== searchSeq) return;
     if (hits === null) return placesUnavailable();
-    const list = $("placeResults");
     list.innerHTML = "";
     for (const h of hits) {
       const li = document.createElement("li");
