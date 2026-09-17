@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening your readings — Follow My Astrolabe</title>
+<meta name="description" content="Opening a Follow My Astrolabe sign-in link unlocks the readings in this browser.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root{
+    --night: #090B1C;
+    --ground: #17110a;
+    --panel: #221a10;
+    --ink: #ede0c4;
+    --muted: #a6926c;
+    --brass: #c8993f;
+    --rule: rgba(200,153,63,0.3);
+  }
+  /* ---------- The night the homepage opens on ----------
+     The hero's ground, its brass glow and its starfield, fixed behind the
+     content so the sky holds still while the page scrolls. The warm --panel
+     plates sit on top of it, which is the point: brass against the sky. */
+  html{ background: var(--night); }
+  body::before{
+    content: "";
+    position: fixed; inset: 0; z-index: -1;
+    background: radial-gradient(ellipse 900px 600px at 50% -10%,
+                                rgba(184,150,63,.14), transparent 60%);
+  }
+  .stars{
+    position: fixed; inset: 0; z-index: -1;
+    overflow: hidden; pointer-events: none;
+  }
+  /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
+     cream as 17px body copy does not read as a star, it reads as a full
+     stop dropped into the sentence — worst on the privacy policy, which is
+     the longest read on the site. Pale blue keeps them stars. */
+  .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
+
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    background: transparent;
+    color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    padding: clamp(28px, 6vw, 72px) 20px 90px;
+  }
+  main{ max-width: 660px; margin: 0 auto; }
+  .eyebrow a{ color: var(--brass); text-decoration: none; }
+  .eyebrow a:hover{ text-decoration: underline; }
+  .eyebrow{
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 8px;
+  }
+  h1{
+    font-size: clamp(28px, 5vw, 36px);
+    line-height: 1.15;
+    margin: 0 0 14px;
+  }
+  .dates{ color: var(--muted); font-size: 14.5px; margin-bottom: 26px; }
+  .lede{
+    font-size: 18px;
+    padding: 18px 20px;
+    background: var(--panel);
+    border-radius: 10px;
+    border: 1px solid var(--rule);
+    margin-bottom: 8px;
+  }
+  h2{
+    font-size: 22px;
+    margin: 46px 0 4px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px;
+  }
+  h3{ font-size: 17px; margin: 26px 0 6px; color: var(--brass); }
+  p, li{ margin: 10px 0; }
+  ul{ padding-left: 22px; }
+  a{ color: var(--brass); }
+  strong{ color: var(--ink); }
+  .contact{
+    font-size: 19px;
+    padding: 20px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    margin: 22px 0 8px;
+  }
+  .contact strong{ display: block; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brass); margin-bottom: 6px; }
+  footer{
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="stars" aria-hidden="true"></div>
+<style>
+  .plans{ display: grid; gap: 14px; margin: 26px 0 8px; }
+  .plan{
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+    padding: 18px 20px; border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--panel);
+  }
+  .plan .name{ font-size: 19px; }
+  .plan .price{ margin-left: auto; font-variant-numeric: tabular-nums; font-size: 19px; }
+  .plan .per{ color: var(--muted); font-size: 15px; }
+  .plan .save{ color: var(--brass); font-size: 14px; letter-spacing: .04em; }
+  button.buy{
+    font-family: inherit; font-size: 17px; font-weight: 600;
+    padding: 13px 22px; border: 1px solid var(--brass); border-radius: 8px;
+    background: var(--brass); color: var(--ground); cursor: pointer;
+  }
+  button.buy:disabled{ opacity: 0.55; cursor: default; }
+  button.plain{
+    font-family: inherit; font-size: 16px; padding: 10px 16px;
+    border: 1px solid var(--rule); border-radius: 8px;
+    background: transparent; color: var(--ink); cursor: pointer;
+  }
+  input[type=email]{
+    font-family: inherit; font-size: 16px; padding: 11px 13px; width: 100%;
+    border: 1px solid var(--rule); border-radius: 8px;
+    background: var(--panel); color: var(--ink);
+  }
+  .field{ display: flex; flex-direction: column; gap: 8px; margin: 18px 0; }
+  .row{ display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .problem, .said{
+    padding: 14px 16px; border: 1px solid var(--brass); border-radius: 8px;
+    background: var(--panel); margin: 18px 0;
+  }
+  .problem[hidden], .said[hidden], [hidden]{ display: none !important; }
+  .note{ color: var(--muted); font-size: 15px; margin-top: 12px; }
+  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+</style>
+<main>
+  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
+  <h1>Opening your readings.</h1>
+
+  <p class="lede" id="state">One moment — unlocking this browser.</p>
+
+  <div class="problem" id="problem" hidden></div>
+
+  <p id="next" hidden><a href="/app/">Go to your charts</a>, and the readings
+  will be open.</p>
+
+  <p class="note" id="againNote" hidden>A link works once. You can always ask
+  for another from <a href="/account/">your account page</a>.</p>
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+  </footer>
+</main>
+<script>
+  // The same fixed field the homepage hero carries, sized to the viewport
+  // rather than one section. Generated once and never animated, so it reads
+  // as a backdrop instead of a distraction.
+  (function () {
+    var field = document.querySelector(".stars");
+    if (!field) return;
+    var html = "";
+    for (var i = 0; i < 90; i++) {
+      html += '<span style="left:' + (Math.random() * 100) +
+              '%;top:' + (Math.random() * 100) +
+              '%;width:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
+              'px;height:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
+              'px;opacity:' + (Math.random() * 0.3 + 0.12).toFixed(2) + '"></span>';
+    }
+    field.innerHTML = html;
+  })();
+</script>
+<script type="module">
+  import { writePass } from "/chart/src/pass.js";
+  const BROKER = "https://astrolabe-gelato-broker.astrolabe-gelato-broker.workers.dev";
+  const state = document.getElementById("state");
+  const problem = document.getElementById("problem");
+  const code = new URLSearchParams(location.search).get("code");
+
+  function failed(message) {
+    state.textContent = "This browser isn't unlocked.";
+    problem.textContent = message; problem.hidden = false;
+    document.getElementById("againNote").hidden = false;
+  }
+
+  if (!code) {
+    failed("This page needs the link from your email — open that link rather than this page on its own.");
+  } else {
+    try {
+      const res = await fetch(`${BROKER}/pass/redeem`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.pass) {
+        failed(body.error ?? "That link has been used already, or it's expired.");
+      } else if (!writePass(body.pass)) {
+        failed("This browser won't let the site store anything, so it can't stay unlocked. A private window does that; an ordinary one should work.");
+      } else {
+        state.textContent = "This browser is unlocked. Your readings are open.";
+        document.getElementById("next").hidden = false;
+        document.getElementById("againNote").hidden = false;
+      }
+    } catch {
+      failed("Couldn't reach the site's server just now. Try the link again in a minute.");
+    }
+  }
+</script>
+</body>
+</html>
