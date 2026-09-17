@@ -47,7 +47,11 @@
     position: fixed; inset: 0; z-index: -1;
     overflow: hidden; pointer-events: none;
   }
-  .stars span{ position: absolute; border-radius: 50%; background: #F3E6C4; }
+  /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
+     cream as 17px body copy does not read as a star, it reads as a full
+     stop dropped into the sentence — worst on the privacy policy, which is
+     the longest read on the site. Pale blue keeps them stars. */
+  .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
 
   *{ box-sizing: border-box; }
   body{
@@ -227,7 +231,7 @@
               '%;top:' + (Math.random() * 100) +
               '%;width:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
               'px;height:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;opacity:' + (Math.random() * 0.5 + 0.25).toFixed(2) + '"></span>';
+              'px;opacity:' + (Math.random() * 0.3 + 0.12).toFixed(2) + '"></span>';
     }
     field.innerHTML = html;
   })();
