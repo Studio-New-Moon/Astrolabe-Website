@@ -342,6 +342,42 @@ for (const z of (Intl.supportedValuesOf ? Intl.supportedValuesOf("timeZone") : [
   const o = document.createElement("option"); o.value = z; o.textContent = z.replace(/_/g, " "); zoneSelect.appendChild(o);
 }
 
+// Pick a birthplace's zone in the list, whatever spelling the browser uses.
+//
+// GeoNames names zones the way the tz database does today: Asia/Kolkata,
+// Europe/Kyiv, America/Argentina/Buenos_Aires. Browsers can still list the
+// same zones under their older names: Chrome's list says Asia/Calcutta,
+// Europe/Kiev, America/Buenos_Aires. Setting a <select> to a value it has no
+// option for fails without a sound, and the chart then casts in whatever
+// zone was left selected, hours out, looking perfectly fine. So match on the
+// zone the browser resolves each name to, not on the spelling.
+//
+// Returns the value now selected, or null if this browser doesn't know the
+// zone under any name, in which case the caller must say so rather than cast.
+const ZONE_RENAMES = {
+  "Europe/Kyiv": "Europe/Kiev", "America/Nuuk": "America/Godthab",
+  "Asia/Yangon": "Asia/Rangoon", "Pacific/Kanton": "Pacific/Enderbury",
+};
+const resolvedZone = (id) => {
+  try { return new Intl.DateTimeFormat("en-US", { timeZone: id }).resolvedOptions().timeZone; }
+  catch { return null; }
+};
+function selectZone(select, id) {
+  const options = [...select.options];
+  if (options.some((o) => o.value === id)) { select.value = id; return id; }
+  const target = resolvedZone(id) ?? resolvedZone(ZONE_RENAMES[id]);
+  if (!target) return null;
+  const match = options.find((o) => o.value === target)
+    ?? options.find((o) => resolvedZone(o.value) === target);
+  if (match) { select.value = match.value; return match.value; }
+  // Known to the browser but missing from its own list: add it rather than lose it.
+  const o = document.createElement("option");
+  o.value = target; o.textContent = target.replace(/_/g, " ");
+  select.appendChild(o);
+  select.value = target;
+  return target;
+}
+
 function setChosen(place) {
   chosenPlace = place;
   $("placeChosen").hidden = !place;
@@ -349,7 +385,11 @@ function setChosen(place) {
     $("placeChosen").textContent = `${place.label ?? place.name} · ${place.timeZoneID.replace(/_/g, " ")}`;
     $("fLat").value = place.latitude;
     $("fLon").value = place.longitude;
-    zoneSelect.value = place.timeZoneID;
+    // The saved place keeps GeoNames' spelling, which casts fine wherever the
+    // browser knows the zone. Where it only knows an older name, keep that
+    // one instead, or casting would throw.
+    const zone = selectZone(zoneSelect, place.timeZoneID);
+    if (zone && !resolvedZone(place.timeZoneID)) chosenPlace = { ...place, timeZoneID: zone };
   }
 }
 
@@ -432,6 +472,13 @@ $("editForm").addEventListener("submit", (e) => {
   const lat = Number($("fLat").value), lon = Number($("fLon").value);
   const hasCoords = $("fLat").value !== "" && $("fLon").value !== "" && Number.isFinite(lat) && Number.isFinite(lon);
   if (!chosenPlace && !hasCoords) return problem("Please choose a place from the list, or enter coordinates.");
+
+  if (chosenPlace && !resolvedZone(chosenPlace.timeZoneID)) {
+    return problem("This browser doesn't recognize that place's time zone. Please use “Enter coordinates instead” and choose the time zone from the list.");
+  }
+  if ((!chosenPlace || $("manual").open) && !resolvedZone(zoneSelect.value)) {
+    return problem("Please choose the time zone where they were born.");
+  }
 
   const place = chosenPlace && !$("manual").open
     ? { name: chosenPlace.label ?? chosenPlace.name, latitude: chosenPlace.latitude, longitude: chosenPlace.longitude, timeZoneID: chosenPlace.timeZoneID }
