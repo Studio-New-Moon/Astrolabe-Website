@@ -1,7 +1,7 @@
 {
   "id": "/chart/",
-  "name": "Follow My Astrolabe",
-  "short_name": "Astrolabe",
+  "name": "Cast a Chart",
+  "short_name": "Cast a Chart",
   "description": "Cast a real birth chart on a working astrolabe. Nothing you type leaves your device.",
   "start_url": "/chart/",
   "scope": "/chart/",
