@@ -12,43 +12,46 @@
 <meta name="apple-mobile-web-app-title" content="Astrolabe">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f7f1e3" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17110a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#090B1C">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
 <style>
   :root{
-    --ground: #f7f1e3;
-    --panel: #eee2c4;
-    --ink: #241a10;
-    --muted: #6c5a3d;
-    --brass: #9c7436;
-    --rule: rgba(156,116,54,0.3);
-    --danger: #a3402a;
+    --night: #090B1C;
+    --ground: #17110a;
+    --panel: #221a10;
+    --ink: #ede0c4;
+    --muted: #a6926c;
+    --brass: #c8993f;
+    --rule: rgba(200,153,63,0.3);
+    --danger: #d4775f;
     /* Aspect tones for the list beside the instrument. The instrument itself
        is always dark brass, so its lines keep their own colours. */
-    --fused: #8a6420;
-    --flow: #3f5a73;
-    --friction: #a3402a;
+    --fused: #e8c87a;
+    --flow: #f3e6c4;
+    --friction: #d4775f;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --ground: #17110a;
-      --panel: #221a10;
-      --ink: #ede0c4;
-      --muted: #a6926c;
-      --brass: #c8993f;
-      --rule: rgba(200,153,63,0.3);
-      --danger: #d4775f;
-      --fused: #e8c87a;
-      --flow: #f3e6c4;
-      --friction: #d4775f;
-    }
+  /* ---------- The night the homepage opens on ----------
+     The hero's ground, its brass glow and its starfield, fixed behind the
+     content so the sky holds still while the page scrolls. The warm --panel
+     plates sit on top of it, which is the point: brass against the sky. */
+  html{ background: var(--night); }
+  body::before{
+    content: "";
+    position: fixed; inset: 0; z-index: -1;
+    background: radial-gradient(ellipse 900px 600px at 50% -10%,
+                                rgba(184,150,63,.14), transparent 60%);
   }
+  .stars{
+    position: fixed; inset: 0; z-index: -1;
+    overflow: hidden; pointer-events: none;
+  }
+  .stars span{ position: absolute; border-radius: 50%; background: #F3E6C4; }
+
   *{ box-sizing: border-box; }
   body{
-    margin: 0; background: var(--ground); color: var(--ink);
+    margin: 0; background: transparent; color: var(--ink);
     font-family: "Spectral", Georgia, "Times New Roman", serif;
     font-size: 17px; line-height: 1.6;
     padding: clamp(22px, 5vw, 54px) 18px 80px;
@@ -126,6 +129,7 @@
 </style>
 </head>
 <body>
+<div class="stars" aria-hidden="true"></div>
 <main>
   <h1 class="wordmark"><a href="/" aria-label="Follow My Astrolabe, home"><span class="wm-follow">Follow My</span>Astrolabe</a></h1>
 
@@ -210,5 +214,23 @@
 </main>
 
 <script type="module" src="/app/src/motion-page.js"></script>
+<script>
+  // The same fixed field the homepage hero carries, sized to the viewport
+  // rather than one section. Generated once and never animated, so it reads
+  // as a backdrop instead of a distraction.
+  (function () {
+    var field = document.querySelector(".stars");
+    if (!field) return;
+    var html = "";
+    for (var i = 0; i < 90; i++) {
+      html += '<span style="left:' + (Math.random() * 100) +
+              '%;top:' + (Math.random() * 100) +
+              '%;width:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
+              'px;height:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
+              'px;opacity:' + (Math.random() * 0.5 + 0.25).toFixed(2) + '"></span>';
+    }
+    field.innerHTML = html;
+  })();
+</script>
 </body>
 </html>

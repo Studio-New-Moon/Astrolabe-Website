@@ -24,11 +24,11 @@
     --shadow: rgba(0,0,0,.55);
   }
   *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth;background:var(--night);}
   section[id]{scroll-margin-top:84px;}
   body{
     margin:0;
-    background:var(--ground);
+    background:transparent;
     color:var(--ink);
     font-family:'Spectral',Georgia,'Times New Roman',serif;
     font-size:17px;
@@ -51,9 +51,9 @@
   .prose{max-width:640px;}
   section{position:relative;}
 
-  /* ---------- Starfield backdrop (hero + footer) ---------- */
+  /* ---------- Starfield backdrop (the whole page) ---------- */
   .stars{
-    position:absolute;inset:0;overflow:hidden;pointer-events:none;
+    position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
   }
   .stars span{
     position:absolute;width:2px;height:2px;border-radius:50%;
@@ -63,7 +63,7 @@
   /* ---------- Nav ---------- */
   header.nav{
     position:sticky;top:0;z-index:20;
-    background:linear-gradient(var(--ground) 65%, transparent);
+    background:linear-gradient(var(--night) 65%, transparent);
     backdrop-filter:blur(6px);
   }
   .nav-inner{
@@ -95,8 +95,7 @@
   /* ---------- Hero ---------- */
   .hero{
     background:
-      radial-gradient(ellipse 900px 600px at 50% -10%, rgba(184,150,63,.14), transparent 60%),
-      var(--night);
+      radial-gradient(ellipse 900px 600px at 50% -10%, rgba(184,150,63,.14), transparent 60%);
     padding:96px 0 120px;
     text-align:center;
     border-bottom:1px solid var(--panel-line);
@@ -274,7 +273,7 @@
 
   /* ---------- Footer ---------- */
   footer{
-    background:var(--night);padding:80px 0 40px;
+    padding:80px 0 40px;
     border-top:1px solid var(--panel-line);
   }
   .footer-top{
@@ -344,6 +343,7 @@
 </style>
 </head>
 <body>
+<div class="stars" aria-hidden="true"></div>
 
 <header class="nav">
   <div class="nav-inner">
@@ -359,7 +359,6 @@
 </header>
 
 <section class="hero" id="top">
-  <div class="stars" aria-hidden="true"></div>
   <div class="wrap">
     <!-- The app's own rendered wordmark rather than a CSS/SVG redraw,
          which after two attempts still didn't read as the same mark.
@@ -562,12 +561,12 @@
 </footer>
 
 <script>
-  // A small, fixed field of stars behind the hero — generated once, not
-  // animated, so it reads as a backdrop rather than a distraction.
+  // A small, fixed field of stars behind the whole page — generated once,
+  // not animated, so it reads as a backdrop rather than a distraction.
   (function () {
-    var field = document.querySelector('.hero .stars');
+    var field = document.querySelector('.stars');
     if (!field) return;
-    var count = 60;
+    var count = 90;
     var html = '';
     for (var i = 0; i < count; i++) {
       var x = Math.random() * 100;
