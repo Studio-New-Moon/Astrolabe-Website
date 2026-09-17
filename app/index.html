@@ -92,6 +92,31 @@
      on the app's ink ground in both light and dark. */
   .wheel canvas{ display: block; width: 100%; aspect-ratio: 1; border-radius: 12px;
                  border: 1px solid var(--rule); background: #14100A; }
+
+  /* ---------- readings ---------- */
+  .readings{ margin-top: 34px; border-top: 1px solid var(--rule); padding-top: 18px; }
+  .readings[hidden]{ display: none !important; }
+  .readingsHead{ display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 18px; }
+  .readingsHead h3{ margin: 0; }
+  .periods{ display: flex; flex-wrap: wrap; gap: 6px; }
+  .periods button{
+    font: inherit; font-size: 13px; letter-spacing: .04em; padding: 5px 12px; cursor: pointer;
+    color: var(--muted); background: transparent; border: 1px solid var(--rule); border-radius: 999px;
+  }
+  .periods button[aria-selected="true"]{ color: var(--ground); background: var(--brass); border-color: var(--brass); }
+  .periods button:focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+  .readingsNote{ color: var(--muted); font-size: 15px; margin: 12px 0 0; }
+  .readingsNote[hidden]{ display: none !important; }
+  .areaGrid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+  .area{ background: var(--panel); border-radius: 12px; padding: 16px 18px 18px; }
+  .area .plate{ font-family: "Cinzel", Georgia, serif; font-size: 19px; letter-spacing: .02em; }
+  .area .which{ font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
+  .area .strip{ font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+                margin: 10px 0 0; line-height: 1.5; }
+  .area .instruction{ font-size: 17px; margin: 8px 0 0; }
+  .area .detail{ color: var(--muted); font-size: 15.5px; margin: 6px 0 0; }
+  .area .clause{ font-size: 15px; font-style: italic; margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--rule); }
+  .area.waiting{ opacity: .55; }
   table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
   th{ text-align: left; font-weight: 600; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 0 6px; }
   td{ padding: 5px 0; border-top: 1px solid var(--rule); }
@@ -260,6 +285,18 @@
           <tbody id="anglesBody"></tbody></table>
       </div>
     </div>
+
+    <!-- The readings, composed by the app's own Swift on the reading server.
+         It is sent this chart's positions and nothing else — no name, no birth
+         date, time or place. See app/src/readings.js. -->
+    <section class="readings" id="readings" hidden>
+      <div class="readingsHead">
+        <h3 id="readingsHeading">Readings</h3>
+        <div class="periods" role="tablist" aria-labelledby="readingsHeading" id="periods"></div>
+      </div>
+      <p class="readingsNote" id="readingsNote" hidden></p>
+      <div class="areaGrid" id="areaGrid"></div>
+    </section>
   </section>
 
   <footer>
@@ -277,6 +314,7 @@ import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } 
 import { mountInstrument } from "../chart/src/instrument-view.js";
 import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId, selectProfile, requestPersistentStorage } from "./src/profiles.js";
 import { loadPlaces, searchPlaces } from "../chart/src/places.js";
+import { fetchReadings } from "./src/readings.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -324,6 +362,77 @@ function cast(profile) {
   return { jd, angles, asc, bodies, points, lat };
 }
 
+// ---------- readings ----------
+const PERIODS = ["daily", "weekly", "monthly", "yearly"];
+let shownPeriod = "daily";
+let readings = null;          // the last answer from the reading server
+let readingsFor = null;       // the profile it was asked for
+let inFlight = null;          // so a fast switch between people cannot land twice
+
+function periodButtons() {
+  $("periods").innerHTML = PERIODS.map((p) =>
+    `<button type="button" role="tab" data-period="${p}" aria-selected="${p === shownPeriod}">${title(p)}</button>`
+  ).join("");
+}
+
+function note(message) {
+  const el = $("readingsNote");
+  el.textContent = message ?? "";
+  el.hidden = !message;
+}
+
+function drawReadings() {
+  const grid = $("areaGrid");
+  if (!readings) { grid.innerHTML = ""; return; }
+  const areas = readings.areas ?? [];
+  grid.innerHTML = areas.map((area) => {
+    const h = (readings.horoscopes ?? []).find((x) => x.area === area.area && x.period === shownPeriod);
+    const lines = [
+      `<p class="which">${esc(title(area.area))}</p>`,
+      `<p class="plate">${esc(area.nameplate)}</p>`,
+    ];
+    if (h) {
+      lines.push(`<p class="strip">${esc(h.stripLine)}</p>`);
+      lines.push(`<p class="instruction">${esc(h.instruction)}</p>`);
+      lines.push(`<p class="detail">${esc(h.detail)}</p>`);
+      if (h.clause) lines.push(`<p class="clause">${esc(h.clause)}</p>`);
+    }
+    return `<article class="area">${lines.join("")}</article>`;
+  }).join("");
+}
+
+async function loadReadings(profile) {
+  if (readingsFor === profile.id && readings) { drawReadings(); return; }
+  readings = null;
+  readingsFor = profile.id;
+  $("readings").hidden = false;
+  periodButtons();
+  $("areaGrid").innerHTML = "";
+  note("Composing this chart's readings…");
+
+  inFlight?.abort();
+  const controller = new AbortController();
+  inFlight = controller;
+  try {
+    const answer = await fetchReadings(profile, { signal: controller.signal });
+    if (controller !== inFlight) return;     // a newer request is on its way
+    if (!answer) { note("Readings need an exact birth time."); return; }
+    readings = answer;
+    note(null);
+    drawReadings();
+  } catch (e) {
+    if (controller === inFlight) note(e.message);
+  }
+}
+
+$("periods").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-period]");
+  if (!button) return;
+  shownPeriod = button.dataset.period;
+  periodButtons();
+  drawReadings();
+});
+
 function showChart(profile) {
   const c = cast(profile);
   $("chartName").textContent = profile.name;
@@ -342,6 +451,7 @@ function showChart(profile) {
 
   $("chartView").hidden = false;
   $("empty").hidden = true;
+  loadReadings(profile);
   // Drawn once the view is showing, because a hidden canvas has no width.
   showWheel(
     { ascendantLongitude: c.asc, midheavenLongitude: c.angles[1].longitude, latitude: c.lat, bodies: c.bodies, points: c.points },

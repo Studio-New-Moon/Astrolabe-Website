@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. cache.addAll fails the whole install if any
 // entry 404s, so a renamed module has to be renamed here too.
 
-const CACHE = "astrolabe-app-v4";
+const CACHE = "astrolabe-app-v5";
 
 // Each installable page clears only caches with its own prefix. Caches are
 // shared across the site, and deleting everything that isn't ours would wipe
@@ -28,7 +28,9 @@ const SHELL = [
   "/app/motion/",
   "/app/src/motion-page.js",
   "/app/src/motion.js",
+  "/app/src/positions.js",
   "/app/src/profiles.js",
+  "/app/src/readings.js",
   "/chart/src/angles.js",
   "/chart/src/chiron-data.js",
   "/chart/src/ephemeris.js",
