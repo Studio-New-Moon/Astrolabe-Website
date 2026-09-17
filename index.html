@@ -115,9 +115,8 @@
     box-shadow:0 0 8px var(--brass-bright);}
   .hero-note{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
     max-width:36ch;text-wrap:balance;}
-  /* The one thing on the page a visitor can use today, so it's filled
-     brass rather than another outlined pill: the Coming Soon badge below
-     it looks the same as a button and isn't one. */
+  /* The first thing a visitor can do, so it's filled brass; the print
+     shop below it is the second, so it keeps the outlined pill. */
   .chart-link{
     display:inline-flex;align-items:center;
     font-family:'Cinzel',Georgia,serif;font-weight:600;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
@@ -130,6 +129,9 @@
   .chart-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
   .chart-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
   .chart-note{margin:-6px 0 18px;}
+  a.shop-link{text-decoration:none;transition:transform .2s ease, filter .2s ease;}
+  a.shop-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
+  a.shop-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
 
   /* ---------- App Store call to action ---------- */
   /* Both states are in the markup at once — the pre-launch pill and the
@@ -366,12 +368,13 @@
     <div class="hero-cta">
       <a class="chart-link" href="/chart/">Cast Your Chart</a>
       <span class="hero-note chart-note">Free, right here in your browser</span>
-      <span class="badge cta-soon"><span class="dot"></span> Coming Soon to the App Store</span>
+      <a class="badge shop-link" href="/prints/">Shop the Prints</a>
+      <span class="hero-note">Sign art, printed to order and shipped to you</span>
       <a class="store-link cta-live" href="https://apps.apple.com/app/follow-my-astrolabe/idAPPLE_ID">
         <img class="store-badge" src="assets/app-store-badge.svg" alt="Download on the App Store"
              width="162" height="54">
       </a>
-      <span class="hero-note">iPhone &amp; iPad &middot; Free, with an optional subscription</span>
+      <span class="hero-note cta-live">iPhone &amp; iPad &middot; Free, with an optional subscription</span>
     </div>
   </div>
 </section>
@@ -530,7 +533,7 @@
       </div>
     </div>
     <div class="cta">
-      <span class="badge cta-soon"><span class="dot"></span> Coming Soon to the App Store</span>
+      <a class="badge shop-link" href="/prints/">Shop the Prints</a>
       <a class="store-link cta-live" href="https://apps.apple.com/app/follow-my-astrolabe/idAPPLE_ID">
         <img class="store-badge" src="assets/app-store-badge.svg" alt="Download on the App Store"
              width="162" height="54">
