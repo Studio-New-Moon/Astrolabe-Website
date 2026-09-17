@@ -88,7 +88,8 @@
   th{ text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
       text-transform: uppercase; color: var(--muted); padding: 0 0 7px; }
   td{ padding: 5px 0; border-top: 1px solid var(--rule); }
-  td.body{ width: 38%; }
+  td.body{ width: 38%; padding-right: 14px; }
+  th:first-child{ padding-right: 14px; }
   td.pos{ font-variant-numeric: tabular-nums; }
   td .rx{ color: var(--brass); font-size: 13px; }
 
@@ -120,18 +121,17 @@
   <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
   <h1>Cast a Chart.</h1>
 
-  <p class="lede">The same instrument the app draws — a real astrolabe, with the
-  houses cut into the fixed limb, the sky over your own latitude on the plate
-  beneath, and the zodiac turning on the rete above.</p>
+  <p class="lede">A real astrolabe, with the houses cut into the fixed limb, the
+  sky over your own latitude on the plate beneath, and the zodiac turning on the
+  rete above.</p>
 
   <p class="quiet"><strong>Nothing you type here leaves your device.</strong> The
-  chart is worked out in this page, by your own browser. There is no server to
+  chart is worked out right here in your own browser, and there's no server to
   send it to.</p>
 
-  <p class="quiet">It opens on <strong>Alex Rivera</strong> &mdash; an invented
-  person, 16 March 1990, 2:15 PM, New York &mdash; so the page shows what it
-  does before you type anything. The defaults here are fictional on purpose:
-  a real birth time, to the minute, with a place, identifies someone.</p>
+  <p class="quiet">The chart below is for <strong>Alex Rivera</strong>, an invented
+  person born 16 March 1990 at 2:15 PM in New York. Put in your own
+  birth details to cast yours.</p>
 
   <div class="install" id="installIos" hidden>
     <p>Keep it on your Home Screen: tap <strong>Share</strong>, then
@@ -157,7 +157,7 @@
         <label class="field">Time
           <input type="time" id="time" value="14:15" required>
         </label>
-        <label class="field">Time zone there, then
+        <label class="field">Time zone where you were born
           <select id="zone"></select>
         </label>
       </div>
@@ -173,9 +173,9 @@
           <input type="number" id="lon" value="-74.0060" step="0.0001" min="-180" max="180" required>
         </label>
       </div>
-      <p class="quiet" style="margin-top:10px">Coordinates rather than a place name,
-      for now. Looking a town up means asking someone else's service where it is,
-      which is a cost and a dependency this page does not have yet.</p>
+      <p class="quiet" style="margin-top:10px">Don't know them? Open a map app,
+      press and hold on the town where you were born, and it'll show you both
+      numbers. South and west are negative.</p>
     </fieldset>
 
     <button class="cast" type="submit">Cast it</button>
@@ -248,7 +248,7 @@ function cast() {
   const zone = zoneSelect.value;
 
   if (!y || !Number.isFinite(lat) || !Number.isFinite(lon)) {
-    problem("Please fill in the date, the time and both coordinates.");
+    problem("Please fill in the date, the time, and both coordinates.");
     return;
   }
 
