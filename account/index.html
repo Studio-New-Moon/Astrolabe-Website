@@ -169,6 +169,16 @@
     stops this page telling a stranger who subscribes.</p>
   </section>
 
+  <section id="manage" hidden>
+    <h2>Your subscription</h2>
+    <p>Cancelling, and changing the card it's paid with, both happen on
+    Stripe's own page. It opens with your subscription already on it, and
+    there's nothing to sign in to.</p>
+    <div class="row">
+      <button class="buy" type="button" id="portal">Manage your subscription</button>
+    </div>
+  </section>
+
   <section id="signOut" hidden>
     <h2>This browser</h2>
     <p>Signing out forgets the pass here. It doesn't cancel anything, and you
@@ -179,9 +189,13 @@
   </section>
 
   <h2>Cancelling</h2>
-  <p>Write to <a href="mailto:support@followmyastrolabe.com">support@followmyastrolabe.com</a>
-  and we'll cancel it. Your readings stay open to the end of the period you've
-  paid for, and we'll delete your record straight away if you'd like.</p>
+  <p>Use the button above, on any browser this subscription has open. Your
+  readings stay open to the end of the period you've paid for, and nothing is
+  charged after that.</p>
+  <p>If you can't get a link to this page, write to
+  <a href="mailto:support@followmyastrolabe.com">support@followmyastrolabe.com</a>
+  and we'll cancel it for you. Either way, ask and we'll delete your record
+  straight away rather than waiting for its timer.</p>
 
   <p class="note">Not subscribed yet? <a href="/plans/">See the plans</a>.</p>
   <footer>
@@ -219,6 +233,9 @@
   function show(status) {
     const unlocked = status.active;
     document.getElementById("signOut").hidden = !unlocked;
+    // Stripe can only be asked about a subscription we can still name, and
+    // an unverified pass means we couldn't reach the server at all.
+    document.getElementById("manage").hidden = !unlocked || status.unverified;
     document.getElementById("linkForm").hidden = unlocked;
     if (!unlocked) {
       state.textContent = "This browser doesn't have your readings open.";
@@ -238,6 +255,32 @@
     said.textContent = "Signed out of this browser.";
     said.hidden = false;
     show({ active: false });
+  });
+
+  document.getElementById("portal").addEventListener("click", async () => {
+    const button = document.getElementById("portal");
+    problem.hidden = true;
+    const pass = readPass();
+    if (!pass) {
+      problem.textContent = "This browser isn't unlocked. Ask for a link first.";
+      problem.hidden = false;
+      return;
+    }
+    button.disabled = true; button.textContent = "Opening Stripe…";
+    try {
+      const res = await fetch(`${BROKER}/portal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pass }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.url) { window.location.href = body.url; return; }
+      problem.textContent = body.error ?? "Couldn't open your subscription page just now.";
+    } catch {
+      problem.textContent = "Couldn't reach the site's server just now. Try again in a minute.";
+    }
+    problem.hidden = false;
+    button.disabled = false; button.textContent = "Manage your subscription";
   });
 
   document.getElementById("send").addEventListener("click", async () => {
