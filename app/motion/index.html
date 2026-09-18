@@ -29,6 +29,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600&display=swap">
 <style>
   :root{
+    --bright: #E8C87A;
+    --resist: #F3E6C4;
+    --glow: rgba(184,150,63,.14);
+    --stars: 1;
+    --instrument: #14100A;
+    /* Type, set by the Appearance panel (chart/src/appearance.js). */
+    --font-display: "Cinzel", Georgia, serif;
+    --font-body: "Spectral", Georgia, "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --night: #090B1C;
     --ground: #17110a;
     --panel: #221a10;
@@ -52,10 +61,10 @@
     content: "";
     position: fixed; inset: 0; z-index: -1;
     background: radial-gradient(ellipse 900px 600px at 50% -10%,
-                                rgba(184,150,63,.14), transparent 60%);
+                                var(--glow), transparent 60%);
   }
   .stars{
-    position: fixed; inset: 0; z-index: -1;
+    position: fixed; inset: 0; z-index: -1; opacity: var(--stars);
     overflow: hidden; pointer-events: none;
   }
   /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
@@ -64,15 +73,16 @@
      the longest read on the site. Pale blue keeps them stars. */
   .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
 
+  html{ font-synthesis-weight: none; }
   *{ box-sizing: border-box; }
   body{
     margin: 0; background: transparent; color: var(--ink);
-    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-family: var(--font-body);
     font-size: 17px; line-height: 1.6;
     padding: clamp(22px, 5vw, 54px) 18px 80px;
   }
   main{ max-width: 980px; margin: 0 auto; }
-  h1, h2, h3{ font-family: "Cinzel", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
+  h1, h2, h3{ font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
   h1{ font-size: clamp(26px, 4.4vw, 38px); }
   /* The app's own wordmark, as on /app/. */
   h1.wordmark{ font-family: "Metamorphous", Georgia, serif; font-weight: 400; text-transform: uppercase;
@@ -81,7 +91,7 @@
                  display: inline-flex; flex-direction: column; align-items: center; line-height: 1.05; }
   h1.wordmark .wm-follow{ font-size: .375em; letter-spacing: .27em; padding-left: .27em; margin-bottom: .12em; }
   h2{ font-size: clamp(22px, 3.4vw, 30px); }
-  .for{ font-family: "Cinzel", Georgia, serif; font-size: clamp(17px, 2.4vw, 20px); color: var(--muted); margin: 2px 0 0; }
+  .for{ font-family: var(--font-display); font-size: clamp(17px, 2.4vw, 20px); color: var(--muted); margin: 2px 0 0; }
   .eyebrow{ font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
   .eyebrow a{ color: var(--brass); }
   .quiet{ color: var(--muted); font-size: 15.5px; max-width: 64ch; margin: 8px 0 0; }
@@ -107,7 +117,7 @@
   .seg button[aria-pressed="true"], .seg button[aria-selected="true"]{
     background: var(--brass); border-color: var(--brass); color: var(--ground); font-weight: 600; }
   .tabs{ margin: 22px 0 0; }
-  .tabs button{ font-family: "Cinzel", Georgia, serif; font-size: 15.5px; padding: 8px 20px; }
+  .tabs button{ font-family: var(--font-display); font-size: 15.5px; padding: 8px 20px; }
   .controls{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .controls button{ font-size: 15.5px; padding: 8px 15px; border-radius: 8px;
                     border: 1px solid var(--rule); background: var(--panel); color: var(--ink); }
@@ -119,7 +129,7 @@
   @media (max-width: 780px){ .result{ grid-template-columns: 1fr; } }
   .stage{ position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 1px solid var(--rule); }
   .stage svg{ position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-  .date{ font-family: "Cinzel", Georgia, serif; font-size: 22px; letter-spacing: .03em; margin: 0;
+  .date{ font-family: var(--font-display); font-size: 22px; letter-spacing: .03em; margin: 0;
          font-variant-numeric: tabular-nums; }
   .note{ color: var(--brass); font-style: italic; margin: 2px 0 0; min-height: 1.6em; }
   .label{ font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }

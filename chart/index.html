@@ -29,6 +29,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
 <style>
   :root{
+    --bright: #E8C87A;
+    --resist: #F3E6C4;
+    --glow: rgba(184,150,63,.14);
+    --stars: 1;
+    --instrument: #14100A;
+    /* Type, set by the Appearance panel (chart/src/appearance.js). */
+    --font-display: "Cinzel", Georgia, serif;
+    --font-body: "Spectral", Georgia, "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --night: #090B1C;
     --ground: #17110a;
     --panel: #221a10;
@@ -46,10 +55,10 @@
     content: "";
     position: fixed; inset: 0; z-index: -1;
     background: radial-gradient(ellipse 900px 600px at 50% -10%,
-                                rgba(184,150,63,.14), transparent 60%);
+                                var(--glow), transparent 60%);
   }
   .stars{
-    position: fixed; inset: 0; z-index: -1;
+    position: fixed; inset: 0; z-index: -1; opacity: var(--stars);
     overflow: hidden; pointer-events: none;
   }
   /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
@@ -58,18 +67,19 @@
      the longest read on the site. Pale blue keeps them stars. */
   .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
 
+  html{ font-synthesis-weight: none; }
   *{ box-sizing: border-box; }
   body{
     margin: 0;
     background: transparent;
     color: var(--ink);
-    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-family: var(--font-body);
     font-size: 17px;
     line-height: 1.65;
     padding: clamp(28px, 6vw, 64px) 20px 90px;
   }
   main{ max-width: 960px; margin: 0 auto; }
-  h1, h2{ font-family: "Cinzel", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
+  h1, h2{ font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
   h1{ font-size: clamp(27px, 4.6vw, 40px); margin-bottom: 10px; }
   h2{ font-size: 21px; margin: 38px 0 12px; }
   .eyebrow{
@@ -93,7 +103,7 @@
     background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
     padding: 9px 11px; min-width: 0;
   }
-  input:invalid{ border-color: #b4472f; }
+  input:invalid{ border-color: var(--danger); }
   button.cast{
     font-family: inherit; font-size: 17px; font-weight: 600;
     padding: 13px 24px; border: 1px solid var(--brass); border-radius: 8px;
@@ -105,10 +115,10 @@
   @media (max-width: 760px){ .result{ grid-template-columns: 1fr; } }
   .wheel{ width: 100%; }
   .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
-  /* The instrument is Brass & Ink whatever the page's own scheme, so it sits
-     on the app's ink ground in both light and dark. */
+  /* The instrument sits on its scheme's own ground, which the Appearance
+     panel sets; Brass & Ink's is the app's ink. */
   .wheel canvas{ display: block; width: 100%; aspect-ratio: 1; border-radius: 12px;
-                 border: 1px solid var(--rule); background: #14100A; }
+                 border: 1px solid var(--rule); background: var(--instrument); }
 
   table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
   th{ text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
@@ -256,6 +266,8 @@
 </main>
 
 <script type="module">
+import { mountAppearance } from "./src/appearance-panel.js";
+mountAppearance();
 import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "./src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "./src/points.js";

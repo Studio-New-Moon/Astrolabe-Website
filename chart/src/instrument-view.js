@@ -12,6 +12,7 @@
 // again lets it go.
 
 import { drawInstrument } from "./instrument.js";
+import { resolve, EVENT } from "./appearance.js";
 import { wheelSVG } from "./wheel.js";
 import { SIGNS, signIndex, normalizedDegrees, wholeSignHouse } from "./angles.js";
 import { POINT_NAMES } from "./points.js";
@@ -209,6 +210,7 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
     drawnWidth = width;
     try {
       hits = drawInstrument(canvas, chart, {
+        ...resolve().instrument,
         size: width, dpr: window.devicePixelRatio || 1, keepStyleSize: true,
         selectedHouse: selected.house, selectedPlanet: selected.planet,
       });
@@ -226,6 +228,14 @@ export function mountInstrument(container, { onSelect = () => {} } = {}) {
     document.fonts.load("700 18px Cinzel"),
     document.fonts.load("400 11px Spectral"),
   ]).then(draw).catch(() => {});
+
+  // A new scheme, metal, finish or type set from the Appearance panel. The
+  // canvas has no CSS to inherit, so it is struck again with the new choice,
+  // once whatever faces that choice asks for have arrived.
+  window.addEventListener(EVENT, () => {
+    if (!chart || !canvas) return;
+    document.fonts.ready.then(draw).catch(draw);
+  });
 
   return {
     show(nextChart, nextLabel) {

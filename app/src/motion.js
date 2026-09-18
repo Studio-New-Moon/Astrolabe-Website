@@ -42,10 +42,18 @@ const speedRank = (key) => { const i = SPEED_ORDER.indexOf(key); return i < 0 ? 
 // How long a badge takes to ease most of the way into a new lane, in seconds.
 const LANE_EASE_S = 0.14;
 
-const INK = {
+// Brass & Ink, the instrument's own colours. The Appearance panel can re-tint
+// it (see `setInk`); anything it leaves out falls back to these.
+const INK_DEFAULT = {
   ground: "#14100A", limb: "#1B1206", line: "#3A2C12", brass: "#B8963F",
   bright: "#E8C87A", resist: "#F3E6C4", muted: "#9A8A66", band: "#2A200F",
+  mater: ["#4A3A18", "#2B2110", "#150F07"], plate: ["#141A33", "#06080F"],
+  disc: "#241A10", rx: "#D4775F",
+  // The house numerals and cardinal ticks sit on the metal rim, not the page,
+  // so they take the metal's own highlight whatever the scheme's ground.
+  numeral: "#E8C87A",
 };
+let INK = { ...INK_DEFAULT };
 const SIGN_GLYPHS = ["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"].map((c) => c + TEXT);
 const ROMAN = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
 const SERIF = "Georgia, 'Times New Roman', serif";
@@ -102,13 +110,18 @@ export function createMotionWheel(svg) {
   set(svg, { viewBox: `0 0 ${VIEW} ${VIEW}` });
   svg.replaceChildren();
   const defs = el("defs", {}, svg);
-  defs.innerHTML = `
+  const gradients = el("g", {}, defs);
+  function writeGradients() {
+    const [m0, m1, m2] = INK.mater, [p0, p1] = INK.plate;
+    gradients.innerHTML = `
     <radialGradient id="mwMater" cx="38%" cy="32%" r="78%">
-      <stop offset="0%" stop-color="#4A3A18"/><stop offset="55%" stop-color="#2B2110"/><stop offset="100%" stop-color="#150F07"/>
+      <stop offset="0%" stop-color="${m0}"/><stop offset="55%" stop-color="${m1}"/><stop offset="100%" stop-color="${m2}"/>
     </radialGradient>
     <radialGradient id="mwPlate" cx="42%" cy="34%" r="80%">
-      <stop offset="0%" stop-color="#141A33"/><stop offset="100%" stop-color="#06080F"/>
+      <stop offset="0%" stop-color="${p0}"/><stop offset="100%" stop-color="${p1}"/>
     </radialGradient>`;
+  }
+  writeGradients();
   const clip = el("clipPath", { id: "mwClip" }, defs);
   const clipCircle = el("circle", { cx: C, cy: C, r: 1 }, clip);
 
@@ -190,9 +203,9 @@ export function createMotionWheel(svg) {
       const cardinal = h % 3 === 1;
       const [x1, y1] = polar(C, C, g.limbInner, houseStart(h));
       const [x2, y2] = polar(C, C, g.mater, houseStart(h));
-      el("line", { x1, y1, x2, y2, stroke: cardinal ? INK.bright : INK.brass, "stroke-width": g.line * (cardinal ? 2.4 : 1.1) }, rim);
+      el("line", { x1, y1, x2, y2, stroke: cardinal ? INK.numeral : INK.brass, "stroke-width": g.line * (cardinal ? 2.4 : 1.1) }, rim);
       const [tx, ty] = polar(C, C, numeralR, houseMid(h));
-      const t = el("text", { x: tx, y: ty, fill: INK.bright, "font-size": g.numeral, "font-family": "Cinzel, Georgia, serif",
+      const t = el("text", { x: tx, y: ty, fill: INK.numeral, "font-size": g.numeral, "font-family": "Cinzel, Georgia, serif",
         "text-anchor": "middle", "dominant-baseline": "central", opacity: 0.85 }, rim);
       t.textContent = ROMAN[h - 1];
     }
@@ -271,10 +284,10 @@ export function createMotionWheel(svg) {
       leader: el("line", { stroke: INK.bright, "stroke-opacity": 0.55 }, leaders),
       group: el("g", {}, skyLayer),
     };
-    m.disc = el("circle", { fill: "#241A10", stroke: minor ? INK.brass : INK.bright }, m.group);
+    m.disc = el("circle", { fill: INK.disc, stroke: minor ? INK.brass : INK.bright }, m.group);
     m.text = el("text", { fill: INK.resist, "font-family": SERIF, "text-anchor": "middle", "dominant-baseline": "central" }, m.group);
     m.text.textContent = glyph + TEXT;
-    m.rx = el("text", { fill: "#D4775F", "font-family": SERIF, "text-anchor": "middle", "dominant-baseline": "central" }, m.group);
+    m.rx = el("text", { fill: INK.rx, "font-family": SERIF, "text-anchor": "middle", "dominant-baseline": "central" }, m.group);
     m.rx.textContent = "℞";
     pools.sky.set(key, m);
     sizeSky(m);
@@ -350,6 +363,30 @@ export function createMotionWheel(svg) {
       latitude = lat;
       g = measure(stagePx);
       buildStatic();
+    },
+
+    /**
+     * Re-tint the instrument: a scheme and metal from the Appearance panel,
+     * or `{}` for Brass & Ink. The fixed parts are rebuilt; the pooled
+     * badges already on the wheel are recoloured where they stand, since
+     * they are reused rather than made again.
+     */
+    setInk(ink = {}) {
+      INK = { ...INK_DEFAULT, ...ink };
+      writeGradients();
+      if (g) buildStatic();
+      for (const m of pools.natal.values()) {
+        set(m.stud, { fill: INK.resist });
+        set(m.leader, { stroke: INK.brass });
+        set(m.text, { fill: INK.resist });
+      }
+      for (const m of pools.sky.values()) {
+        set(m.stud, { fill: INK.bright });
+        set(m.leader, { stroke: INK.bright });
+        set(m.disc, { fill: INK.disc, stroke: m.minor ? INK.brass : INK.bright });
+        set(m.text, { fill: INK.resist });
+        set(m.rx, { fill: INK.rx });
+      }
     },
 
     /**

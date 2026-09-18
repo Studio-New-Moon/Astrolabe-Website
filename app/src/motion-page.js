@@ -17,6 +17,8 @@ import { julianDay, julianDayFromLocal, anglesFor } from "../../chart/src/angles
 import { longitudeOf, isRetrograde, PLANETS } from "../../chart/src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_GLYPHS } from "../../chart/src/points.js";
 import { createMotionWheel } from "./motion.js";
+import { mountAppearance } from "../../chart/src/appearance-panel.js";
+import { resolve, EVENT } from "../../chart/src/appearance.js";
 import { listProfiles, selectedProfileId, selectProfile } from "./profiles.js";
 
 const $ = (id) => document.getElementById(id);
@@ -140,13 +142,24 @@ function show(profile, people) {
 // ---- drawing ----
 const wheel = createMotionWheel($("motion"));
 
+// The Appearance panel: the page's tokens, the instrument's colours and the
+// aspect lines drawn on it all follow the choice, and follow it live.
+mountAppearance();
+let aspectInk = resolve().aspects;
+wheel.setInk(resolve().motion);
+window.addEventListener(EVENT, (e) => {
+  aspectInk = e.detail.aspects;
+  wheel.setInk(e.detail.motion);
+  draw();   // redraw now, or a paused wheel keeps the old aspect lines
+});
+
 function drawTransits(jd, listDue) {
   const sky = planetsAt(jd);
   const aspects = [];
   for (const s of sky) for (const n of birth.natal) {
     const m = match(s.longitude, n.longitude);
     if (!m) continue;
-    aspects.push({ sky: s.key, natal: n.key, orb: m.orb, kind: m.kind, color: m.kind.color,
+    aspects.push({ sky: s.key, natal: n.key, orb: m.orb, kind: m.kind, color: aspectInk[m.kind.tone] ?? m.kind.color,
       closeness: 1 - m.orb / m.kind.orb, conjunction: m.kind.angle === 0 });
   }
   wheel.draw({ ascendant: birth.asc, midheaven: birth.mc, sky, natal: birth.natal, aspects });

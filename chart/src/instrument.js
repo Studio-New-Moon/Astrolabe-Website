@@ -69,8 +69,14 @@ const BRASS_AND_INK = {
   plate: "#150F07", engraving: "#6F6A52", horizonLine: "#8FB0A8",
 };
 
-/** The app's `wearAmount` at rest: fine swirl marks, no oxide. */
-const WEAR = 0.16;
+/**
+ * The app's `Theme.wearAmount` and `patinaAmount`. Polished is not zero wear:
+ * a handled instrument carries fine swirl marks, and a surface with none reads
+ * as plastic. Polished IS zero oxide — the app tried a trace of it at rest and
+ * it read as patina showing through on the one state that promises none.
+ */
+const WEAR_POLISHED = 0.16;
+const WEAR_TARNISHED = 1.0;
 
 // ---------------------------------------------------------------------------
 // Colour and gradient helpers.
@@ -194,6 +200,9 @@ export function drawInstrument(canvas, chart, options = {}) {
   const dpr = options.dpr ?? (window.devicePixelRatio || 1);
   const m = METALS[options.metal ?? "brass"] ?? METALS.brass;
   const pal = { ...BRASS_AND_INK, ...(options.palette ?? {}) };
+  const tarnished = options.tarnished === true;
+  const wear = tarnished ? WEAR_TARNISHED : WEAR_POLISHED;
+  const patinaAmount = tarnished ? 1 : 0;
   const font = {
     body: options.bodyFont ?? "Spectral, Georgia, serif",
     display: options.displayFont ?? "Cinzel, Georgia, serif",
@@ -248,6 +257,44 @@ export function drawInstrument(canvas, chart, options = {}) {
     if (close) p.closePath();
     return p;
   };
+
+  /**
+   * `WearMarks.drawColony`: one colony of spreading oxide. A nucleus puts out
+   * two to five lobes at shrinking radii, each a circle perturbed by a slow
+   * sine for lumpiness and a fast one for a ragged edge, with a darker offset
+   * core so the patch has depth, and dark creep at the rim now and then.
+   * Draws from `rng` in the app's order, so a seed gives the app's growth.
+   */
+  function drawColony(c, rng, cx0, cy0, spread, heavy) {
+    const lobes = 2 + Math.floor(rng.next() * 4);
+    for (let lobe = 0; lobe < lobes; lobe++) {
+      const drift = spread * 0.55 * lobe / Math.max(lobes - 1, 1);
+      const dir = rng.next() * Math.PI * 2;
+      const cx = cx0 + Math.cos(dir) * drift;
+      const cy = cy0 + Math.sin(dir) * drift;
+      const base = spread * (0.85 - 0.5 * lobe / lobes) * (0.5 + rng.next() * 0.9);
+      if (!(base > 0.6)) continue;
+      const wobbleSlow = 0.22 + rng.next() * 0.30;
+      const wobbleFast = 0.06 + rng.next() * 0.14;
+      const phase1 = rng.next() * Math.PI * 2;
+      const phase2 = rng.next() * Math.PI * 2;
+      const freqFast = 5 + Math.round(rng.next() * 5);
+      const outline = (ox, oy) => {
+        const pts = [];
+        for (let i = 0; i <= 44; i++) {
+          const t = i / 44 * Math.PI * 2;
+          const r = base * (1 + wobbleSlow * Math.sin(t * 2 + phase1) + wobbleFast * Math.sin(t * freqFast + phase2));
+          pts.push({ x: cx + ox + Math.cos(t) * r, y: cy + oy + Math.sin(t) * r });
+        }
+        return polyPath(pts, true);
+      };
+      const blob = outline(0, 0);
+      const a = (0.05 + rng.next() * 0.11) * (0.35 + heavy);
+      fill(c, blob, solid(rgba(m.patina, a)));
+      fill(c, outline(base * 0.12, base * 0.10), solid(rgba(m.patina, a * 0.75)));
+      if (rng.next() > 0.55) stroke(c, blob, solid(rgba(m.deep, a * 1.2)), 0.5);
+    }
+  }
 
   /**
    * `strokeWire`: a sampled wire whose thickness varies along its run.
@@ -347,16 +394,31 @@ export function drawInstrument(canvas, chart, options = {}) {
 
     // wear on the limb: swirl from polishing
     const rng = new SeededRandom(90210);
-    const marks = 14 + Math.floor(WEAR * 90);
+    const marks = 14 + Math.floor(wear * 90);
     for (let i = 0; i < marks; i++) {
       const a0 = rng.next() * Math.PI * 2;
       const sweep = 0.05 + rng.next() * 0.5;
       const rr = g.limbInner + rng.next() * (g.mater - g.limbInner);
       const arc = new Path2D();
       arc.arc(g.c.x, g.c.y, rr, a0, a0 + sweep, false);
-      const alpha = (0.05 + rng.next() * 0.14) * (0.35 + WEAR);
+      const alpha = (0.05 + rng.next() * 0.14) * (0.35 + wear);
       const tone = rng.next() > 0.5 ? m.deep : m.spec;
       stroke(c, arc, solid(rgba(tone, alpha)), 0.4 + rng.next() * 0.7, { cap: "round" });
+    }
+    if (wear > 0.4) {
+      // Oxide caught against the raised edge where a cloth can't reach: the
+      // same colony every stud tarnishes with, clipped to the disc so a
+      // colony's spread never reaches past the limb onto the page behind it.
+      c.save();
+      c.clip(full);
+      const blooms = Math.floor(wear * 10);
+      for (let i = 0; i < blooms; i++) {
+        const a0 = rng.next() * Math.PI * 2;
+        const rr = g.limbInner + rng.next() * (g.mater - g.limbInner);
+        const spread = g.size * (0.012 + rng.next() * 0.022);
+        drawColony(c, rng, g.c.x + Math.cos(a0) * rr, g.c.y + Math.sin(a0) * rr, spread, wear);
+      }
+      c.restore();
     }
 
     // degree scale, engraved
@@ -1013,16 +1075,37 @@ export function drawInstrument(canvas, chart, options = {}) {
     const disc = circlePath(o, o, d / 2);
 
     fill(sc, disc, conic(spunStops(m, true), o, o, -135));
+    if (patinaAmount > 0) {
+      // oxide gathers in the rim, where a thumb never quite reaches
+      const rimAlpha = (body.retrograde ? 0.55 : 0.24) * patinaAmount;
+      stroke(sc, circlePath(o, o, d * 0.39), radial([[0, rgba(m.patina, 0)], [1, rgba(m.patina, rimAlpha)]], o, o, d * 0.18, d * 0.5), d * 0.22);
+      if (body.retrograde) {
+        // a darker bloom across one side, as though it has sat unturned
+        const bx = o - d / 2 + d * 0.72, by = o - d / 2 + d * 0.74;
+        sc.save();
+        sc.clip(disc);
+        fill(sc, disc, radial([[0, rgba(m.patina, 0.34 * patinaAmount)], [1, rgba(m.patina, 0)]], bx, by, 0, d * 0.55));
+        sc.restore();
+      }
+    }
     stroke(sc, circlePath(o, o, d / 2 - 0.5), linear([[0, "rgba(255,255,255,0.6)"], [1, "rgba(0,0,0,0.45)"]], o, o - d / 2, o, o + d / 2), 1);
 
     // wear under the glyph
     sc.save();
     sc.clip(disc);
-    const heavy = WEAR * (body.retrograde ? 1.25 : 1);
+    const heavy = wear * (body.retrograde ? 1.25 : 1);
     let seed = 7;
     for (const ch of body.name) seed = (seed * 31 + ch.charCodeAt(0)) % 100000;
     const rng = new SeededRandom(seed + 7);
     const x0 = o - d / 2, y0 = o - d / 2;
+    // Oxide colonies come first and only once the metal is really tarnished;
+    // the app gates them the same way so Polished never grows oxide.
+    const colonies = heavy > 0.4 ? 2 + Math.floor(heavy * 5) : 0;
+    for (let i = 0; i < colonies; i++) {
+      const nx = x0 + rng.next() * d, ny = y0 + rng.next() * d;
+      const spread = d * (0.10 + rng.next() * 0.34) * (0.5 + heavy);
+      drawColony(sc, rng, nx, ny, spread, heavy);
+    }
     const strokes = 6 + Math.floor(heavy * 26);
     const grain = rng.next() * Math.PI;
     for (let i = 0; i < strokes; i++) {

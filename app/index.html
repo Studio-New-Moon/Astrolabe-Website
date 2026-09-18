@@ -29,6 +29,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
 <style>
   :root{
+    --bright: #E8C87A;
+    --resist: #F3E6C4;
+    --glow: rgba(184,150,63,.14);
+    --stars: 1;
+    --instrument: #14100A;
+    /* Type, set by the Appearance panel (chart/src/appearance.js). */
+    --font-display: "Cinzel", Georgia, serif;
+    --font-body: "Spectral", Georgia, "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --night: #090B1C;
     --ground: #17110a;
     --panel: #221a10;
@@ -47,10 +56,10 @@
     content: "";
     position: fixed; inset: 0; z-index: -1;
     background: radial-gradient(ellipse 900px 600px at 50% -10%,
-                                rgba(184,150,63,.14), transparent 60%);
+                                var(--glow), transparent 60%);
   }
   .stars{
-    position: fixed; inset: 0; z-index: -1;
+    position: fixed; inset: 0; z-index: -1; opacity: var(--stars);
     overflow: hidden; pointer-events: none;
   }
   /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
@@ -59,15 +68,16 @@
      the longest read on the site. Pale blue keeps them stars. */
   .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
 
+  html{ font-synthesis-weight: none; }
   *{ box-sizing: border-box; }
   body{
     margin: 0; background: transparent; color: var(--ink);
-    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-family: var(--font-body);
     font-size: 17px; line-height: 1.6;
     padding: clamp(22px, 5vw, 54px) 18px 80px;
   }
   main{ max-width: 980px; margin: 0 auto; }
-  h1, h2, h3{ font-family: "Cinzel", Georgia, serif; font-weight: 600; margin: 0; text-wrap: balance; }
+  h1, h2, h3{ font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
   h1{ font-size: clamp(26px, 4.4vw, 38px); }
   /* The app's own wordmark: "Follow My" small over "Astrolabe", both in
      Metamorphous, at the welcome screen's 15-over-40 proportions. */
@@ -109,10 +119,10 @@
   .result{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 22px; }
   @media (max-width: 780px){ .result{ grid-template-columns: 1fr; } }
   .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
-  /* The instrument is Brass & Ink whatever the page's own scheme, so it sits
-     on the app's ink ground in both light and dark. */
+  /* The instrument sits on its scheme's own ground, which the Appearance
+     panel sets; Brass & Ink's is the app's ink. */
   .wheel canvas{ display: block; width: 100%; aspect-ratio: 1; border-radius: 12px;
-                 border: 1px solid var(--rule); background: #14100A; }
+                 border: 1px solid var(--rule); background: var(--instrument); }
 
   /* ---------- readings ---------- */
   .readings{ margin-top: 34px; border-top: 1px solid var(--rule); padding-top: 18px; }
@@ -130,7 +140,7 @@
   .readingsNote[hidden]{ display: none !important; }
   .areaGrid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
   .area{ background: var(--panel); border-radius: 12px; padding: 16px 18px 18px; }
-  .area .plate{ font-family: "Cinzel", Georgia, serif; font-size: 19px; letter-spacing: .02em; }
+  .area .plate{ font-family: var(--font-display); font-size: 19px; letter-spacing: .02em; }
   .area .which{ font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
   .area .strip{ font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
                 margin: 10px 0 0; line-height: 1.5; }
@@ -336,6 +346,8 @@
 </main>
 
 <script type="module">
+import { mountAppearance } from "../chart/src/appearance-panel.js";
+mountAppearance();
 import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "../chart/src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "../chart/src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "../chart/src/points.js";
