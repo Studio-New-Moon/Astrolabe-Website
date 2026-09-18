@@ -303,7 +303,7 @@ export function resolve(state = load()) {
  */
 const wearCache = new Map();
 
-function wearTexture(m, heavy, seed = 4021) {
+export function wearTexture(m, heavy, seed = 4021) {
   const key = `${m.id}|${heavy}|${seed}`;
   if (wearCache.has(key)) return wearCache.get(key);
   const w = 360, h = 72, scale = 2;
