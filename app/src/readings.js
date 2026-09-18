@@ -21,22 +21,6 @@ import { readPass } from "../../chart/src/pass.js";
 /// which is how a work-in-progress server is tried without touching the site.
 const DEFAULT_ENDPOINT = "https://astrolabe-readings.astrolabe-gelato-broker.workers.dev/readings";
 
-/// A subscriber's pass, or null. It is an opaque token: it proves a
-/// subscription without saying whose, and the reading server checks its
-/// signature without looking anything up. Written by /account/unlock/ when a
-/// sign-in link is opened.
-///
-/// Reading it can throw rather than return null — a private window, storage
-/// switched off — and that has to mean the free reading, not a broken page.
-/// Temporary: chart/src/pass.js will own this key, and this becomes an import.
-export function readPass() {
-  try {
-    return localStorage.getItem("astrolabe.pass") || null;
-  } catch {
-    return null;
-  }
-}
-
 export function endpoint() {
   try {
     return localStorage.getItem("astrolabe.readings.endpoint") || DEFAULT_ENDPOINT;
