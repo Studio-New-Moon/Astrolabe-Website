@@ -164,5 +164,7 @@
     field.innerHTML = html;
   })();
 </script>
+<!-- No Cloudflare Web Analytics beacon here, on purpose: this URL carries a Stripe session id (?session_id=),
+     and the beacon reports the full URL. Every other page carries it. -->
 </body>
 </html>
