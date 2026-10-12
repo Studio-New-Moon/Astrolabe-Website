@@ -7,253 +7,94 @@
 <meta name="description" content="Whether this browser has your Follow My Astrolabe readings open, and how to get a link for another one.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/assets/favicon.png">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
+<!-- Only for the "Engraved" type a visitor may have chosen on the Chart pages;
+     the files are fetched only when that face is in use. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<script type="module">
+  // The visitor's Appearance choice from the Chart pages, as the app's
+  // Settings follow it. Brass & Ink with brass when there is none.
+  import { apply } from "/chart/src/appearance.js";
+  apply();
+</script>
 <style>
-  :root{
-    /* Buttons, struck from polished brass. */
-    --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 6%, #FDF1CD 14%, #F0D493 24%, #C9A24C 40%, #B08C3F 66%, #6D5424 82%, #B08C3F 89%, #F0D493 95%, #3D2F14 100%);
-    --metal-wear: url("/assets/metal/brass-polished-wear.png");
-    --on-metal: #1A1408;
-    --engrave: 0 1px 0 rgba(253,241,205,0.6);
-    --metal-lift: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.35), inset 1px 0 0 rgba(255,255,255,.14), inset -1px 0 0 rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.45);
-    --night: #090B1C;
-    --ground: #17110a;
-    --panel: #221a10;
-    --ink: #ede0c4;
-    --muted: #a6926c;
-    --brass: #c8993f;
-    --rule: rgba(200,153,63,0.3);
-  }
-  /* ---------- The night the homepage opens on ----------
-     The hero's ground, its brass glow and its starfield, fixed behind the
-     content so the sky holds still while the page scrolls. The warm --panel
-     plates sit on top of it, which is the point: brass against the sky. */
-  html{ background: var(--night); }
-  body::before{
-    content: "";
-    position: fixed; inset: 0; z-index: -1;
-    background: radial-gradient(ellipse 900px 600px at 50% -10%,
-                                rgba(184,150,63,.14), transparent 60%);
-  }
-  .stars{
-    position: fixed; inset: 0; z-index: -1;
-    overflow: hidden; pointer-events: none;
-  }
-  /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
-     cream as 17px body copy does not read as a star, it reads as a full
-     stop dropped into the sentence — worst on the privacy policy, which is
-     the longest read on the site. Pale blue keeps them stars. */
-  .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
-
-  *{ box-sizing: border-box; }
-  body{
-    margin: 0;
-    background: transparent;
-    color: var(--ink);
-    font-family: "Spectral", Georgia, "Times New Roman", serif;
-    font-size: 17px;
-    line-height: 1.65;
-    padding: clamp(28px, 6vw, 72px) 20px 90px;
-  }
-  main{ max-width: 660px; margin: 0 auto; }
-  .eyebrow a{ color: var(--brass); text-decoration: none; }
-  .eyebrow a:hover{ text-decoration: underline; }
-  .eyebrow{
-    font-size: 12.5px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--brass);
-    margin-bottom: 8px;
-  }
-  h1{
-    font-size: clamp(28px, 5vw, 36px);
-    line-height: 1.15;
-    margin: 0 0 14px;
-  }
-  .dates{ color: var(--muted); font-size: 14.5px; margin-bottom: 26px; }
-  .lede{
-    font-size: 18px;
-    padding: 18px 20px;
-    background: var(--panel);
-    border-radius: 10px;
-    border: 1px solid var(--rule);
-    margin-bottom: 8px;
-  }
-  h2{
-    font-size: 22px;
-    margin: 46px 0 4px;
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 10px;
-  }
-  h3{ font-size: 17px; margin: 26px 0 6px; color: var(--brass); }
-  p, li{ margin: 10px 0; }
-  ul{ padding-left: 22px; }
-  a{ color: var(--brass); }
-  strong{ color: var(--ink); }
-  .contact{
-    font-size: 19px;
-    padding: 20px;
-    background: var(--panel);
-    border: 1px solid var(--rule);
-    border-radius: 10px;
-    margin: 22px 0 8px;
-  }
-  .contact strong{ display: block; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brass); margin-bottom: 6px; }
-  footer{
-    margin-top: 56px;
-    padding-top: 20px;
-    border-top: 1px solid var(--rule);
-    color: var(--muted);
-    font-size: 14px;
-    font-style: italic;
-  }
-
-  /* The app's metal buttons (Brass.polished, WearMarks, BrassBevel, EngravedText),
-     always polished brass here: this page has no Appearance panel. The wear image is
-     the chart pages' own, saved from chart/src/appearance.js. */
-  :root button.buy{
-    background: var(--metal-wear) center / cover no-repeat, var(--metal);
-    color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
-    border-color: transparent;
-  }
-  :root button.buy:active{ filter: brightness(.93); }
-  /* The app's plate label: small capitals, tracked. */
-  :root button.buy{
-    font-family: inherit; font-size: 16px; font-weight: 600;
-    letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
-    text-align: center; text-wrap: balance;
-  }
-
-  /* Every button sits on a plate, as /app/'s do: a dark panel with a faint
-     brass rule, holding the button together with what it does. Inside one,
-     --panel turns to the ground colour, so fields and choices that use it
-     still stand out from the plate rather than vanishing into it. */
-  .plate{
-    margin: 26px 0; padding: clamp(18px, 3vw, 26px);
-    border: 1px solid rgba(200,153,63,0.3); border-radius: 12px;
-    background: #221a10; --panel: #17110a;
-  }
-  .plate > :first-child{ margin-top: 0; }
-  .plate > :last-child{ margin-bottom: 0; }
+  /* SettingsView's subscription row and its sections: display 20 titles,
+     muted 13 under them, each button on its plate. */
+  #state{ font-size: 15px; color: var(--ink); }
+  .field{ display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .field input{ width: 100%; }
 </style>
 </head>
-<body>
-<div class="stars" aria-hidden="true"></div>
-<style>
-  .plans{ display: grid; gap: 14px; margin: 26px 0 8px; }
-  .plan{
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
-    padding: 18px 20px; border: 1px solid var(--rule); border-radius: 10px;
-    background: var(--panel);
-  }
-  .plan .name{ font-size: 19px; }
-  .plan .price{ margin-left: auto; font-variant-numeric: tabular-nums; font-size: 19px; }
-  .plan .per{ color: var(--muted); font-size: 15px; }
-  .plan .save{ color: var(--brass); font-size: 14px; letter-spacing: .04em; }
-  button.buy{
-    font-family: inherit; font-size: 17px; font-weight: 600;
-    padding: 13px 22px; border: 1px solid var(--brass); border-radius: 8px;
-    background: var(--brass); color: var(--ground); cursor: pointer;
-  }
-  button.buy:disabled{ opacity: 0.55; cursor: default; }
-  button.plain{
-    font-family: inherit; font-size: 16px; padding: 10px 16px;
-    border: 1px solid var(--rule); border-radius: 8px;
-    background: transparent; color: var(--ink); cursor: pointer;
-  }
-  input[type=email]{
-    font-family: inherit; font-size: 16px; padding: 11px 13px; width: 100%;
-    border: 1px solid var(--rule); border-radius: 8px;
-    background: var(--panel); color: var(--ink);
-  }
-  .field{ display: flex; flex-direction: column; gap: 8px; margin: 18px 0; }
-  .row{ display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-  .problem, .said{
-    padding: 14px 16px; border: 1px solid var(--brass); border-radius: 8px;
-    background: var(--panel); margin: 18px 0;
-  }
-  .problem[hidden], .said[hidden], [hidden]{ display: none !important; }
-  .note{ color: var(--muted); font-size: 15px; margin-top: 12px; }
-  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
-</style>
-<main>
-  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
-  <h1>Your subscription.</h1>
-
-  <p class="lede" id="state">Checking this browser…</p>
+<body class="page">
+<header class="nav-bar">
+  <div class="leading">
+    <a class="back" href="/app/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Chart</span></a>
+  </div>
+  <div class="title" aria-hidden="true">Subscription</div>
+  <div class="trailing"></div>
+</header>
+<main class="form-width">
+  <h1 class="visually-hidden">Your subscription</h1>
+  <div class="card">
+    <span class="plate-label">Subscription</span>
+    <p id="state">Checking this browser…</p>
+  </div>
 
   <div class="said" id="said" hidden></div>
   <div class="problem" id="problem" hidden></div>
 
   <section class="plate" id="linkForm">
-    <h2>Unlock a browser</h2>
+    <h2>Unlock a Browser</h2>
     <p>Type the email address you subscribed with and we'll send a link.
     Opening it unlocks the browser you open it in.</p>
     <div class="field">
       <label for="email">Email address</label>
       <input type="email" id="email" autocomplete="email" placeholder="you@example.com">
     </div>
-    <div class="row">
-      <button class="buy" type="button" id="send">Email me a link</button>
-    </div>
+    <button class="buy metal-button wide" type="button" id="send">Email me a link</button>
     <p class="note">We send a link only to an address with a current
     subscription, and we'll say the same thing either way — which is what
     stops this page telling a stranger who subscribes.</p>
   </section>
 
   <section class="plate" id="manage" hidden>
-    <h2>Your subscription</h2>
-    <p>Cancelling, and changing the card it's paid with, both happen on
+    <h2>Your Subscription</h2>
+    <p>Canceling, and changing the card it's paid with, both happen on
     Stripe's own page. It opens with your subscription already on it, and
     there's nothing to sign in to.</p>
-    <div class="row">
-      <button class="buy" type="button" id="portal">Manage subscription</button>
-    </div>
+    <button class="buy metal-button wide" type="button" id="portal">Manage subscription</button>
   </section>
 
   <section class="plate" id="signOut" hidden>
-    <h2>This browser</h2>
+    <h2>This Browser</h2>
     <p>Signing out forgets the pass here. It doesn't cancel anything, and you
     can ask for a new link whenever you like.</p>
-    <div class="row">
-      <button class="plain" type="button" id="forget">Sign out of this browser</button>
-    </div>
+    <button class="plain quiet-button" type="button" id="forget">Sign out of this browser</button>
   </section>
 
-  <h2>Cancelling</h2>
-  <p>Use the button above, on any browser this subscription has open. Your
-  readings stay open to the end of the period you've paid for, and nothing is
-  charged after that.</p>
-  <p>If you can't get a link to this page, write to
-  <a href="mailto:support@followmyastrolabe.com">support@followmyastrolabe.com</a>
-  and we'll cancel it for you. Either way, ask and we'll delete your record
-  straight away rather than waiting for its timer.</p>
+  <hr class="divider">
+
+  <section>
+    <h2>Canceling</h2>
+    <div class="muted-prose">
+      <p>Use the button above, on any browser this subscription has open. Your
+      readings stay open to the end of the period you've paid for, and nothing is
+      charged after that.</p>
+      <p>If you can't get a link to this page, write to
+      <a href="mailto:support@followmyastrolabe.com">support@followmyastrolabe.com</a>
+      and we'll cancel it for you. Either way, ask and we'll delete your record
+      straight away rather than waiting for its timer.</p>
+    </div>
+  </section>
 
   <p class="note">Not subscribed yet? <a href="/plans/">See the plans</a>.</p>
   <footer>
     <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
   </footer>
 </main>
-<script>
-  // The same fixed field the homepage hero carries, sized to the viewport
-  // rather than one section. Generated once and never animated, so it reads
-  // as a backdrop instead of a distraction.
-  (function () {
-    var field = document.querySelector(".stars");
-    if (!field) return;
-    var html = "";
-    for (var i = 0; i < 90; i++) {
-      html += '<span style="left:' + (Math.random() * 100) +
-              '%;top:' + (Math.random() * 100) +
-              '%;width:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;height:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;opacity:' + (Math.random() * 0.3 + 0.12).toFixed(2) + '"></span>';
-    }
-    field.innerHTML = html;
-  })();
-</script>
 <script type="module">
   import { refreshPass, clearPass, readPass } from "/chart/src/pass.js";
   const BROKER = "https://astrolabe-gelato-broker.astrolabe-gelato-broker.workers.dev";

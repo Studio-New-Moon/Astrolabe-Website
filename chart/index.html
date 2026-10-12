@@ -23,265 +23,173 @@
 <meta name="apple-mobile-web-app-title" content="Cast a Chart">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#090B1C">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
+<!-- Only for the Appearance panel's "Engraved" type. Native Sky, the default,
+     is the device's own faces, so these files are fetched only when chosen. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap">
 <style>
-  :root{
-    /* Buttons, struck from the chosen metal (chart/src/appearance.js). */
-    --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 6%, #FDF1CD 14%, #F0D493 24%, #C9A24C 40%, #B08C3F 66%, #6D5424 82%, #B08C3F 89%, #F0D493 95%, #3D2F14 100%);
-    --metal-wear: none;
-    --on-metal: #1A1408;
-    --engrave: 0 1px 0 rgba(253,241,205,0.6);
-    --metal-lift: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.35), inset 1px 0 0 rgba(255,255,255,.14), inset -1px 0 0 rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.45);
-    --bright: #E8C87A;
-    --resist: #F3E6C4;
-    --glow: rgba(184,150,63,.14);
-    --stars: 1;
-    --instrument: #14100A;
-    /* Type, set by the Appearance panel (chart/src/appearance.js). */
-    --font-display: "Cinzel", Georgia, serif;
-    --font-body: "Spectral", Georgia, "Times New Roman", serif;
-    --font-mono: "JetBrains Mono", ui-monospace, monospace;
-    --night: #090B1C;
-    --ground: #17110a;
-    --panel: #221a10;
-    --ink: #ede0c4;
-    --muted: #a6926c;
-    --brass: #c8993f;
-    --rule: rgba(200,153,63,0.3);
-  }
-  /* ---------- The night the homepage opens on ----------
-     The hero's ground, its brass glow and its starfield, fixed behind the
-     content so the sky holds still while the page scrolls. The warm --panel
-     plates sit on top of it, which is the point: brass against the sky. */
-  html{ background: var(--night); }
-  body::before{
-    content: "";
-    position: fixed; inset: 0; z-index: -1;
-    background: radial-gradient(ellipse 900px 600px at 50% -10%,
-                                var(--glow), transparent 60%);
-  }
-  .stars{
-    position: fixed; inset: 0; z-index: -1; opacity: var(--stars);
-    overflow: hidden; pointer-events: none;
-  }
-  /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
-     cream as 17px body copy does not read as a star, it reads as a full
-     stop dropped into the sentence — worst on the privacy policy, which is
-     the longest read on the site. Pale blue keeps them stars. */
-  .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
+  /* The app's Chart screen for a visitor who has no chart yet: BirthChartView's
+     header, its form on a plate, then the instrument and the cards under it.
+     Colours, type, plates and buttons come from /assets/app.css. */
 
-  html{ font-synthesis-weight: none; }
-  *{ box-sizing: border-box; }
-  body{
-    margin: 0;
-    background: transparent;
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 17px;
-    line-height: 1.65;
-    padding: clamp(28px, 6vw, 64px) 20px 90px;
-  }
-  main{ max-width: 960px; margin: 0 auto; }
-  h1, h2{ font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
-  h1{ font-size: clamp(27px, 4.6vw, 40px); margin-bottom: 10px; }
-  h2{ font-size: 21px; margin: 38px 0 12px; }
-  .eyebrow{
-    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 14px;
-  }
-  .eyebrow a{ color: inherit; }
-  .lede{ max-width: 60ch; margin: 0 0 6px; }
-  .quiet{ color: var(--muted); font-size: 15px; max-width: 62ch; }
+  /* BirthDetailsForm: rows with the label leading and the control trailing. */
+  #chartForm fieldset{ border: 0; margin: 0; padding: 0; display: grid; gap: 14px; min-width: 0; }
+  #chartForm fieldset + fieldset{ margin-top: 14px; }
+  #chartForm .form-row input{ width: auto; }
+  #chartForm .form-row select{ width: min(100%, 15rem); }
+  #zone{ text-overflow: ellipsis; }
+  .coords{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .coords label{ display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted); }
+  .coords input{ width: 100%; }
+  .placeSearch input{ width: 100%; }
+  .results{ list-style: none; margin: 0; padding: 0; }
+  .results[hidden]{ display: none !important; }
+  .results button{ display: block; width: 100%; text-align: left; font-family: inherit;
+                   font-size: 14px; color: var(--ink); background: transparent; border: 0;
+                   border-bottom: 1px solid rgba(176,140,63,0.15); padding: 6px 0; cursor: pointer; }
+  .results button:hover{ color: var(--bright); }
+  .results .zone{ display: block; color: var(--muted); font-size: 11px; }
+  #chartForm .cast{ margin-top: 14px; }
 
-  form{ margin: 26px 0 0; }
-  fieldset{ border: 0; margin: 0 0 18px; padding: 0; }
-  legend{
-    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); padding: 0; margin-bottom: 10px;
-  }
-  .row{ display: flex; flex-wrap: wrap; gap: 14px; }
-  label.field{ display: flex; flex-direction: column; gap: 5px; font-size: 15px; color: var(--muted); }
-  input, select{
-    font-family: inherit; font-size: 16px; color: var(--ink);
-    background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
-    padding: 9px 11px; min-width: 0;
-  }
-  input:invalid{ border-color: var(--danger); }
-  button.cast{
-    font-family: inherit; font-size: 17px; font-weight: 600;
-    padding: 13px 24px; border: 1px solid var(--brass); border-radius: 8px;
-    background: var(--brass); color: var(--ground); cursor: pointer;
-  }
-  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+  /* The Home Screen hint: one plate, its two buttons with it. */
+  .install[hidden]{ display: none !important; }
+  .install{ display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; font-size: 14px; }
+  .install p{ margin: 0; flex: 1 1 26ch; }
+  .install .go{ padding: 9px 14px; }
+  .install .later{ font-size: 13px; color: var(--muted); }
 
-  .result{ display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 30px; align-items: start; margin-top: 30px; }
-  @media (max-width: 760px){ .result{ grid-template-columns: 1fr; } }
-  .wheel{ width: 100%; }
-  .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
-  /* The instrument sits on its scheme's own ground, which the Appearance
-     panel sets; Brass & Ink's is the app's ink. */
-  .wheel canvas{ display: block; width: 100%; aspect-ratio: 1; border-radius: 12px;
-                 border: 1px solid var(--rule); background: var(--instrument); }
+  /* The Appearance button rides the bar's trailing edge as an icon, the way
+     the app's Settings glyph rides its own bar. */
+  .nav-bar .ap-open{ position: static; padding: 0; width: 44px; height: 44px; justify-content: center;
+                     border: 0; border-radius: 0; background: none; color: var(--bright);
+                     -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .nav-bar .ap-open svg{ width: 22px; height: 22px; }
+  .nav-bar .ap-open span{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  table{ width: 100%; border-collapse: collapse; font-size: 15.5px; }
-  th{ text-align: left; font-weight: 600; font-size: 13px; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--muted); padding: 0 0 7px; }
-  td{ padding: 5px 0; border-top: 1px solid var(--rule); }
-  td.body{ width: 38%; padding-right: 14px; }
+  /* The instrument, capped at Layout.wheel and sitting straight on the
+     ground as the app's does. Its own ground is the scheme's, set by
+     Appearance; in Brass & Ink that is the page's own ink. */
+  .result[hidden]{ display: none !important; }
+  .result > * + *{ margin-top: 22px; }
+  .wheel{ width: 100%; max-width: var(--wheel); margin-inline: auto; }
+  .wheel svg{ display: block; width: 100%; height: auto; border-radius: 12px; }
+  .wheel canvas{ display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; background: var(--instrument); }
+  .wheel .instrument-readout{ text-align: center; font-size: 13px; color: var(--muted); }
+
+  /* "Every Placement" and "The Four Angles", as cards. */
+  .card .plate-label{ display: block; margin: 0 0 10px; }
+  table{ width: 100%; border-collapse: collapse; font-size: 15px; }
+  th{ text-align: left; font-weight: 600; font-size: 11px; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted); padding: 0 0 6px; }
+  td{ padding: 5px 0; border-top: 1px solid rgba(176,140,63,0.15); }
+  td.body{ width: 40%; padding-right: 12px; color: var(--ink); }
+  td.pos{ font-variant-numeric: tabular-nums; color: var(--ink); }
+  td:last-child, th:last-child{ text-align: right; }
   /* Rows lit by a tap on the instrument. */
   tr.picked td{ background: color-mix(in srgb, var(--brass) 16%, transparent); }
   tr.picked td:first-child{ box-shadow: inset 3px 0 0 var(--brass); padding-left: 8px; }
-  th:first-child{ padding-right: 14px; }
-  td.pos{ font-variant-numeric: tabular-nums; }
-  td .rx{ color: var(--brass); font-size: 13px; }
+  td .rx{ color: var(--fire); font-size: 12px; }
 
-  .problem{
-    padding: 13px 15px; border: 1px solid var(--brass); border-radius: 8px;
-    background: var(--panel); margin: 18px 0 0;
-  }
-  .problem[hidden]{ display: none !important; }
-  .placeSearch{ margin-bottom: 14px; max-width: 520px; }
-  .placeSearch input{ width: 100%; }
-  .results{ list-style: none; margin: 6px 0 0; padding: 0; border: 1px solid var(--rule);
-            border-radius: 8px; overflow: hidden; background: var(--panel); }
-  .results[hidden]{ display: none !important; }
-  .results button{ display: block; width: 100%; text-align: left; font-family: inherit;
-                   font-size: 15.5px; color: var(--ink); background: transparent; border: 0;
-                   border-top: 1px solid var(--rule); padding: 9px 12px; cursor: pointer; }
-  .results li:first-child button{ border-top: 0; }
-  .results button:hover, .results button:focus-visible{ background: var(--ground); }
-  .results .zone{ color: var(--muted); font-size: 13.5px; }
-  .install{
-    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
-    padding: 13px 15px; border: 1px solid var(--rule); border-radius: 8px;
-    background: var(--panel); margin: 22px 0 0; font-size: 15.5px;
-  }
-  .install[hidden]{ display: none !important; }
-  .install p{ margin: 0; flex: 1 1 26ch; }
-  .install button{
-    font-family: inherit; font-size: 15px; cursor: pointer; border-radius: 8px;
-    padding: 8px 14px; border: 1px solid var(--brass);
-  }
-  .install .go{ background: var(--brass); color: var(--ground); font-weight: 600; }
-  .install .later{ background: transparent; color: var(--muted); border-color: var(--rule); }
-  footer{ margin-top: 54px; padding-top: 20px; border-top: 1px solid var(--rule);
-          color: var(--muted); font-size: 15px; }
-  footer a{ color: var(--brass); }
-
-  /* The app's metal buttons: polished bands that never sit flat, wear worked
-     into the metal, a bevel, and lettering cut in rather than printed on.
-     Every value is a token, so the metal and tarnish follow Appearance. */
-  :root button.cast,
-  :root .install .go,
+  /* The install guide's own action, struck in the chosen metal. */
   :root .ig-actions .ig-go{
     background: var(--metal-wear) center / cover no-repeat, var(--metal);
     color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
-    border-color: transparent;
-  }
-  :root button.cast:active, :root .install .go:active, :root .ig-actions .ig-go:active{ filter: brightness(.93); }
-  /* The app's plate label on its action buttons: small capitals, tracked. */
-  button.cast, .install .go, .ig-actions .ig-go{
-    font-family: var(--font-body); font-size: 16px; font-weight: 600;
+    border-color: transparent; font-family: var(--font-body); font-size: 16px; font-weight: 600;
     letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
   }
-
-  /* Every button sits on a plate, as /app/'s do: a dark panel with a faint
-     brass rule, holding the button together with what it does. Inside one,
-     --panel turns to the ground colour, so fields and choices that use it
-     still stand out from the plate rather than vanishing into it. */
-  .plate{
-    margin: 26px 0; padding: clamp(18px, 3vw, 26px);
-    border: 1px solid rgba(200,153,63,0.3); border-radius: 12px;
-    background: #221a10; --panel: #17110a;
-  }
-  .plate > :first-child{ margin-top: 0; }
-  .plate > :last-child{ margin-bottom: 0; }
+  :root .ig-actions .ig-go:active{ filter: brightness(.93); }
 </style>
 </head>
-<body>
-<div class="stars" aria-hidden="true"></div>
+<body class="page">
+<header class="nav-bar">
+  <div class="leading">
+    <a class="back" href="/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></a>
+  </div>
+  <div class="title" aria-hidden="true">Cast a Chart</div>
+  <div class="trailing" id="navTrailing"></div>
+</header>
 <main>
-  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
-  <h1>Free Birth Chart Calculator.</h1>
+  <div class="intro">
+    <h1 class="visually-hidden">Free Birth Chart Calculator</h1>
+    <p>Three facts cast the whole thing: the day, the minute, and the place.</p>
+  </div>
 
-  <p class="lede">A real astrolabe, with the houses cut into the fixed limb, the
-  sky over your own latitude on the plate beneath, and the zodiac turning on the
-  rete above.</p>
-
-  <p class="quiet"><strong>Nothing you type here leaves your device.</strong> The
-  chart is worked out right here in your own browser, and there's no server to
-  send it to.</p>
-
-  <p class="quiet">The chart below is for <strong>Alex Rivera</strong>, an invented
-  person born 16 March 1990 at 2:15 PM in New York. Put in your own
-  birth details to cast yours.</p>
-
-  <div class="install" id="installHint" hidden>
+  <div class="install plate" id="installHint" hidden>
     <p><strong>Keep Cast a Chart on your Home Screen.</strong> It opens like an
     app, and it works with no signal.</p>
-    <button class="go" type="button" data-install-go>Show Me How</button>
-    <button class="later" type="button" data-dismiss>Not now</button>
+    <button class="go metal-button" type="button" data-install-go>Show Me How</button>
+    <button class="later text-link" type="button" data-dismiss>Not now</button>
   </div>
 
   <form id="chartForm" class="plate">
     <fieldset>
-      <legend>When</legend>
-      <div class="row">
-        <label class="field">Date of birth
-          <input type="date" id="date" value="1990-03-16" required>
-        </label>
-        <label class="field">Time
-          <input type="time" id="time" value="14:15" required>
-        </label>
-        <label class="field">Time zone where you were born
-          <select id="zone"></select>
-        </label>
-      </div>
+      <legend class="visually-hidden">When</legend>
+      <label class="form-row">Date of birth
+        <input type="date" id="date" value="1990-03-16" required>
+      </label>
+      <label class="form-row">Time of birth
+        <input type="time" id="time" value="14:15" required>
+      </label>
+      <label class="form-row">Time zone where you were born
+        <select id="zone"></select>
+      </label>
     </fieldset>
 
     <fieldset>
-      <legend>Where</legend>
-      <div class="placeSearch">
-        <label class="field" for="place">Town or city where you were born</label>
+      <legend class="visually-hidden">Where</legend>
+      <div class="placeSearch form-col">
+        <label for="place">Place of birth</label>
         <input id="place" autocomplete="off" value="New York City, New York, United States"
+               placeholder="Town or city of birth"
                role="combobox" aria-controls="placeResults" aria-expanded="false">
         <ul class="results" id="placeResults" role="listbox" hidden></ul>
       </div>
-      <div class="row">
-        <label class="field">Latitude &mdash; north positive
+      <div class="coords">
+        <label>Latitude, north positive
           <input type="number" id="lat" value="40.7128" step="0.0001" min="-89.9" max="89.9" required>
         </label>
-        <label class="field">Longitude &mdash; east positive
+        <label>Longitude, east positive
           <input type="number" id="lon" value="-74.0060" step="0.0001" min="-180" max="180" required>
         </label>
       </div>
-      <p class="quiet" style="margin-top:10px">Choosing a town fills in the
-      numbers and the time zone for you. If yours is too small to be listed, type
-      its coordinates instead. South and west are negative.</p>
+      <p class="note">Choosing a town fills in the numbers and the time zone for
+      you. If yours is too small to be listed, type its coordinates instead. South
+      and west are negative.</p>
     </fieldset>
 
-    <button class="cast" type="submit">Cast it</button>
+    <button class="cast metal-button wide" type="submit">Cast My Chart</button>
   </form>
 
   <div class="problem" id="problem" hidden></div>
 
+  <p class="note center"><strong>Nothing you type here leaves your device.</strong>
+  The chart is worked out right here in your own browser, and there's no server
+  to send it to. The chart below is for <strong>Alex Rivera</strong>, an invented
+  person born March 16, 1990, at 2:15 PM in New York. Put in your own birth
+  details to cast yours.</p>
+
   <div class="result" id="result" hidden>
     <div class="wheel" id="wheel"></div>
-    <div>
-      <h2 id="placementsTitle">Placements</h2>
+    <p class="note center">A real astrolabe, with the houses cut into the fixed
+    limb, the sky over your own latitude on the plate beneath, and the zodiac
+    turning on the rete above.</p>
+    <section class="card" aria-labelledby="placementsTitle">
+      <h2 class="plate-label" id="placementsTitle">Every Placement</h2>
       <table>
         <thead><tr><th>Body</th><th>Position</th><th>House</th></tr></thead>
         <tbody id="placements"></tbody>
       </table>
-      <h2>Angles</h2>
+    </section>
+    <section class="card" aria-labelledby="anglesTitle">
+      <h2 class="plate-label" id="anglesTitle">The Four Angles</h2>
       <table>
         <thead><tr><th>Angle</th><th>Position</th><th>House</th></tr></thead>
         <tbody id="anglesBody"></tbody>
       </table>
-    </div>
+    </section>
   </div>
 
   <footer>
@@ -296,7 +204,7 @@
 <script type="module">
 import { mountAppearance } from "./src/appearance-panel.js";
 import { installGuide } from "./src/install-guide.js";
-mountAppearance();
+mountAppearance({ into: document.getElementById("navTrailing") });
 import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "./src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "./src/points.js";
@@ -486,7 +394,7 @@ $("place").addEventListener("input", () => {
         list.hidden = true;
         $("place").setAttribute("aria-expanded", "false");
         if (!selectZone(zoneSelect, h.timeZoneID)) {
-          problem(`This browser doesn't recognize ${h.label}'s time zone (${h.timeZoneID.replace(/_/g, " ")}). Please choose it from the time zone list, then press Cast it.`);
+          problem(`This browser doesn't recognize ${h.label}'s time zone (${h.timeZoneID.replace(/_/g, " ")}). Please choose it from the time zone list, then press Cast My Chart.`);
           return;
         }
         cast();
@@ -521,24 +429,6 @@ installGuide({
   hint: $("installHint"),
   key: "astrolabe.installHint.dismissed",
 });
-</script>
-<script>
-  // The same fixed field the homepage hero carries, sized to the viewport
-  // rather than one section. Generated once and never animated, so it reads
-  // as a backdrop instead of a distraction.
-  (function () {
-    var field = document.querySelector(".stars");
-    if (!field) return;
-    var html = "";
-    for (var i = 0; i < 90; i++) {
-      html += '<span style="left:' + (Math.random() * 100) +
-              '%;top:' + (Math.random() * 100) +
-              '%;width:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;height:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;opacity:' + (Math.random() * 0.3 + 0.12).toFixed(2) + '"></span>';
-    }
-    field.innerHTML = html;
-  })();
 </script>
 <!-- Cloudflare Web Analytics: counts page views without cookies. Left off
      /account/unlock/ and /order/thank-you/, whose URLs carry a one-time code
