@@ -91,14 +91,15 @@ export const TARNISHED_OFF = "Kept polished. A trace of oxide remains in the rec
  *
  * The shaded core sits below the middle, not on it, because a button's
  * lettering is centred: the letters cross base into mid rather than mid into
- * dark, which takes brass and sterling from 2.6:1 to over 5:1. These are the
- * app's own stops (Brass.polished, launch-prep 6b4a052). Bronze and copper
- * reach only about 3:1 whatever the ramp does: their mids are too dark for the
- * ink, which is a palette question, not a ramp one.
+ * dark. Measured across 35-65% of the height, everything centred capitals can
+ * cover, brass reads at 5.9:1 and sterling at 5.7:1, up from 2.6:1. These match
+ * the app's Brass.polished. Bronze (3.4:1) and copper (3.2:1) hold 3:1 but go
+ * no higher whatever the ramp does: their mids are too dark for the ink, which
+ * is a palette question, not a ramp one.
  */
 function polished(m) {
-  return `linear-gradient(180deg, ${m.dark} 0%, ${m.base} 6%, ${m.spec} 15%, ${m.lit} 26%, ${m.base} 42%, ` +
-    `${m.mid} 60%, ${m.dark} 78%, ${m.mid} 86%, ${m.lit} 93%, ${m.deep} 100%)`;
+  return `linear-gradient(180deg, ${m.dark} 0%, ${m.base} 6%, ${m.spec} 14%, ${m.lit} 24%, ${m.base} 40%, ` +
+    `${m.mid} 66%, ${m.dark} 82%, ${m.mid} 89%, ${m.lit} 95%, ${m.deep} 100%)`;
 }
 
 /**
