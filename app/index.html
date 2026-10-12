@@ -230,8 +230,8 @@
   :root .primary:active, :root .install .go:active, :root .periods button[aria-selected="true"]:active{ filter: brightness(.93); }
   /* The app's plate label on its action buttons: small capitals, tracked. */
   .primary, .install .go{
-    font-family: var(--font-body); font-size: 13.5px; font-weight: 600;
-    letter-spacing: .14em; text-transform: uppercase;
+    font-family: var(--font-body); font-size: 16px; font-weight: 600;
+    letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
   }
 </style>
 </head>
