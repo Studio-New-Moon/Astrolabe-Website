@@ -59,8 +59,8 @@ const STARS = [
 
 const METALS = {
   brass:    { deep: "#3D2F14", dark: "#6D5424", mid: "#B08C3F", base: "#C9A24C", lit: "#F0D493", spec: "#FDF1CD", patina: "#4E8C7A", onMetal: "#1A1408" },
-  bronze:   { deep: "#2E1D0E", dark: "#5A3A1C", mid: "#8C5C2E", base: "#A9713C", lit: "#D1A268", spec: "#F0D8AE", patina: "#3E7F6B", onMetal: "#160F06" },
-  copper:   { deep: "#3A1608", dark: "#6E2C12", mid: "#A9491F", base: "#C4622E", lit: "#E39160", spec: "#F8CDA8", patina: "#2E9C86", onMetal: "#2A1006" },
+  bronze:   { deep: "#2E1D0E", dark: "#5A3A1C", mid: "#AD7239", base: "#B97C42", lit: "#D1A268", spec: "#F0D8AE", patina: "#3E7F6B", onMetal: "#160F06" },
+  copper:   { deep: "#3A1608", dark: "#6E2C12", mid: "#C46A3E", base: "#CF7A4B", lit: "#E39160", spec: "#F8CDA8", patina: "#2E9C86", onMetal: "#2A1006" },
   sterling: { deep: "#2B2C2E", dark: "#55585C", mid: "#8A8E93", base: "#B4B8BD", lit: "#DCDFE3", spec: "#F9FAFB", patina: "#6B5F55", onMetal: "#141516" },
 };
 

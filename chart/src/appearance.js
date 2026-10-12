@@ -54,6 +54,10 @@ export const RANDOM_BLURB = "A different scheme and metal each day — quietly, 
 
 // ---------------------------------------------------------------- metals
 
+// Bronze's and copper's mid and base were lightened (2026-10-12) so dark
+// lettering reads on their buttons: 4.8:1 over the 34-62% of a button the
+// capitals cover, where the old tones stopped near 3.3:1. The app's
+// MetalFinish.swift and instrument.js below carry the same values.
 export const METALS = [
   {
     id: "brass", name: "Brass",
@@ -63,12 +67,12 @@ export const METALS = [
   {
     id: "bronze", name: "Bronze",
     blurb: "Copper and tin. Darker and browner, with a blue-green verdigris in the recesses.",
-    deep: "#2E1D0E", dark: "#5A3A1C", mid: "#8C5C2E", base: "#A9713C", lit: "#D1A268", spec: "#F0D8AE", patina: "#3E7F6B", onMetal: "#160F06",
+    deep: "#2E1D0E", dark: "#5A3A1C", mid: "#AD7239", base: "#B97C42", lit: "#D1A268", spec: "#F0D8AE", patina: "#3E7F6B", onMetal: "#160F06",
   },
   {
     id: "copper", name: "Copper",
     blurb: "Soft, red, and the finest to engrave. Grows the strongest verdigris of the four.",
-    deep: "#3A1608", dark: "#6E2C12", mid: "#A9491F", base: "#C4622E", lit: "#E39160", spec: "#F8CDA8", patina: "#2E9C86", onMetal: "#2A1006",
+    deep: "#3A1608", dark: "#6E2C12", mid: "#C46A3E", base: "#CF7A4B", lit: "#E39160", spec: "#F8CDA8", patina: "#2E9C86", onMetal: "#2A1006",
   },
   {
     id: "sterling", name: "Sterling Silver",
