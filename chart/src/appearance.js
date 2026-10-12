@@ -99,11 +99,14 @@ function polished(m) {
  * light at the upper left, a groove's upper-left wall faces away and goes
  * dark while its lower-right wall catches the light — dark above-left, light
  * below-right, always. The app notes it had this backwards twice.
+ *
+ * On the web's buttons only the lit wall is drawn, as one soft line under the
+ * letters. The full four-edge cut doubled every stroke at 14px and made the
+ * labels hard to read, so the shading gives way to the letterforms here.
  */
 function engrave(m) {
-  const d = (a) => alpha(m.deep, a), s = (a) => alpha(m.spec, a);
-  return `-1px -1px 0 ${d(0.95)}, -0.5px -0.5px 0 ${d(0.55)}, 1px 1px 0 ${s(0.95)}, ` +
-    `0.5px 0.5px 0 ${s(0.52)}, -0.4px -0.4px 2.2px ${d(0.5)}`;
+  const s = (a) => alpha(m.spec, a);
+  return `0 1px 0 ${s(0.6)}`;
 }
 
 /** `BrassBevel`: a light top edge, a dark bottom one, and a small drop shadow. */
