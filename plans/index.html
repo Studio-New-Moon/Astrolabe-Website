@@ -134,6 +134,18 @@
     font-family: inherit; font-size: 13.5px; font-weight: 600;
     letter-spacing: .14em; text-transform: uppercase;
   }
+
+  /* Every button sits on a plate, as /app/'s do: a dark panel with a faint
+     brass rule, holding the button together with what it does. Inside one,
+     --panel turns to the ground colour, so fields and choices that use it
+     still stand out from the plate rather than vanishing into it. */
+  .plate{
+    margin: 26px 0; padding: clamp(18px, 3vw, 26px);
+    border: 1px solid rgba(200,153,63,0.3); border-radius: 12px;
+    background: #221a10; --panel: #17110a;
+  }
+  .plate > :first-child{ margin-top: 0; }
+  .plate > :last-child{ margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -198,15 +210,17 @@
 
   <div class="problem" id="problem" hidden></div>
 
-  <div class="row">
-    <button class="buy" type="button" data-plan="monthly">Subscribe monthly</button>
-    <button class="buy" type="button" data-plan="yearly">Subscribe yearly</button>
-  </div>
+  <div class="plate">
+    <div class="row">
+      <button class="buy" type="button" data-plan="monthly">Subscribe monthly</button>
+      <button class="buy" type="button" data-plan="yearly">Subscribe yearly</button>
+    </div>
 
-  <p class="note">Payment is handled by Stripe. Cancel any time from
-  <a href="/account/">your account page</a>, in a couple of taps and with
-  nobody to ask, and your readings stay open to the end of the period you've
-  paid for.</p>
+    <p class="note">Payment is handled by Stripe. Cancel any time from
+    <a href="/account/">your account page</a>, in a couple of taps and with
+    nobody to ask, and your readings stay open to the end of the period you've
+    paid for.</p>
+  </div>
 
   <h2>How it works on a browser</h2>
 

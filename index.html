@@ -356,6 +356,17 @@
     .nav-links{display:none;}
   }
 
+
+  /* Every button sits on a plate, as the web app's do: a dark panel with a
+     faint brass rule, holding the button together with what it does. */
+  .hero-cta, .feature .section-cta, .pricing .cta{
+    width:fit-content;max-width:100%;
+    padding:clamp(18px,3vw,26px) clamp(20px,4vw,30px);
+    border:1px solid rgba(200,153,63,0.3);border-radius:12px;background:#221a10;
+  }
+  .hero-cta, .pricing .cta{margin-left:auto;margin-right:auto;}
+  .feature .section-cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;}
+  .feature .section-cta .section-link{margin-top:0;}
 </style>
 </head>
 <body>

@@ -186,6 +186,18 @@
     font-family: var(--font-body); font-size: 13.5px; font-weight: 600;
     letter-spacing: .14em; text-transform: uppercase;
   }
+
+  /* Every button sits on a plate, as /app/'s do: a dark panel with a faint
+     brass rule, holding the button together with what it does. Inside one,
+     --panel turns to the ground colour, so fields and choices that use it
+     still stand out from the plate rather than vanishing into it. */
+  .plate{
+    margin: 26px 0; padding: clamp(18px, 3vw, 26px);
+    border: 1px solid rgba(200,153,63,0.3); border-radius: 12px;
+    background: #221a10; --panel: #17110a;
+  }
+  .plate > :first-child{ margin-top: 0; }
+  .plate > :last-child{ margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -220,7 +232,7 @@
     <button class="later" type="button" data-dismiss>Not now</button>
   </div>
 
-  <form id="chartForm">
+  <form id="chartForm" class="plate">
     <fieldset>
       <legend>When</legend>
       <div class="row">
