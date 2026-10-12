@@ -22,12 +22,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* Buttons, struck from polished brass. */
-    --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 7%, #FDF1CD 16%, #F0D493 24%, #B08C3F 37%, #6D5424 52%, #B08C3F 64%, #F0D493 77%, #B08C3F 88%, #3D2F14 100%);
-    --metal-wear: url("/assets/metal/brass-polished-wear.png");
-    --on-metal: #1A1408;
-    --engrave: 0 1px 0 rgba(253,241,205,0.6);
-    --metal-lift: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.35), inset 1px 0 0 rgba(255,255,255,.14), inset -1px 0 0 rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.45);
     --ground:#14100A;
     --ground-deep:#0B0805;
     --panel:#1B1206;
@@ -142,14 +136,18 @@
   .hero-note{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
     max-width:36ch;text-wrap:balance;}
   /* The first thing a visitor can do, so it's filled brass; the print
-     shop below it is the second, so it keeps the outlined pill. */
+     shop below it is the second, so it keeps the outlined pill.
+     Not the chart pages' struck metal: its dark middle band sits right
+     behind the lettering, which made these hard to read on the marketing
+     page. Only the light brass tones here, so the label holds at 9:1 or
+     better from top to bottom. */
   .chart-link{
     display:inline-flex;align-items:center;
-    font-family:'Cinzel',Georgia,serif;font-weight:600;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
+    font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
     color:var(--night);text-decoration:none;
     padding:15px 32px;border-radius:999px;
-    background:linear-gradient(180deg,var(--brass-bright),var(--brass));
-    box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.25);
+    background:linear-gradient(180deg,#F6E2AE,var(--brass-bright) 55%,#D4AF5E);
+    box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5);
     transition:transform .2s ease, filter .2s ease;
   }
   .chart-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
@@ -358,15 +356,6 @@
     .nav-links{display:none;}
   }
 
-  /* The app's metal buttons (Brass.polished, WearMarks, BrassBevel, EngravedText),
-     always polished brass here: this page has no Appearance panel. The wear image is
-     the chart pages' own, saved from chart/src/appearance.js. */
-  :root .chart-link{
-    background: var(--metal-wear) center / cover no-repeat, var(--metal);
-    color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift), 0 8px 24px rgba(0,0,0,.4);
-    border-color: transparent;
-  }
-  :root .chart-link:active{ filter: brightness(.93); }
 </style>
 </head>
 <body>
