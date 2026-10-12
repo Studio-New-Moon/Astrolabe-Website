@@ -175,14 +175,15 @@
      into the metal, a bevel, and lettering cut in rather than printed on.
      Every value is a token, so the metal and tarnish follow Appearance. */
   :root button.cast,
-  :root .install .go{
+  :root .install .go,
+  :root .ig-actions .ig-go{
     background: var(--metal-wear) center / cover no-repeat, var(--metal);
     color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
     border-color: transparent;
   }
-  :root button.cast:active, :root .install .go:active{ filter: brightness(.93); }
+  :root button.cast:active, :root .install .go:active, :root .ig-actions .ig-go:active{ filter: brightness(.93); }
   /* The app's plate label on its action buttons: small capitals, tracked. */
-  button.cast, .install .go{
+  button.cast, .install .go, .ig-actions .ig-go{
     font-family: var(--font-body); font-size: 16px; font-weight: 600;
     letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
   }
@@ -218,17 +219,10 @@
   person born 16 March 1990 at 2:15 PM in New York. Put in your own
   birth details to cast yours.</p>
 
-  <div class="install" id="installIos" hidden>
-    <p>Keep it on your Home Screen: tap <strong>Share</strong>, then
-    <strong>Add to Home Screen</strong>. It opens like an app, and it works with
-    no signal.</p>
-    <button class="later" type="button" data-dismiss>Not now</button>
-  </div>
-
-  <div class="install" id="installPrompt" hidden>
-    <p>Install Cast a Chart on this device. It opens like an app, and it works with
-    no signal.</p>
-    <button class="go" type="button" id="installGo">Install</button>
+  <div class="install" id="installHint" hidden>
+    <p><strong>Keep Cast a Chart on your Home Screen.</strong> It opens like an
+    app, and it works with no signal.</p>
+    <button class="go" type="button" data-install-go>Show Me How</button>
     <button class="later" type="button" data-dismiss>Not now</button>
   </div>
 
@@ -301,6 +295,7 @@
 
 <script type="module">
 import { mountAppearance } from "./src/appearance-panel.js";
+import { installGuide } from "./src/install-guide.js";
 mountAppearance();
 import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "./src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
@@ -520,43 +515,12 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-const installed =
-  window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-
-const DISMISS_KEY = "astrolabe.installHint.dismissed";
-const dismissed = () => { try { return localStorage.getItem(DISMISS_KEY) === "1"; } catch { return false; } };
-const dismiss = () => { try { localStorage.setItem(DISMISS_KEY, "1"); } catch {} };
-
-document.querySelectorAll("[data-dismiss]").forEach((b) =>
-  b.addEventListener("click", () => {
-    dismiss();
-    $("installIos").hidden = true;
-    $("installPrompt").hidden = true;
-  }));
-
-// iPhone and iPad never offer to install a web app, so unless the page says so
-// nobody finds the Share-sheet route. iPadOS reports itself as a Mac; a Mac
-// with a touchscreen is the tell.
-const ua = navigator.userAgent;
-const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-if (isIOS && !installed && !dismissed()) $("installIos").hidden = false;
-
-// Chrome on Android does offer, but only once the page asks, so hold the
-// browser's own prompt until someone presses Install.
-let deferredPrompt = null;
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (!installed && !dismissed()) $("installPrompt").hidden = false;
+// The guide itself, and when it opens, live in src/install-guide.js.
+installGuide({
+  name: "Cast a Chart",
+  hint: $("installHint"),
+  key: "astrolabe.installHint.dismissed",
 });
-$("installGo").addEventListener("click", async () => {
-  if (!deferredPrompt) return;
-  $("installPrompt").hidden = true;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice.catch(() => {});
-  deferredPrompt = null;
-});
-window.addEventListener("appinstalled", () => { $("installPrompt").hidden = true; });
 </script>
 <script>
   // The same fixed field the homepage hero carries, sized to the viewport

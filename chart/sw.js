@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. A name that stays the same keeps serving the
 // old file list to anyone offline until they next load the page online.
 
-const CACHE = "astrolabe-chart-v6";
+const CACHE = "astrolabe-chart-v7";
 
 // Every file the page needs to cast a chart with no signal. cache.addAll fails
 // the whole install if any one of these 404s, so a renamed module has to be
@@ -29,6 +29,7 @@ const SHELL = [
   "/chart/src/chiron-data.js",
   "/chart/src/ephemeris.js",
   "/chart/src/instrument.js",
+  "/chart/src/install-guide.js",
   "/chart/src/instrument-view.js",
   "/chart/src/pass.js",
   "/chart/src/places.js",

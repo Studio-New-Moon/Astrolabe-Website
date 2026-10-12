@@ -222,14 +222,15 @@
      Every value is a token, so the metal and tarnish follow Appearance. */
   :root .primary,
   :root .install .go,
+  :root .ig-actions .ig-go,
   :root .periods button[aria-selected="true"]{
     background: var(--metal-wear) center / cover no-repeat, var(--metal);
     color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
     border-color: transparent;
   }
-  :root .primary:active, :root .install .go:active, :root .periods button[aria-selected="true"]:active{ filter: brightness(.93); }
+  :root .primary:active, :root .install .go:active, :root .ig-actions .ig-go:active, :root .periods button[aria-selected="true"]:active{ filter: brightness(.93); }
   /* The app's plate label on its action buttons: small capitals, tracked. */
-  .primary, .install .go{
+  .primary, .install .go, .ig-actions .ig-go{
     font-family: var(--font-body); font-size: 16px; font-weight: 600;
     letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
   }
@@ -243,18 +244,10 @@
   <p class="quiet">The people you add are kept in this browser, on this device.
   There's no account, and nothing you type is sent anywhere.</p>
 
-  <div class="install" id="installIos" hidden>
-    <p><strong>Keep Astrolabe on your Home Screen:</strong> tap Share, then Add to
-    Home Screen. It opens like an app and works with no signal. Do it before you
-    add anyone, because an iPhone keeps the Home Screen app's saved people
-    separate from Safari's.</p>
-    <button class="later" type="button" data-dismiss>Not now</button>
-  </div>
-
-  <div class="install" id="installPrompt" hidden>
-    <p>Install Astrolabe on this device. It opens like an app, and it works with
-    no signal.</p>
-    <button class="go" type="button" id="installGo">Install</button>
+  <div class="install" id="installHint" hidden>
+    <p><strong>Keep Astrolabe on your Home Screen.</strong> It opens like an app,
+    and it works with no signal.</p>
+    <button class="go" type="button" data-install-go>Show Me How</button>
     <button class="later" type="button" data-dismiss>Not now</button>
   </div>
 
@@ -370,6 +363,7 @@
 
 <script type="module">
 import { mountAppearance } from "../chart/src/appearance-panel.js";
+import { installGuide } from "../chart/src/install-guide.js";
 mountAppearance();
 import { julianDayFromLocal, anglesFor, wholeSignHouse, SIGNS, signIndex, normalizedDegrees } from "../chart/src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "../chart/src/ephemeris.js";
@@ -840,40 +834,17 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-const installed =
-  window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-
-const HINT_KEY = "astrolabe.app.installHint.dismissed";
-const hintDismissed = () => { try { return localStorage.getItem(HINT_KEY) === "1"; } catch { return false; } };
-document.querySelectorAll("[data-dismiss]").forEach((b) =>
-  b.addEventListener("click", () => {
-    try { localStorage.setItem(HINT_KEY, "1"); } catch {}
-    $("installIos").hidden = true;
-    $("installPrompt").hidden = true;
-  }));
-
-// iPhone and iPad never offer to install a web app, so the page has to say how.
-// iPadOS reports itself as a Mac; a Mac with a touchscreen is the tell.
-const ua = navigator.userAgent;
-const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-if (isIOS && !installed && !hintDismissed()) $("installIos").hidden = false;
-
-// Chrome on Android does offer, once the page asks: hold its prompt until
-// someone presses Install.
-let deferredPrompt = null;
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (!installed && !hintDismissed()) $("installPrompt").hidden = false;
+// The guide itself, and when it opens, live in chart/src/install-guide.js.
+// An iPhone or iPad keeps a Home Screen app's storage apart from Safari's, so
+// the people someone adds in Safari would not follow them across.
+installGuide({
+  name: "Astrolabe",
+  hint: $("installHint"),
+  key: "astrolabe.app.installHint.dismissed",
+  note: /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 0
+    ? "Do this before you add anyone: the Home Screen app keeps its saved people separate from Safari's."
+    : "",
 });
-$("installGo").addEventListener("click", async () => {
-  if (!deferredPrompt) return;
-  $("installPrompt").hidden = true;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice.catch(() => {});
-  deferredPrompt = null;
-});
-window.addEventListener("appinstalled", () => { $("installPrompt").hidden = true; });
 </script>
 <script>
   // The same fixed field the homepage hero carries, sized to the viewport
