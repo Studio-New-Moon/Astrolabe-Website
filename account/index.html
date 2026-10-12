@@ -209,7 +209,7 @@
     Stripe's own page. It opens with your subscription already on it, and
     there's nothing to sign in to.</p>
     <div class="row">
-      <button class="buy" type="button" id="portal">Manage your subscription</button>
+      <button class="buy" type="button" id="portal">Manage subscription</button>
     </div>
   </section>
 
@@ -314,7 +314,7 @@
       problem.textContent = "Couldn't reach the site's server just now. Try again in a minute.";
     }
     problem.hidden = false;
-    button.disabled = false; button.textContent = "Manage your subscription";
+    button.disabled = false; button.textContent = "Manage subscription";
   });
 
   document.getElementById("send").addEventListener("click", async () => {
