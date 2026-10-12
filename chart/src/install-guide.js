@@ -81,7 +81,7 @@ function route() {
     }
     if (/CriOS/.test(ua)) {
       return { steps: [`Tap ${key("share")} at the top right, beside the address.`,
-                       `Choose ${key("addHome", "Add to Home Screen")}. You may need to scroll down to find it.`], arrow: "tr" };
+                       `Scroll down if you need to, and choose ${key("addHome", "Add to Home Screen")}.`], arrow: "tr" };
     }
     if (/FxiOS|EdgiOS|OPiOS|GSA\//.test(ua)) {
       return { steps: [`Open this page in ${words("Safari")}.`,
@@ -94,12 +94,12 @@ function route() {
       return v >= 26
         ? { steps: [`Tap ${key("share")} at the top of the screen.`, ...tail], arrow: "tr" }
         : { steps: [`Tap ${key("share")} at the top of the screen.`,
-                    `Choose ${key("addHome", "Add to Home Screen")}. You may need to scroll down to find it.`], arrow: "tr" };
+                    `Scroll down if you need to, and choose ${key("addHome", "Add to Home Screen")}.`], arrow: "tr" };
     }
     if (v >= 27) return { steps: [`Tap ${key("bars")} in the toolbar.`, `Tap ${key("share", "Share")}.`, ...tail], arrow: "bl" };
     if (v >= 26) return { steps: [`Tap ${key("more")} in the toolbar.`, `Tap ${key("share", "Share")}.`, ...tail], arrow: "br" };
     return { steps: [`Tap ${key("share")} in the toolbar.`,
-                     `Choose ${key("addHome", "Add to Home Screen")}. You may need to scroll down to find it.`], arrow: "bc" };
+                     `Scroll down if you need to, and choose ${key("addHome", "Add to Home Screen")}.`], arrow: "bc" };
   }
   if (isAndroid) {
     if (/FBAN|FBAV|Instagram/.test(ua)) {
@@ -160,6 +160,7 @@ const CSS = `
 .ig-actions{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
 .ig-actions button{ font-family: inherit; font-size: 15px; cursor: pointer; border-radius: 8px;
   padding: 9px 18px; border: 1px solid rgba(200,153,63,0.3); background: transparent; color: var(--muted); }
+.ig-sheet:focus{ outline: none; }
 .ig-actions button:focus{ outline: none; }
 .ig-actions button:focus-visible{ outline: 2px solid var(--bright, var(--brass)); outline-offset: 2px; }
 .ig-actions .ig-go{ border: 1px solid var(--brass); background: var(--brass); color: var(--ground); }
@@ -219,7 +220,7 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
     if (e.key === "Tab" && scrim) {
       const f = scrim.querySelectorAll("button");
       const first = f[0], last = f[f.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      if (e.shiftKey && (document.activeElement === first || document.activeElement.classList.contains("ig-sheet"))) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
   }
@@ -251,7 +252,7 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
     const steps = oneTap ? "" :
       `<ol class="ig-steps">${r.steps.map((s) => `<li><span>${s.replace(/<\/span>\.$/, "</span>")}</span></li>`).join("")}</ol>`;
     scrim.innerHTML = `
-      <div class="ig-sheet" role="dialog" aria-modal="true" aria-labelledby="ig-title">
+      <div class="ig-sheet" role="dialog" aria-modal="true" aria-labelledby="ig-title" tabindex="-1">
         <img class="ig-icon" src="/chart/icons/icon-192.png" alt="">
         <h2 id="ig-title">Put ${name} on Your Home Screen</h2>
         <p class="ig-why">It opens like an app, and it works with no signal.</p>
@@ -268,7 +269,9 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
     scrim.querySelector(".ig-go")?.addEventListener("click", nativePrompt);
     document.body.append(scrim);
     document.addEventListener("keydown", onKey);
-    (scrim.querySelector(".ig-go") || scrim.querySelector(".ig-close")).focus();
+    // The dialog itself takes focus, not a button: on touch a focused button
+    // draws its ring, which reads as a styling mistake. Tab reaches the buttons.
+    scrim.querySelector(".ig-sheet").focus();
   }
 
   go?.addEventListener("click", () => (r ? open() : nativePrompt()));
