@@ -38,9 +38,18 @@ const GLYPH = {
   compass: svg('<circle cx="12" cy="12" r="9.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>'),
 };
 
+// What a screen reader calls each button that is drawn without words.
+const SPOKEN = {
+  share: "Share", more: "More", bars: "Toolbar menu", kebab: "More options",
+  menu: "Menu", compass: "Open in Safari",
+};
+
 // A button as the browser draws it: the glyph, and its label when it has one.
+// One drawn without a label still needs a name, or step 1 is read aloud as
+// "Tap in the toolbar".
 const key = (glyph, label = "") =>
-  `<span class="ig-key">${GLYPH[glyph]}${label ? `<span>${label}</span>` : ""}</span>`;
+  `<span class="ig-key">${GLYPH[glyph]}${label ? `<span>${label}</span>`
+    : `<span class="ig-sr">${SPOKEN[glyph]}</span>`}</span>`;
 const words = (label) => `<strong>${label}</strong>`;
 // (A step that ends on a button drops its full stop when drawn: a lone period
 // after the chip reads as a stray mark.)
@@ -143,6 +152,8 @@ const CSS = `
 .ig-key{ display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;
   padding: 3px 9px; margin: 1px 2px; border-radius: 8px; white-space: nowrap;
   background: #17110a; border: 1px solid rgba(200,153,63,0.3); color: var(--ink); font-size: 14.5px; }
+.ig-sr{ position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; }
 .ig-key svg{ width: 19px; height: 19px; flex: none; color: var(--brass); }
 .ig-note{ margin: 14px 0 0; padding: 10px 12px; border-radius: 8px; text-align: left;
   background: #17110a; font-size: 14.5px; color: var(--muted); }
@@ -246,7 +257,7 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
         ${note && !(r && r.outside) ? `<p class="ig-note">${note}</p>` : ""}
         <div class="ig-actions">
           ${oneTap ? `<button class="ig-go" type="button">Install</button>` : ""}
-          <button class="ig-close" type="button">${oneTap ? "Not now" : "Close"}</button>
+          <button class="ig-close" type="button">Close</button>
         </div>
       </div>
       ${!oneTap && r.arrow ? `<div class="ig-arrow" data-at="${r.arrow}">${ARROW}</div>` : ""}`;
@@ -262,11 +273,14 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
   hint.querySelectorAll("[data-dismiss]").forEach((b) =>
     b.addEventListener("click", () => { store.set(dismissKey, "1"); hint.hidden = true; }));
 
-  // Chrome holds its own install prompt until the page asks for it.
+  // Chrome holds its own install prompt until the page asks for it. If it
+  // arrives while the steps are showing, they give way to the one button.
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferred = e;
     showHint();
+    if (scrim) open();
+    else if (autoReady) autoOpen();
   });
   window.addEventListener("appinstalled", () => { close(); hint.hidden = true; });
 
@@ -274,13 +288,20 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
 
   // Once, on a phone or tablet, the sheet opens by itself: long enough after
   // the page settles that it reads as an offer rather than a wall. Android
-  // waits for Chrome's prompt, if it is coming, so the one-tap sheet wins.
+  // waits up to six seconds for Chrome's prompt, so where a one-tap install
+  // is coming, that is the sheet that opens.
   const SEEN = dismissKey.replace(/dismissed$/, "") + "autoShown";
-  if (r && !dismissed() && store.get(SEEN) !== "1") {
-    setTimeout(() => {
-      if (installed() || dismissed() || scrim) return;
-      store.set(SEEN, "1");
-      open();
-    }, 2200);
+  let autoPending = !!r && !dismissed() && store.get(SEEN) !== "1";
+  let autoReady = false;
+  function autoOpen() {
+    if (!autoPending) return;
+    autoPending = false;
+    if (installed() || dismissed() || scrim) return;
+    store.set(SEEN, "1");
+    open();
+  }
+  if (autoPending) {
+    setTimeout(() => { autoReady = true; if (!isAndroid || deferred) autoOpen(); }, 2200);
+    if (isAndroid) setTimeout(autoOpen, 6000);
   }
 }
