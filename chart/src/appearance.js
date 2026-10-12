@@ -88,10 +88,17 @@ export const TARNISHED_OFF = "Kept polished. A trace of oxide remains in the rec
  * bounce off the lower edge. Ten stops and not two, because the app's rule is
  * that metal never sits at one value across an area the eye can resolve —
  * a smooth two-stop ramp reads as plastic whatever the hue.
+ *
+ * The shaded core sits below the middle, not on it, because a button's
+ * lettering is centred: the letters cross base into mid rather than mid into
+ * dark, which takes brass and sterling from 2.6:1 to over 5:1. These are the
+ * app's own stops (Brass.polished, launch-prep 6b4a052). Bronze and copper
+ * reach only about 3:1 whatever the ramp does: their mids are too dark for the
+ * ink, which is a palette question, not a ramp one.
  */
 function polished(m) {
-  return `linear-gradient(180deg, ${m.dark} 0%, ${m.base} 7%, ${m.spec} 16%, ${m.lit} 24%, ${m.mid} 37%, ` +
-    `${m.dark} 52%, ${m.mid} 64%, ${m.lit} 77%, ${m.mid} 88%, ${m.deep} 100%)`;
+  return `linear-gradient(180deg, ${m.dark} 0%, ${m.base} 6%, ${m.spec} 15%, ${m.lit} 26%, ${m.base} 42%, ` +
+    `${m.mid} 60%, ${m.dark} 78%, ${m.mid} 86%, ${m.lit} 93%, ${m.deep} 100%)`;
 }
 
 /**
