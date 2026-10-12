@@ -1,0 +1,165 @@
+/* The iPhone app's look, for every page of the site but the homepage.
+ *
+ * Each value here is traceable to the app's Swift source, and should stay so:
+ * colours to `Palette.brassAndInk` resolved through `Palette.with(.brass)`
+ * (the metal's accent replaces the palette's own brass, as the app does),
+ * type to `FontSet.nativeSky`, cards and labels to `BirthChartView` and
+ * `PlateLabel` in `Theme.swift`, the metal to `MetalFinish` and `Brass`.
+ *
+ * These are only the defaults before any script runs. chart/src/appearance.js
+ * overwrites every token here from the visitor's Appearance choice, so a page
+ * that loads it follows the app's other palettes, metals, and faces too. The
+ * homepage is the exception and keeps the app's welcome-screen night.
+ */
+
+:root{
+  /* Palette.brassAndInk, with the brass metal's accent. */
+  --night: #14100A;
+  --ground: #14100A;
+  --panel: #1B1206;
+  --ink: #EDE0C0;
+  --muted: #9A8A66;
+  --brass: #B08C3F;
+  --bright: #F0D493;
+  --resist: #F3E6C4;
+  --rule: rgba(176,140,63,0.3);
+  --danger: #d4775f;
+  --glow: rgba(176,140,63,0.14);
+  --stars: 0;
+  --instrument: #14100A;
+  --fused: #F0D493;
+  --flow: #F3E6C4;
+  --friction: #d4775f;
+  --fire: #DD6440;
+
+  /* FontSet.nativeSky: New York over San Francisco over Menlo, and the
+     nearest thing a Windows or Android device already carries. */
+  --font-display: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, Menlo, Consolas, monospace;
+
+  /* The polished brass ramp (MetalFinish.brass, Brass.polished). */
+  --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 6%, #FDF1CD 14%, #F0D493 24%, #C9A24C 40%, #B08C3F 66%, #6D5424 82%, #B08C3F 89%, #F0D493 95%, #3D2F14 100%);
+  --metal-wear: none;
+  --on-metal: #1A1408;
+  --engrave: 0 1px 0 rgba(253,241,205,0.6);
+  --metal-lift: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.35), inset 1px 0 0 rgba(255,255,255,.14), inset -1px 0 0 rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.45);
+
+  /* Layout.swift */
+  --readable: 680px;
+  --form: 620px;
+  --gallery: 820px;
+  --wheel: 560px;
+
+  color-scheme: dark;
+}
+
+html{ background: var(--ground); }
+body{
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+/* The site's old night sky. Pages still carrying the element keep working;
+   it just isn't drawn. */
+.stars{ display: none !important; }
+
+h1, h2, h3, .display{ font-family: var(--font-display); color: var(--resist); font-weight: 600; }
+a{ color: var(--bright); }
+
+/* `PlateLabel`: small semibold capitals in brass, tracked 1.6pt. */
+.plate-label{
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  letter-spacing: 1.6px; text-transform: uppercase; color: var(--brass);
+}
+
+/* The app's card: panel fill, 10pt corners, a quarter-strength brass rule. */
+.card{
+  background: var(--panel); border: 1px solid rgba(176,140,63,0.25);
+  border-radius: 10px; padding: 14px;
+}
+.card.featured{ border-color: rgba(221,100,64,0.32); } /* "Your Whole Chart": fire at .32 */
+.card > :first-child{ margin-top: 0; }
+.card > :last-child{ margin-bottom: 0; }
+
+/* Morgan's standing rule: every button sits on a plate. */
+.plate{
+  background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 12px; padding: clamp(16px, 3vw, 22px); --panel: var(--ground);
+}
+.plate > :first-child{ margin-top: 0; }
+.plate > :last-child{ margin-bottom: 0; }
+
+.muted{ color: var(--muted); }
+
+/* Metal buttons: the app's `wornBrassButton` + `brassBevel` + engraved label. */
+.metal-button{
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-body); font-size: 16px; font-weight: 600;
+  letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
+  padding: 11px 22px; border-radius: 8px; border: 1px solid transparent; cursor: pointer;
+  background: var(--metal-wear) center / cover no-repeat, var(--metal);
+  color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
+  text-decoration: none;
+}
+.metal-button:active{ filter: brightness(.93); }
+.quiet-button{
+  font-family: var(--font-body); font-size: 15px; padding: 10px 16px; border-radius: 8px;
+  border: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer;
+}
+
+/* The inline navigation title the app's screens carry (17pt semibold). */
+.nav-bar{
+  position: sticky; top: 0; z-index: 50;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  min-height: 44px; padding: env(safe-area-inset-top, 0px) 12px 0;
+  background: color-mix(in srgb, var(--ground) 82%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(18px); backdrop-filter: saturate(1.4) blur(18px);
+  border-bottom: 0.5px solid rgba(255,255,255,0.08);
+}
+.nav-bar .title{ grid-column: 2; font-family: var(--font-body); font-size: 17px; font-weight: 600; color: var(--ink); margin: 0; }
+.nav-bar .leading{ grid-column: 1; display: flex; gap: 4px; }
+.nav-bar .trailing{ grid-column: 3; display: flex; gap: 4px; justify-content: flex-end; }
+.nav-bar button, .nav-bar a.icon{
+  width: 44px; height: 44px; display: grid; place-items: center;
+  background: none; border: 0; color: var(--bright); cursor: pointer; padding: 0;
+}
+.nav-bar svg{ width: 22px; height: 22px; }
+
+/* The system tab bar, tinted with the palette's bright brass. */
+.tab-bar{
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  padding: 6px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--ground) 82%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(18px); backdrop-filter: saturate(1.4) blur(18px);
+  border-top: 0.5px solid rgba(255,255,255,0.08);
+}
+.tab-bar a{
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  color: #8E8E93; text-decoration: none; font-family: var(--font-body);
+  font-size: 10px; font-weight: 500; padding: 2px 0; position: relative;
+}
+.tab-bar a[aria-current="page"]{ color: var(--bright); }
+.tab-bar svg{ width: 26px; height: 26px; }
+.tab-bar .badge{
+  position: absolute; top: -4px; left: 52%; padding: 1px 6px; border-radius: 8px;
+  font-size: 9.5px; font-weight: 600; background: var(--metal); color: var(--on-metal);
+}
+
+/* A segmented control, as `Picker(.segmented)` draws one on a dark ground. */
+.segmented{
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px;
+  padding: 2px; border-radius: 9px; background: rgba(118,118,128,0.24);
+}
+.segmented button{
+  font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--ink);
+  background: none; border: 0; border-radius: 7px; padding: 6px 10px; cursor: pointer;
+}
+.segmented button[aria-selected="true"]{ background: rgba(99,99,102,0.9); font-weight: 600; }
+
+/* Readable columns, Layout.readable and friends. */
+.readable{ max-width: var(--readable); margin-inline: auto; }
+.screen{ padding: 20px; max-width: var(--readable); margin-inline: auto; }
+
+@media (prefers-reduced-motion: reduce){ *{ scroll-behavior: auto !important; } }

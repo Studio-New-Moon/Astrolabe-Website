@@ -8,14 +8,11 @@
 // choice lives in this browser only, and it is shared by every page that
 // shows the instrument: /chart/, /app/ and /app/motion/.
 //
-// Two deliberate differences from the app, both so that a visitor who never
-// opens the panel sees exactly the site they saw before it existed:
-//
-// - Brass & Ink with the brass metal keeps the site's own dress: the night
-//   sky behind the page, and the slightly lifted brass the site's labels were
-//   already set in. Every other combination is the app's, unaltered.
-// - The default type is Engraved (Cinzel, Spectral, JetBrains Mono), which is
-//   what the site has always been set in. The app defaults to Native Sky.
+// There are no differences from the app any more. Until 2026-10-12 Brass & Ink
+// kept the site's own night sky and lifted brass, and the type defaulted to
+// Engraved; Morgan then asked for every page to look exactly like the app, so
+// the defaults are the app's own: Brass & Ink, polished brass, Native Sky.
+// (The homepage keeps a night sky because the app's welcome screen has one.)
 
 const STORE = "astrolabe.appearance.v1";
 export const EVENT = "astrolabe:appearance";
@@ -170,7 +167,7 @@ export const FONT_SETS = [
 export const TYPE_BLURB = "A display face for headings and names, a body face for readings, a mono face for degrees and coordinates — the same three roles, differently struck.";
 export const COLOR_BLURB = "Every color below already appears somewhere in the app — the batik dyes, the parchment, the metal. Changing the scheme re-tints the whole instrument, not just the background.";
 
-const DEFAULTS = { scheme: "brass", metal: "brass", tarnished: false, fontSet: "engraved" };
+const DEFAULTS = { scheme: "brass", metal: "brass", tarnished: false, fontSet: "nativeSky" };
 
 // ---------------------------------------------------------------- Random
 
@@ -244,23 +241,15 @@ export function resolve(state = load()) {
   const daily = state.scheme === RANDOM ? dailyPick() : null;
   const scheme = SCHEMES.find((s) => s.id === (daily ? daily.scheme : state.scheme)) ?? SCHEMES[0];
   const metal = METALS.find((m) => m.id === (daily ? daily.metal : state.metal)) ?? METALS[0];
-  const fonts = FONT_SETS.find((f) => f.id === state.fontSet) ?? FONT_SETS[3];
-  // The site's own dress, kept exactly for the one combination it was made in.
-  const siteDress = scheme.id === "brass" && metal.id === "brass";
-  const a = siteDress ? { brass: "#C8993F", bright: "#E8C87A" } : accent(metal, scheme.isDark);
+  const fonts = FONT_SETS.find((f) => f.id === state.fontSet) ?? FONT_SETS[0];
+  const a = accent(metal, scheme.isDark);
 
-  const page = siteDress ? {
-    "--night": "#090B1C", "--ground": "#17110a", "--panel": "#221a10",
-    "--ink": "#ede0c4", "--muted": "#a6926c", "--brass": "#c8993f", "--bright": "#E8C87A",
-    "--resist": "#F3E6C4", "--rule": "rgba(200,153,63,0.3)", "--danger": "#d4775f",
-    "--glow": "rgba(184,150,63,.14)", "--stars": "1", "--instrument": "#14100A",
-    "--fused": "#e8c87a", "--flow": "#f3e6c4", "--friction": "#d4775f",
-  } : {
+  const page = {
     "--night": scheme.ground, "--ground": scheme.isDark ? scheme.ground : scheme.panel, "--panel": scheme.panel,
     "--ink": scheme.ink, "--muted": scheme.muted, "--brass": a.brass, "--bright": a.bright,
     "--resist": scheme.resist, "--rule": alpha(a.brass, scheme.isDark ? 0.3 : 0.35),
     "--danger": scheme.isDark ? "#d4775f" : scheme.fire,
-    "--glow": alpha(a.brass, scheme.isDark ? 0.14 : 0.1), "--stars": scheme.isDark ? "1" : "0",
+    "--glow": alpha(a.brass, scheme.isDark ? 0.14 : 0.1), "--stars": "0",
     "--instrument": scheme.ground,
     "--fused": a.bright, "--flow": scheme.resist, "--friction": scheme.isDark ? "#d4775f" : scheme.fire,
   };
@@ -276,9 +265,7 @@ export function resolve(state = load()) {
     instrument: {
       metal: metal.id,
       tarnished: state.tarnished,
-      // Left empty for the site's own dress, so the renderer's defaults — the
-      // colours the instrument has always been drawn in — stay exactly as they were.
-      palette: siteDress ? {} : {
+      palette: {
         ground: scheme.ground, brass: a.brass, resist: scheme.resist, muted: scheme.muted,
         fire: scheme.fire, plate: scheme.plate, engraving: scheme.engraving, horizonLine: scheme.horizonLine,
       },
@@ -288,7 +275,7 @@ export function resolve(state = load()) {
     // Chart in Motion draws its own SVG instrument. Its glyphs stay in the
     // faces its plate was measured around, as the app's wheel keeps its hand-
     // measured glyphs; the metal and the scheme re-tint it like everything else.
-    motion: siteDress ? {} : {
+    motion: {
       ground: scheme.ground, limb: scheme.panel, line: metal.deep, brass: a.brass, bright: a.bright,
       resist: scheme.resist, muted: scheme.muted, band: scheme.isDark ? metal.deep : scheme.panel,
       mater: [metal.dark, metal.deep, scheme.plate],
@@ -298,9 +285,7 @@ export function resolve(state = load()) {
       numeral: metal.lit,
     },
     // The aspect lines on the instrument, by tone.
-    aspects: siteDress
-      ? { fused: "#E8C87A", flow: "#F3E6C4", friction: "#D4775F" }
-      : { fused: a.bright, flow: scheme.resist, friction: scheme.isDark ? "#D4775F" : scheme.fire },
+    aspects: { fused: a.bright, flow: scheme.resist, friction: scheme.isDark ? "#D4775F" : scheme.fire },
   };
 }
 

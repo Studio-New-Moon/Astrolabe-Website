@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. cache.addAll fails the whole install if any
 // entry 404s, so a renamed module has to be renamed here too.
 
-const CACHE = "astrolabe-app-v8";
+const CACHE = "astrolabe-app-v9";
 
 // Each installable page clears only caches with its own prefix. Caches are
 // shared across the site, and deleting everything that isn't ours would wipe
@@ -25,6 +25,7 @@ const OWN = "astrolabe-app-";
 const SHELL = [
   "/app/",
   "/app/manifest.webmanifest",
+  "/assets/app.css",
   "/app/motion/",
   "/app/src/motion-page.js",
   "/app/src/motion.js",
@@ -56,7 +57,8 @@ const SHELL = [
 
 // What this worker answers for. Everything else — fonts, /prints/, the
 // homepage — goes straight to the network untouched.
-const MINE = ["/app/", "/chart/src/", "/chart/data/", "/chart/icons/"];
+// /assets/app.css is the app's look, shared by every page but the homepage.
+const MINE = ["/app/", "/chart/src/", "/chart/data/", "/chart/icons/", "/assets/app.css"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));

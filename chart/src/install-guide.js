@@ -150,7 +150,7 @@ const CSS = `
   display: grid; place-items: center; font-size: 14px; font-weight: 600;
   color: var(--brass); border: 1px solid var(--brass); margin-top: 1px; }
 .ig-key{ display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;
-  padding: 3px 9px; margin: 1px 2px; border-radius: 8px; white-space: nowrap;
+  padding: 3px 9px; margin: 1px 0; border-radius: 8px; white-space: nowrap;
   background: #17110a; border: 1px solid rgba(200,153,63,0.3); color: var(--ink); font-size: 14.5px; }
 .ig-sr{ position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden;
   clip-path: inset(50%); white-space: nowrap; }
@@ -160,6 +160,8 @@ const CSS = `
 .ig-actions{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
 .ig-actions button{ font-family: inherit; font-size: 15px; cursor: pointer; border-radius: 8px;
   padding: 9px 18px; border: 1px solid rgba(200,153,63,0.3); background: transparent; color: var(--muted); }
+.ig-actions button:focus{ outline: none; }
+.ig-actions button:focus-visible{ outline: 2px solid var(--bright, var(--brass)); outline-offset: 2px; }
 .ig-actions .ig-go{ border: 1px solid var(--brass); background: var(--brass); color: var(--ground); }
 .ig-arrow{ position: fixed; z-index: 1001; width: 34px; height: 56px; color: var(--bright, var(--brass));
   filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); pointer-events: none; }
