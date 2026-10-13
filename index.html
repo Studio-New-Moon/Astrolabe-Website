@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Follow My Astrolabe — Birth Charts and Horoscopes, Rising Sign First</title>
 <meta name="description" content="Cast your birth chart free on a working astrolabe, read a daily horoscope from your whole chart, subscribe for deeper readings, and order zodiac prints.">
 <!-- What a shared link shows: iMessage, Slack, Facebook, and the rest read these. -->
@@ -16,364 +16,302 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The Follow My Astrolabe wordmark in brass on a night sky, over the line Your Path, Cast in Metal.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#090B1C">
 <link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Metamorphous is the wordmark's face; everything else is the app's own
+     type (FontSet.nativeSky), which the device already carries. -->
+<link href="https://fonts.googleapis.com/css2?family=Metamorphous&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
 <style>
+  /* The homepage is the app's welcome screen, so it keeps the welcome
+     screen's night (#090B1C) instead of Brass & Ink's ground. Everything
+     else here (cards, plate labels, the metal) is the app's, from app.css. */
   :root{
-    --ground:#14100A;
-    --ground-deep:#0B0805;
-    --panel:#1B1206;
-    --panel-line:#3A2C12;
-    --brass:#B8963F;
-    --brass-bright:#E8C87A;
-    --resist:#F3E6C4;
-    --ink:#EDE0C0;
-    --muted:#9A8A66;
+    --ground:#090B1C;
     --night:#090B1C;
-    --shadow: rgba(0,0,0,.55);
+    --title-gold: linear-gradient(180deg, #8A6C2E 0%, #D9B45F 9%, #FDF1CD 20%, #E6C47F 30%, #C19A4D 44%, #9D7C33 56%, #BD9540 66%, #F2DDA0 79%, #C29C48 90%, #7A5F28 100%);
+    /* The polished brass ramp, exactly as measured for legible lettering
+       (Brass.polished; f9fef0b). Not to be re-spaced. */
+    --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 6%, #FDF1CD 14%, #F0D493 24%, #C9A24C 40%, #B08C3F 66%, #6D5424 82%, #B08C3F 89%, #F0D493 95%, #3D2F14 100%);
+    --metal-wear: url("/assets/metal/brass-polished-wear.png");
   }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;background:var(--night);}
-  section[id]{scroll-margin-top:84px;}
-  body{
-    margin:0;
-    background:transparent;
-    color:var(--ink);
-    font-family:'Spectral',Georgia,'Times New Roman',serif;
-    font-size:17px;
-    line-height:1.65;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
-  img{max-width:100%;display:block;}
-  a{color:var(--brass-bright);}
-  h1,h2,h3{font-family:'Cinzel',Georgia,serif;font-weight:600;text-wrap:balance;margin:0;}
-  .wordmark{font-family:'Metamorphous',Georgia,serif;}
-  .eyebrow{
-    font-family:'JetBrains Mono',ui-monospace,monospace;
-    font-size:12.5px;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    color:var(--brass);
-  }
-  .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
-  .prose{max-width:640px;}
-  section{position:relative;}
-
-  /* ---------- Starfield backdrop (the whole page) ---------- */
-  .stars{
-    position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
-  }
-  .stars span{
-    position:absolute;width:2px;height:2px;border-radius:50%;
-    background:#B9C7EA;opacity:.42;
+  html{ background:#090B1C; scroll-behavior:smooth; }
+  body{ background:transparent; overflow-x:hidden; }
+  img{ max-width:100%; display:block; }
+  .visually-hidden{
+    position:absolute !important; width:1px; height:1px; margin:-1px; padding:0; border:0;
+    overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap;
   }
 
-  /* ---------- Nav ---------- */
-  header.nav{
-    position:sticky;top:0;z-index:20;
-    background:linear-gradient(var(--night) 65%, transparent);
-    backdrop-filter:blur(6px);
+  /* The night behind everything below the welcome screen: the same sky's
+     stars and constellations, without its planets, held still. */
+  .backdrop{ position:fixed; inset:0; width:100vw; height:100lvh; z-index:-1; pointer-events:none; }
+
+  /* ================= The welcome screen (WelcomeView) =================
+     --k is the app's `scale`: 1 at compact width, side/272 at regular. */
+  .welcome{
+    --k:1; --side:272px;
+    position:relative; min-height:100vh; min-height:100svh;
+    background:#090B1C; overflow:hidden; isolation:isolate;
   }
-  .nav-inner{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:20px 28px;max-width:1080px;margin:0 auto;
+  @media (min-width:768px){ .welcome{ --k:1.4706; --side:400px; } }
+  .welcome .sky, .welcome .shooting{
+    position:absolute; inset:0; width:100%; height:100%; pointer-events:none;
+  }
+  .welcome .sky{ z-index:0; }
+  .welcome .shooting{ z-index:1; }
+  .welcome-stack{
+    position:relative; z-index:2;
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100vh; min-height:100svh;
+    padding:0 16px; box-sizing:border-box;
+  }
+  .welcome-stack .spacer{ flex:1 1 0; }
+  .welcome-stack .s1{ min-height:calc(20px * var(--k)); }
+  .welcome-stack .s2{ min-height:calc(4px * var(--k)); }
+  .welcome-stack .s3{ min-height:calc(36px * var(--k)); }
+
+  .title{ display:flex; flex-direction:column; align-items:center; gap:calc(10px * var(--k)); width:100%; }
+  .wordmark{
+    margin:0; display:flex; flex-direction:column; align-items:center; gap:calc(2px * var(--k));
+    font-family:'Metamorphous', Georgia, serif; font-weight:400; line-height:normal;
+  }
+  .wm-line{ position:relative; display:inline-block; }
+  .wm-text{
+    display:inline-block; white-space:nowrap;
+    background:var(--title-gold); -webkit-background-clip:text; background-clip:text;
+    color:transparent; -webkit-text-fill-color:transparent;
+  }
+  /* SwiftUI shadow radius r is a CSS blur of 2r. */
+  .wm-follow{ font-size:calc(15px * var(--k)); letter-spacing:4px;
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.85)) drop-shadow(0 2px 10px rgba(0,0,0,.45)); }
+  .wm-astro{ font-size:calc(40px * var(--k)); letter-spacing:3px;
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.85)) drop-shadow(0 3px 14px rgba(0,0,0,.45)); }
+  .wm-baseline{ display:inline-block; width:0; height:0; vertical-align:baseline; }
+  .r-star{
+    position:absolute; left:0; top:0; pointer-events:none;
+    width:calc(120px * var(--k)); height:calc(120px * var(--k));
+  }
+  .tagline{
+    margin:0; box-sizing:border-box; width:100%;
+    max-width:calc(420px * var(--k)); padding:0 calc(20px * var(--k));
+    font-family:ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-style:italic; font-size:calc(16px * var(--k)); line-height:1.25;
+    color:rgba(232,200,122,.65); text-align:center;
+  }
+  .moon-glow{
+    display:block; flex:none;
+    width:calc(200px * var(--k)); height:calc(84px * var(--k)); margin-top:calc(6px * var(--k));
+  }
+  /* The view is taller than the disc's square so the throne and its rings
+     have room; the extra is handed straight back with a negative margin. */
+  .instrument{
+    position:relative; flex:none;
+    width:var(--side); height:calc(var(--side) * 316 / 272);
+    margin-top:calc(var(--side) * -44 / 272);
+    touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent;
+    cursor:grab; outline:none; border-radius:50%;
+    transform:scale(.85); opacity:0;
+  }
+  .instrument:active{ cursor:grabbing; }
+  .instrument:focus-visible{ box-shadow:0 0 0 2px rgba(232,200,122,.55); }
+  .appeared .instrument{
+    transform:none; opacity:1;
+    transition:transform .9s cubic-bezier(0,0,.58,1) .15s, opacity .9s cubic-bezier(0,0,.58,1) .15s;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .instrument{ transform:none; opacity:1; }
+    .appeared .instrument{ transition:none; }
+  }
+  .instrument canvas{ position:absolute; inset:0; width:100%; height:100%; }
+  /* `.shadow(color: .black.opacity(0.55), radius: 28, y: 14)`, following
+     the silhouette as it narrows through the turn. */
+  .instrument-shadow{
+    position:absolute; left:8%; right:8%;
+    top:calc(var(--side) * (44 / 272 + 0.08) + 14px); height:calc(var(--side) * 0.79);
+    border-radius:50%; background:rgba(0,0,0,.55); filter:blur(28px);
+    pointer-events:none;
+  }
+
+  /* ENTER: `wornBrassButton` + `brassBevel` + the engraved label. */
+  .enter{
+    position:relative; flex:none; box-sizing:border-box;
+    display:inline-flex; align-items:center; justify-content:center;
+    width:calc(168px * var(--k)); padding:calc(14px * var(--k)) 0;
+    border-radius:999px; text-decoration:none;
+    font-family:ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-weight:500; font-size:calc(15px * var(--k)); line-height:1.2;
+    letter-spacing:calc(3px * var(--k)); text-indent:calc(3px * var(--k)); text-transform:uppercase;
+    color:#1A1408; text-shadow:0 1px 0 rgba(253,241,205,.6);
+    background:var(--wear, none) center / 100% 100% no-repeat, var(--metal);
+    box-shadow:0 1px 4px rgba(0,0,0,.45);
+  }
+  .enter::after{
+    content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; pointer-events:none;
+    background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(0,0,0,.35));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  .enter:active{ filter:brightness(.93); }
+  .enter:focus-visible{ outline:2px solid #E8C87A; outline-offset:3px; }
+
+  /* ================= Below the welcome screen ================= */
+  .site-nav{
+    position:fixed; left:0; right:0; top:0; z-index:50;
+    padding-top:env(safe-area-inset-top, 0px);
+    background:color-mix(in srgb, #090B1C 82%, transparent);
+    -webkit-backdrop-filter:saturate(1.4) blur(18px); backdrop-filter:saturate(1.4) blur(18px);
+    border-bottom:.5px solid rgba(255,255,255,.08);
+    transform:translateY(-110%); transition:transform .25s ease;
+  }
+  .site-nav.shown{ transform:none; }
+  @media (prefers-reduced-motion: reduce){ .site-nav{ transition:none; } }
+  .site-nav .inner{
+    max-width:1080px; margin:0 auto; min-height:48px; padding:0 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
   }
   .nav-name{
-    font-family:'Metamorphous',Georgia,serif;
-    font-size:19px;letter-spacing:.06em;color:var(--brass-bright);
+    display:inline-flex; flex-direction:column; align-items:center; line-height:1.3;
+    font-family:'Metamorphous', Georgia, serif; font-size:18px; letter-spacing:.06em;
     text-decoration:none;
+    background:var(--title-gold); -webkit-background-clip:text; background-clip:text;
+    color:transparent; -webkit-text-fill-color:transparent;
   }
-  /* "Follow My" over the wordmark, at the proportions the app's welcome
-     screen sets it: 15pt over 40pt, tracked wider. Stacked and centred, so
-     the letter-spacing trailing the last letter is given back on the left. */
-  .nav-name, .footer-brand .wordmark{
-    display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;
-  }
-  .wm-follow{
-    /* Never under 9px, or the small menu wordmark stops being legible. */
-    font-size:max(.375em,9px);letter-spacing:.27em;padding-left:.27em;margin-bottom:.12em;
-  }
-  .nav-links{display:flex;gap:28px;align-items:center;}
+  .nav-name .small{ font-size:9px; letter-spacing:.27em; padding-left:.27em; margin-bottom:-.2em; }
+  .nav-links{ display:flex; gap:22px; align-items:center; }
   .nav-links a{
-    font-family:'Cinzel',Georgia,serif;font-size:12.5px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--muted);text-decoration:none;
+    font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
+    color:var(--muted); text-decoration:none;
   }
-  .nav-links a:hover{color:var(--brass-bright);}
+  .nav-links a:hover{ color:var(--bright); }
+  @media (max-width:600px){ .nav-links{ display:none; } }
 
-  /* ---------- Hero ---------- */
-  .hero{
-    background:
-      radial-gradient(ellipse 900px 600px at 50% -10%, rgba(184,150,63,.14), transparent 60%);
-    padding:96px 0 120px;
-    text-align:center;
-    border-bottom:1px solid var(--panel-line);
-  }
-  .hero-mark{
-    width:min(620px,72vw);height:auto;margin:0 auto 22px;
-  }
-  .hero .subtitle{
-    font-family:'Cinzel',Georgia,serif;font-weight:600;
-    font-size:clamp(14px,1.8vw,17px);letter-spacing:.18em;text-transform:uppercase;
-    color:var(--brass-bright);opacity:.9;margin:0;
-  }
-  .hero-cta{
-    margin-top:48px;display:flex;flex-direction:column;align-items:center;gap:14px;
-  }
-  .badge{
-    display:inline-flex;align-items:center;gap:10px;
-    font-family:'Cinzel',Georgia,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--resist);
-    padding:13px 26px;border-radius:999px;
-    background:linear-gradient(180deg,#2a1f0c,#150f06);
-    border:1px solid var(--brass);
-    box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
-  }
-  .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--brass-bright);
-    box-shadow:0 0 8px var(--brass-bright);}
-  .hero-note{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
-    max-width:36ch;text-wrap:balance;}
-  /* The first thing a visitor can do, so it's filled brass; the print
-     shop below it is the second, so it keeps the outlined pill.
-     Not the chart pages' struck metal: its dark middle band sits right
-     behind the lettering, which made these hard to read on the marketing
-     page. Only the light brass tones here, so the label holds at 9:1 or
-     better from top to bottom. */
-  .chart-link{
-    display:inline-flex;align-items:center;
-    font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--night);text-decoration:none;
-    padding:15px 32px;border-radius:999px;
-    background:linear-gradient(180deg,#F6E2AE,var(--brass-bright) 55%,#D4AF5E);
-    box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5);
-    transition:transform .2s ease, filter .2s ease;
-  }
-  .chart-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
-  .chart-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
-  .chart-note{margin:-6px 0 18px;}
-  a.shop-link{text-decoration:none;transition:transform .2s ease, filter .2s ease;}
-  a.shop-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
-  a.shop-link:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px;}
+  main{ display:block; }
+  section[id]{ scroll-margin-top:64px; }
+  .wrap{ max-width:var(--readable); margin:0 auto; padding:0 16px; }
+  .wrap.wide{ max-width:1080px; }
+  .band{ padding-block:clamp(28px, 6vw, 56px); }
+  .band:first-child{ padding-top:clamp(40px, 8vw, 72px); }
 
-  .pricing .cta{
-    margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:12px;
+  /* The app's card, holding one feature: plate label, title, prose. */
+  .feature.card{ padding:clamp(18px, 4vw, 26px); }
+  .feature .plate-label{ display:block; margin:0 0 8px; }
+  .feature h2, .head h2{
+    font-family:var(--font-display); font-weight:600; color:var(--resist);
+    font-size:clamp(22px, 3.6vw, 28px); line-height:1.22; margin:0 0 12px; text-wrap:balance;
+  }
+  .feature p{ color:var(--ink); opacity:.9; margin:0; }
+  .feature p + p{ margin-top:12px; }
+  .feature p a{ color:var(--bright); }
+  .feature .shot{
+    margin-top:18px; border-radius:10px; overflow:hidden;
+    border:1px solid rgba(176,140,63,0.25); background:var(--panel);
+  }
+  .feature .shot img{ width:100%; height:auto; }
+  .lede{
+    margin:0 0 18px; text-align:center;
+    font-family:var(--font-display); font-weight:600; font-size:13px; letter-spacing:2.2px;
+    text-transform:uppercase; color:var(--bright); opacity:.9;
   }
 
-  /* ---------- Feature sections ---------- */
-  .feature{padding:104px 0;border-bottom:1px solid var(--panel-line);}
-  .feature .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
-  .feature.reverse .wrap{direction:rtl;}
-  .feature.reverse .wrap > *{direction:ltr;}
-  .feature h2{font-size:clamp(26px,3.2vw,36px);margin:10px 0 20px;color:var(--resist);}
-  .feature p{color:var(--ink);opacity:.88;}
-  .feature p + p{margin-top:14px;}
-  /* A sentence lifted out of the reading itself and set as type, so the
-     writing is legible at any width and readable as text rather than only
-     as pixels inside a screenshot. */
-  .pullquote{margin:26px 0 0;padding:0 0 0 20px;border-left:2px solid var(--brass);}
-  .pullquote blockquote{
-    margin:0;font-family:'Cinzel',Georgia,serif;font-weight:500;
-    font-size:clamp(17px,1.9vw,20px);line-height:1.5;
-    color:var(--brass-bright);text-wrap:balance;
+  /* Morgan's standing rule: every button sits on a plate with what it does. */
+  .plate{
+    background:#221a10; border:1px solid rgba(200,153,63,0.3); border-radius:12px;
+    padding:clamp(16px, 3vw, 22px);
   }
-  .pullquote cite{
-    display:block;margin-top:10px;font-style:normal;
-    font-family:'JetBrains Mono',ui-monospace,monospace;
-    font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-  }
-  /* Sections that carry no screenshot: one column, held to a reading measure. */
-  .feature.prose-only .wrap{grid-template-columns:1fr;max-width:760px;}
-  .feature .section-cta{margin-top:26px;}
-  /* Chart in Motion is for tablets and computers: its page tells a phone
-     screen so, and this section isn't offered on one at all. Same line as
-     the page, 600px each way, so a phone on its side doesn't qualify. */
-  @media (max-width:599.98px), (max-height:599.98px){ #motion{display:none;} }
-  .shot{
-    border-radius:18px;overflow:hidden;
-    border:1px solid var(--panel-line);
-    box-shadow:0 30px 70px var(--shadow);
-    background:var(--panel);
-  }
-  .shot img{border-radius:18px;width:100%;height:auto;}
+  .plate.actions{ display:grid; gap:18px; }
+  .plate .action{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
+  .plate .note{ margin:0; font-size:14px; color:var(--muted); flex:1 1 220px; }
+  .feature .plate{ margin-top:18px; }
+  .metal-button{ background:var(--metal-wear) center / cover no-repeat, var(--metal); }
+  .metal-button:focus-visible, .quiet-button:focus-visible{ outline:2px solid var(--bright); outline-offset:3px; }
+  a.quiet-button{ display:inline-block; text-decoration:none; }
 
-  /* ---------- Philosophy break ---------- */
-  .philosophy{
-    padding:120px 0;text-align:center;
-    border-bottom:1px solid var(--panel-line);
-  }
-  .philosophy .eyebrow{display:block;margin-bottom:22px;}
+  /* Chart in Motion is for tablets and computers: its page tells a phone-
+     sized screen so, and this section isn't offered on one at all. Same line
+     as the page, 600px each way, so a small screen on its side doesn't
+     qualify. */
+  @media (max-width:599.98px), (max-height:599.98px){ #motion{ display:none; } }
+
+  .philosophy{ text-align:center; }
+  .philosophy .plate-label{ display:block; margin-bottom:14px; }
   .philosophy p{
-    font-family:'Cinzel',Georgia,serif;font-weight:500;
-    font-size:clamp(22px,3.4vw,32px);line-height:1.5;
-    max-width:820px;margin:0 auto;color:var(--resist);
-    text-wrap:balance;
+    font-family:var(--font-display); font-weight:500; color:var(--resist);
+    font-size:clamp(20px, 3.4vw, 28px); line-height:1.45; margin:0 auto; max-width:760px; text-wrap:balance;
   }
-  .philosophy p span{color:var(--brass);}
+  .philosophy p span{ color:var(--bright); }
 
-  /* ---------- Gallery strip ---------- */
-  .gallery{padding:104px 0;border-bottom:1px solid var(--panel-line);}
-  .gallery-head{text-align:center;max-width:640px;margin:0 auto 56px;padding:0 20px;}
-  .gallery-head h2{font-size:clamp(26px,3.2vw,36px);color:var(--resist);margin:10px 0 16px;}
-  .gallery-head p{color:var(--muted);}
-  .gallery-head .tangible{
-    margin:22px 0 0;font-family:'Cinzel',Georgia,serif;font-weight:500;
-    font-size:clamp(17px,1.9vw,20px);letter-spacing:.04em;color:var(--brass-bright);
+  .head{ text-align:center; max-width:var(--readable); margin:0 auto 24px; padding:0 16px; }
+  .head .plate-label{ display:block; margin-bottom:8px; }
+  .head p{ color:var(--muted); margin:0; }
+  .head p + p{ margin-top:10px; }
+  .head .tangible{
+    margin-top:16px; font-family:var(--font-display); font-weight:600; font-size:clamp(17px, 2.2vw, 20px);
+    color:var(--bright);
   }
-  .strip{
-    display:flex;gap:24px;overflow-x:auto;padding:8px 28px 24px;
-    scroll-snap-type:x mandatory;
-    width:fit-content;max-width:100%;margin:0 auto;
-  }
-  .strip::-webkit-scrollbar{height:6px;}
-  .strip::-webkit-scrollbar-thumb{background:var(--panel-line);border-radius:3px;}
-  .strip .shot{flex:0 0 auto;width:260px;scroll-snap-align:start;}
-  /* The twelve signs themselves, each a way into the print shop. */
   .sign-grid{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;
-    max-width:1080px;margin:0 auto;padding:0 28px;
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:14px;
+    max-width:var(--gallery); margin:0 auto; padding:0 16px;
   }
-  .sign-tile{display:block;text-decoration:none;color:var(--muted);text-align:center;}
-  .sign-tile img{width:100%;height:auto;border-radius:12px;border:1px solid var(--panel-line);
-    box-shadow:0 14px 34px var(--shadow);transition:transform .2s ease, filter .2s ease;}
-  .sign-tile:hover img{transform:translateY(-2px);filter:brightness(1.06);}
-  .sign-tile span{display:block;margin-top:8px;font-family:'Cinzel',Georgia,serif;font-size:13px;
-    letter-spacing:.1em;text-transform:uppercase;}
-  .sign-tile:hover span{color:var(--brass-bright);}
-  @media (max-width:820px){ .sign-grid{grid-template-columns:repeat(3,1fr);gap:14px;} }
-  @media (max-width:520px){ .sign-grid{grid-template-columns:repeat(2,1fr);gap:12px;padding:0 20px;} }
-  /* A plain text link under a feature, for the one thing it's about. */
-  .section-link{
-    display:inline-block;margin-top:22px;font-family:'Cinzel',Georgia,serif;font-size:13px;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--brass-bright);text-decoration:none;
-    border-bottom:1px solid var(--brass);padding-bottom:3px;
-  }
-  .section-link:hover{color:var(--resist);}
-
-  /* ---------- Pricing ---------- */
-  .pricing{padding:112px 0;text-align:center;}
-  .pricing-head{max-width:560px;margin:0 auto 52px;}
-  .pricing-head h2{font-size:clamp(26px,3.2vw,36px);color:var(--resist);margin:10px 0 16px;}
-  .pricing-head p{color:var(--muted);}
-  .plans{
-    display:grid;grid-template-columns:1fr 1fr;gap:22px;
-    max-width:640px;margin:0 auto;
-  }
-  .plan{
-    border:1px solid var(--panel-line);border-radius:16px;padding:32px 24px;
-    background:var(--panel);text-align:left;
-  }
-  .plan.yearly{border-color:var(--brass);position:relative;}
-  .plan .save{
-    position:absolute;top:-13px;right:20px;
-    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
-    background:var(--brass-bright);color:var(--ground-deep);
-    padding:4px 10px;border-radius:999px;font-weight:600;
-  }
-  .plan .name{font-family:'Cinzel',Georgia,serif;font-size:13px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--brass);}
-  .plan .price{font-family:'Cinzel',Georgia,serif;font-size:34px;color:var(--resist);margin:10px 0 4px;}
-  .plan .price sub{font-family:'Spectral',serif;font-size:14px;color:var(--muted);}
-  .plan .desc{font-size:14px;color:var(--muted);margin-top:10px;}
-  .plans.sizes{grid-template-columns:repeat(3,1fr);max-width:860px;}
-  .plans.sizes .plan{text-align:center;}
-  /* The one claim about what a subscription is *not* buying. Sits between
-     the button and the legal fine print: louder than the fine print, since
-     it is a reason to trust the price, quieter than the pitch above it. */
-  .pledge{max-width:560px;margin:30px auto 0;font-size:15px;color:var(--ink);opacity:.9;}
-  .pledge em{font-style:normal;color:var(--brass-bright);}
-  .fine{max-width:560px;margin:32px auto 0;font-size:13px;color:var(--muted);}
-
-  /* ---------- Footer ---------- */
-  footer{
-    padding:80px 0 40px;
-    border-top:1px solid var(--panel-line);
-  }
-  .footer-top{
-    display:flex;justify-content:space-between;align-items:flex-start;
-    flex-wrap:wrap;gap:40px;margin-bottom:56px;
-  }
-  .footer-brand .wordmark{font-size:24px;color:var(--brass-bright);}
-  .footer-brand p{color:var(--muted);font-size:14px;max-width:280px;margin-top:10px;}
-  .studio-credit{
-    display:flex;align-items:center;gap:9px;margin-top:16px;
-  }
-  .studio-credit span{
-    font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);
-    letter-spacing:.02em;
-  }
-  .studio-credit .beetle{height:26px;width:auto;opacity:.9;}
-  .studio-credit .studio-wordmark{height:13px;width:auto;opacity:.9;margin-top:2px;}
-
-  /* ---------- Climate commitment ---------- */
-  .climate{
-    padding:96px 0;text-align:center;
-    border-bottom:1px solid var(--panel-line);
-  }
-  .climate-icon{
-    width:40px;height:40px;margin:0 auto 22px;color:var(--brass);
-  }
-  .climate h2{font-size:clamp(26px,3.2vw,36px);color:var(--resist);margin:10px 0 16px;}
-  .climate p{max-width:560px;margin:0 auto;color:var(--muted);}
-  .climate-link{
-    display:inline-flex;align-items:center;gap:10px;margin-top:32px;
-    font-family:'Cinzel',Georgia,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--resist);text-decoration:none;
-    padding:13px 26px;border-radius:999px;
-    background:linear-gradient(180deg,#2a1f0c,#150f06);
-    border:1px solid var(--brass);
-    box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  .sign-tile{ display:block; text-decoration:none; color:var(--muted); text-align:center; }
+  .sign-tile img{
+    width:100%; height:auto; border-radius:10px; border:1px solid rgba(176,140,63,0.25);
     transition:transform .2s ease, filter .2s ease;
   }
-  .climate-link:hover{transform:translateY(-2px);filter:brightness(1.06);}
-  .climate-link svg{width:15px;height:15px;flex:0 0 auto;}
-  .footer-links{display:flex;gap:64px;flex-wrap:wrap;}
-  .footer-col h4{
-    font-family:'Cinzel',Georgia,serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--brass);margin-bottom:14px;
+  .sign-tile:hover img{ transform:translateY(-2px); filter:brightness(1.06); }
+  .sign-tile span{
+    display:block; margin-top:6px; font-size:11px; font-weight:600; letter-spacing:1.6px;
+    text-transform:uppercase; color:var(--brass);
   }
-  .footer-col a{display:block;color:var(--ink);opacity:.8;text-decoration:none;font-size:14.5px;margin-bottom:10px;}
-  .footer-col a:hover{opacity:1;color:var(--brass-bright);}
+  .sign-tile:hover span{ color:var(--bright); }
+  .sign-tile:focus-visible{ outline:2px solid var(--bright); outline-offset:3px; border-radius:10px; }
+  @media (max-width:820px){ .sign-grid{ grid-template-columns:repeat(3, 1fr); } }
+  @media (max-width:520px){ .sign-grid{ grid-template-columns:repeat(2, 1fr); gap:12px; } }
+
+  .sizes{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; max-width:var(--gallery); margin:0 auto; }
+  .sizes .card{ text-align:center; }
+  .sizes .name{ font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; color:var(--brass); }
+  .sizes .price{ font-family:var(--font-display); font-weight:600; font-size:28px; color:var(--resist); margin:6px 0 2px; }
+  .sizes .desc{ font-size:14px; color:var(--muted); margin-top:6px; }
+  @media (max-width:640px){ .sizes{ grid-template-columns:1fr; } }
+  .center-plate{ max-width:var(--readable); margin:18px auto 0; text-align:center; }
+  .center-plate .action{ justify-content:center; }
+  .fine{ max-width:var(--readable); margin:16px auto 0; font-size:13px; color:var(--muted); text-align:center; }
+
+  .climate{ text-align:center; }
+  .climate-icon{ width:40px; height:40px; margin:0 auto 14px; }
+  .climate .feature p{ color:var(--muted); opacity:1; }
+  .climate-link svg{ width:15px; height:15px; flex:0 0 auto; }
+
+  footer{ padding-block:48px 32px; border-top:.5px solid rgba(255,255,255,.08); margin-top:24px; }
+  .footer-top{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:32px; margin-bottom:36px; }
+  .footer-brand .nav-name{ font-size:24px; }
+  .footer-brand .nav-name .small{ font-size:9px; }
+  .footer-brand p{ color:var(--muted); font-size:14px; max-width:280px; margin:10px 0 0; }
+  .studio-credit{ display:flex; align-items:center; gap:9px; margin-top:16px; }
+  .studio-credit span{ font-family:var(--font-mono); font-size:11.5px; color:var(--muted); }
+  .studio-credit .beetle{ height:26px; width:auto; opacity:.9; }
+  .studio-credit .studio-wordmark{ height:13px; width:auto; opacity:.9; margin-top:2px; }
+  .footer-links{ display:flex; gap:56px; flex-wrap:wrap; }
+  .footer-col h3{ font-family:var(--font-body); margin:0 0 12px; }
+  .footer-col a{ display:block; color:var(--ink); opacity:.8; text-decoration:none; font-size:14.5px; margin-bottom:9px; }
+  .footer-col a:hover{ opacity:1; color:var(--bright); }
   .footer-bottom{
-    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
-    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
-    padding-top:28px;border-top:1px solid var(--panel-line);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    font-family:var(--font-mono); font-size:12px; color:var(--muted);
+    padding-top:20px; border-top:.5px solid rgba(255,255,255,.08);
   }
-
-  @media (max-width:820px){
-    .feature .wrap{grid-template-columns:1fr;gap:36px;}
-    .feature.reverse .wrap{direction:ltr;}
-    .plans, .plans.sizes{grid-template-columns:1fr;}
-    .nav-links{gap:18px;}
-  }
-  @media (max-width:600px){
-    /* The section anchors are a desktop nicety — on a phone the page is
-       just scrolled, and the full link row collides with the wordmark
-       at this width. */
-    .nav-links{display:none;}
-  }
-
-
-  /* Every button sits on a plate, as the web app's do: a dark panel with a
-     faint brass rule, holding the button together with what it does. */
-  .hero-cta, .feature .section-cta, .pricing .cta{
-    width:fit-content;max-width:100%;
-    padding:clamp(18px,3vw,26px) clamp(20px,4vw,30px);
-    border:1px solid rgba(200,153,63,0.3);border-radius:12px;background:#221a10;
-  }
-  .hero-cta, .pricing .cta{margin-left:auto;margin-right:auto;}
-  .feature .section-cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;}
-  .feature .section-cta .section-link{margin-top:0;}
 </style>
 </head>
 <body>
-<div class="stars" aria-hidden="true"></div>
+<canvas class="backdrop" aria-hidden="true"></canvas>
 
-<header class="nav">
-  <div class="nav-inner">
-    <a class="nav-name" href="#top" aria-label="Follow My Astrolabe"><span class="wm-follow">FOLLOW MY</span>ASTROLABE</a>
-    <nav class="nav-links">
+<header class="site-nav" id="site-nav" aria-label="Site">
+  <div class="inner">
+    <a class="nav-name" href="#top" aria-label="Follow My Astrolabe, back to the top"><span class="small">FOLLOW MY</span>ASTROLABE</a>
+    <nav class="nav-links" aria-label="Sections">
       <a href="/chart/">Cast a Chart</a>
       <a href="#readings">Readings</a>
       <a href="#instrument">Instrument</a>
@@ -384,123 +322,144 @@
   </div>
 </header>
 
-<section class="hero" id="top">
-  <div class="wrap">
-    <!-- The app's own rendered wordmark rather than a CSS/SVG redraw,
-         which after two attempts still didn't read as the same mark.
-         Captured from the welcome screen on black and on white, so the
-         transparency is exact instead of keyed out of a starfield. -->
-    <img class="hero-mark" src="assets/wordmark-follow-my-astrolabe.png" alt="Follow My Astrolabe" width="882" height="272">
-    <p class="subtitle">Your Path, Cast in Metal</p>
-    <div class="hero-cta">
-      <a class="chart-link" href="/chart/">Cast Your Chart</a>
-      <span class="hero-note chart-note">Free, and laid out from your rising sign, not your sun</span>
-      <a class="badge shop-link" href="/app/">Read Your Horoscope</a>
-      <span class="hero-note">Today's reading, free, from your whole chart</span>
+<!-- The first screenful is the app's welcome screen (WelcomeView.swift). -->
+<section class="welcome" id="top" aria-label="Welcome">
+  <canvas class="sky" aria-hidden="true"></canvas>
+  <canvas class="shooting" aria-hidden="true"></canvas>
+  <div class="welcome-stack">
+    <div class="spacer s1"></div>
+    <div class="title">
+      <h1 class="wordmark">
+        <span class="visually-hidden">Follow My Astrolabe</span>
+        <span class="wm-line" aria-hidden="true"><span class="wm-text wm-follow">FOLLOW MY</span></span>
+        <span class="wm-line" aria-hidden="true"><span class="wm-text wm-astro">ASTROLABE<span class="wm-baseline"></span></span><canvas class="r-star"></canvas></span>
+      </h1>
+      <p class="tagline">An Ancient Instrument for Navigating Your Way through the Stars.</p>
     </div>
+    <canvas class="moon-glow" aria-hidden="true"></canvas>
+    <div class="instrument" role="img" tabindex="0" aria-label="A brass astrolabe. Drag left or right to turn it over.">
+      <div class="instrument-shadow" aria-hidden="true"></div>
+      <canvas aria-hidden="true"></canvas>
+    </div>
+    <div class="spacer s2"></div>
+    <a class="enter" href="/app/" aria-description="Continues into the app" title="Continues into the app">Enter</a>
+    <div class="spacer s3"></div>
   </div>
 </section>
 
-<section class="feature prose-only">
+<main>
+<section class="band" aria-labelledby="rising-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">Your Rising Sign, First</span>
-      <h2>Laid Out From Your Rising Sign, Not Your Sun.</h2>
+    <p class="lede">Your Path, Cast in Metal</p>
+    <div class="feature card">
+      <span class="plate-label">Your Rising Sign, First</span>
+      <h2 id="rising-title">Laid Out From Your Rising Sign, Not Your Sun.</h2>
       <p>Most horoscopes start from your sun sign. This chart starts from your rising sign instead, the sign coming up over the horizon at the minute and place you were born, and counts every house from it. That's how whole-sign houses work, the oldest way of reading a chart.</p>
       <p>If the sign on your wheel isn't the one you expected, that's not a mistake. It's the more personal one.</p>
+      <div class="plate actions">
+        <div class="action"><a class="metal-button" href="/chart/">Cast Your Chart</a><p class="note">Free, and laid out from your rising sign, not your sun</p></div>
+        <div class="action"><a class="metal-button" href="/app/">Read Your Horoscope</a><p class="note">Today's reading, free, from your whole chart</p></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="feature" id="instrument">
+<section class="band" id="instrument" aria-labelledby="instrument-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">A Real Instrument</span>
-      <h2>A Working Instrument, Engraved in Brass.</h2>
+    <div class="feature card">
+      <span class="plate-label">A Real Instrument</span>
+      <h2 id="instrument-title">A Working Instrument, Engraved in Brass.</h2>
       <p>An astrolabe is the oldest computer built for the sky — a brass instrument astronomers and navigators turned by hand for over a thousand years to read the positions of the stars.</p>
       <p>Cast your chart and it's struck the way the instrument always was: the houses cut into the rim for the place you were born, the sky over your own latitude engraved on the plate, and every planet riding the rete at its true position. Tap a house or a planet to see what's there.</p>
-      <a class="section-link" href="/chart/">Cast Your Chart</a>
+      <div class="shot"><img src="assets/screenshots/web-instrument.jpg" alt="A birth chart drawn as a brass astrolabe, with Leo rising, the planets as brass studs on the rete, and the twelve houses numbered around the rim" width="780" height="782" loading="lazy"></div>
+      <div class="plate actions">
+        <div class="action"><a class="metal-button" href="/chart/">Cast Your Chart</a><p class="note">Your birth date, time, and place, struck on the plate</p></div>
+      </div>
     </div>
-    <div class="shot"><img src="assets/screenshots/web-instrument.jpg" alt="A birth chart drawn as a brass astrolabe, with Leo rising, the planets as brass studs on the rete, and the twelve houses numbered around the rim" width="780" height="782" loading="lazy"></div>
   </div>
 </section>
 
-<section class="feature prose-only">
+<section class="band" aria-labelledby="points-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">The Points Most Charts Skip</span>
-      <h2>More Than Ten Planets.</h2>
+    <div class="feature card">
+      <span class="plate-label">The Points Most Charts Skip</span>
+      <h2 id="points-title">More Than Ten Planets.</h2>
       <p>Alongside the ten planets and the four angles, your chart places the North Node, Chiron, and Black Moon Lilith, each with its sign, its degree, and its house.</p>
     </div>
   </div>
 </section>
 
-<section class="feature prose-only">
+<section class="band" aria-labelledby="checked-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">We Went and Checked</span>
-      <h2>A Chart Is Only as Good as the Sky It Was Cast From.</h2>
+    <div class="feature card">
+      <span class="plate-label">We Went and Checked</span>
+      <h2 id="checked-title">A Chart Is Only as Good as the Sky It Was Cast From.</h2>
       <p>The planets in yours come from VSOP87, the planetary theory published by Bretagnon and Francou at the Paris Observatory — all but Pluto, which the theory doesn't reach and which keeps orbital elements of its own. The Moon comes from the published lunar theory that goes with it. Neither was typed in from memory and taken on trust — the planets are generated straight from the observatory's own data files.</p>
       <p>Then we checked them against an independent ephemeris, a source with no reason to agree with us: nearly half a million positions across the last century, every planet sampled every day and the Moon more often still. Chiron crosses two planets' orbits, so no tidy formula holds it; its positions come from JPL's own tracking. Every body in your chart lands within a fiftieth of a degree. The Sun and the seven planets the theory covers land within a hundredth.</p>
     </div>
   </div>
 </section>
 
-<section class="feature prose-only" id="readings">
+<section class="band" id="readings" aria-labelledby="readings-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">Readings</span>
-      <h2>Six Parts of a Life, Read From Your Own Chart.</h2>
+    <div class="feature card">
+      <span class="plate-label">Readings</span>
+      <h2 id="readings-title">Six Parts of a Life, Read From Your Own Chart.</h2>
       <p>Purpose, love, friends, career, home, and spirit. Each one shows the sign and the planet that rule it, one word for what it asks of you, and a horoscope for today. That's free, and it's read from your whole chart rather than your sun sign alone &mdash; Purpose even spells its word out for everyone.</p>
       <p>A subscription opens the rest: what each of the other five words is asking, and the weekly, monthly, and yearly readings for all six. It's $9.99 a month or $79.99 a year, there's no account and no password, and you can cancel any time.</p>
-      <div class="section-cta"><a class="chart-link" href="/app/">Open Your Readings</a> <a class="section-link" href="/plans/">What a subscription opens</a></div>
+      <div class="plate actions">
+        <div class="action"><a class="metal-button" href="/app/">Open Your Readings</a><p class="note">Today's reading for all six is free</p></div>
+        <div class="action"><a class="quiet-button" href="/plans/">What a Subscription Opens</a><p class="note">The weekly, monthly, and yearly readings, and the other five words</p></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="feature prose-only" id="motion">
+<section class="band" id="motion" aria-labelledby="motion-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">Chart in Motion</span>
-      <h2>Watch the Real Sky Move Around a Chart.</h2>
+    <div class="feature card">
+      <span class="plate-label">Chart in Motion</span>
+      <h2 id="motion-title">Watch the Real Sky Move Around a Chart.</h2>
       <p>A birth chart holds still inside the zodiac band while the actual sky runs past it, at anything from a day to a year each second. A line lights up the moment a moving planet makes an aspect to one in the chart, and when two planets meet, they pass each other the way they do overhead.</p>
       <p>Or take a single day at the birthplace and watch the zodiac and the planets turn through the houses, minute by minute, pausing on the minute of birth. It all runs in your browser, on a tablet or a computer.</p>
-      <div class="section-cta"><a class="chart-link" href="/app/motion/">Open Chart in Motion</a></div>
+      <div class="plate actions">
+        <div class="action"><a class="metal-button" href="/app/motion/">Open Chart in Motion</a><p class="note">On a tablet or a computer</p></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="feature prose-only">
+<section class="band" aria-labelledby="private-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">Yours Alone</span>
-      <h2>Nothing You Type Leaves Your Device.</h2>
+    <div class="feature card">
+      <span class="plate-label">Yours Alone</span>
+      <h2 id="private-title">Nothing You Type Leaves Your Device.</h2>
       <p>Your chart is worked out right in your own browser. Your birth date, time, and place are never sent to us or to anyone else, and even finding your birthplace runs on your device. There's no account to make and no password, and that holds for subscribers too: a subscription is an email address and a date, and nothing about your chart.</p>
     </div>
   </div>
 </section>
 
-<section class="feature prose-only">
+<section class="band" aria-labelledby="home-title">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">Keep It Close</span>
-      <h2>On Your Home Screen, With or Without a Signal.</h2>
+    <div class="feature card">
+      <span class="plate-label">Keep It Close</span>
+      <h2 id="home-title">On Your Home Screen, With or Without a Signal.</h2>
       <p>On an iPhone or iPad, open the <a href="/chart/">chart page</a>, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. On Android, choose <strong>Install</strong> when your browser offers it. It opens like an app, and once it's there it works with no signal at all.</p>
     </div>
   </div>
 </section>
 
-<div class="philosophy">
-  <div class="wrap">
-    <span class="eyebrow">The Whole Point</span>
+<section class="band philosophy" aria-label="The whole point">
+  <div class="wrap wide">
+    <span class="plate-label">The Whole Point</span>
     <p>None of this predicts your life.<br>It describes you precisely enough to steer by — so the paths you choose are the ones most likely to <span>fulfill you</span>.</p>
   </div>
-</div>
+</section>
 
-<section class="gallery" id="signs">
-  <div class="gallery-head">
-    <span class="eyebrow">Twelve Signs, in a Batik Style</span>
-    <h2>The Look of Dye in Cloth, Held by a Pale Wax-Resist Line.</h2>
+<section class="band" id="signs" aria-labelledby="signs-title">
+  <div class="head">
+    <span class="plate-label">Twelve Signs, in a Batik Style</span>
+    <h2 id="signs-title">The Look of Dye in Cloth, Held by a Pale Wax-Resist Line.</h2>
     <p>Every sign rendered in a warm, wax-resist batik style — digital art, created skillfully under the close, wash-by-wash direction of a real-life artist's eye, not left to run on its own. Worth exploring on their own, and available as real prints on real paper.</p>
     <p class="tangible">Astrology, Made Tangible.</p>
   </div>
@@ -520,54 +479,57 @@
   </div>
 </section>
 
-<section class="pricing" id="prints">
-  <div class="wrap">
-    <div class="pricing-head">
-      <span class="eyebrow">Chart to Canvas</span>
-      <h2>Your Sign, Off the Screen and On the Wall.</h2>
+<section class="band" id="prints" aria-labelledby="prints-title">
+  <div class="wrap wide">
+    <div class="head">
+      <span class="plate-label">Chart to Canvas</span>
+      <h2 id="prints-title">Your Sign, Off the Screen and On the Wall.</h2>
       <p>Any of the twelve signs, printed to order on 170&nbsp;gsm coated silk and shipped to you flat. Every print keeps the proportions the art was drawn in, so nothing gets cropped to fit.</p>
     </div>
-    <div class="plans sizes">
-      <div class="plan" data-size="Small">
+    <div class="sizes plans">
+      <div class="card plan" data-size="Small">
         <div class="name">Small</div>
         <div class="price" hidden></div>
         <div class="desc">12 &times; 16 in &middot; 300 &times; 400 mm</div>
       </div>
-      <div class="plan" data-size="Medium">
+      <div class="card plan" data-size="Medium">
         <div class="name">Medium</div>
         <div class="price" hidden></div>
         <div class="desc">18 &times; 24 in &middot; 450 &times; 600 mm</div>
       </div>
-      <div class="plan" data-size="Large">
+      <div class="card plan" data-size="Large">
         <div class="name">Large</div>
         <div class="price" hidden></div>
         <div class="desc">24 &times; 32 in &middot; 600 &times; 800 mm</div>
       </div>
     </div>
-    <div class="cta">
-      <a class="chart-link" href="/prints/">Choose Your Print</a>
+    <div class="plate center-plate">
+      <div class="action"><a class="metal-button" href="/prints/">Choose Your Print</a><p class="note">Any of the twelve signs, in any of the three sizes</p></div>
     </div>
     <p class="fine">Ships to addresses in the United States. Checkout is handled by Stripe, and each print is made and mailed by our print partner.</p>
   </div>
 </section>
 
-<section class="climate" id="climate">
+<section class="band climate" id="climate" aria-labelledby="climate-title">
   <div class="wrap">
-    <img class="climate-icon" src="assets/stripe-climate-badge.svg" alt="Stripe Climate" width="40" height="40" loading="lazy">
-    <span class="eyebrow">Climate Commitment</span>
-    <h2>5% of Print Sales, to Carbon Removal.</h2>
-    <p>Studio New Moon is a member of Stripe Climate. On every print ordered, 5% of that Stripe transaction funds permanent carbon removal — not offsets.</p>
-    <a class="climate-link" href="https://climate.stripe.com/lMRr5u" target="_blank" rel="noopener">
-      See Our Stripe Climate Commitment
-    </a>
+    <div class="feature card">
+      <img class="climate-icon" src="assets/stripe-climate-badge.svg" alt="Stripe Climate" width="40" height="40" loading="lazy">
+      <span class="plate-label">Climate Commitment</span>
+      <h2 id="climate-title">5% of Print Sales, to Carbon Removal.</h2>
+      <p>Studio New Moon is a member of Stripe Climate. On every print ordered, 5% of that Stripe transaction funds permanent carbon removal — not offsets.</p>
+      <div class="plate center-plate">
+        <div class="action"><a class="quiet-button climate-link" href="https://climate.stripe.com/lMRr5u" target="_blank" rel="noopener">See Our Stripe Climate Commitment</a><p class="note">Opens Stripe Climate's page for Studio New Moon</p></div>
+      </div>
+    </div>
   </div>
 </section>
+</main>
 
 <footer>
-  <div class="wrap">
+  <div class="wrap wide">
     <div class="footer-top">
       <div class="footer-brand">
-        <div class="wordmark" aria-label="Follow My Astrolabe"><span class="wm-follow">FOLLOW MY</span>ASTROLABE</div>
+        <a class="nav-name" href="#top" aria-label="Follow My Astrolabe"><span class="small">FOLLOW MY</span>ASTROLABE</a>
         <p>A working brass instrument, in your browser.</p>
         <div class="studio-credit">
           <span>Built by</span>
@@ -577,14 +539,14 @@
       </div>
       <div class="footer-links">
         <div class="footer-col">
-          <h4>Explore</h4>
+          <h3 class="plate-label">Explore</h3>
           <a href="/chart/">Cast a Chart</a>
           <a href="#instrument">The Instrument</a>
           <a href="#signs">The Signs</a>
           <a href="#prints">Prints</a>
         </div>
         <div class="footer-col">
-          <h4>Legal</h4>
+          <h3 class="plate-label">Legal</h3>
           <a href="/privacy/">Privacy Policy</a>
           <a href="/support/">Support</a>
           <a href="mailto:morgan@followmyastrolabe.com">Contact</a>
@@ -598,23 +560,17 @@
   </div>
 </footer>
 
-<script>
-  // A small, fixed field of stars behind the whole page — generated once,
-  // not animated, so it reads as a backdrop rather than a distraction.
-  (function () {
-    var field = document.querySelector('.stars');
-    if (!field) return;
-    var count = 90;
-    var html = '';
-    for (var i = 0; i < count; i++) {
-      var x = Math.random() * 100;
-      var y = Math.random() * 100;
-      var s = (Math.random() * 1.6 + 0.6).toFixed(2);
-      var o = (Math.random() * 0.3 + 0.12).toFixed(2);
-      html += '<span style="left:' + x + '%;top:' + y + '%;width:' + s + 'px;height:' + s + 'px;opacity:' + o + '"></span>';
-    }
-    field.innerHTML = html;
-  })();
+<script type="module">
+  import { initWelcome, initBackdrop } from "/assets/home/welcome.js";
+  initBackdrop(document.querySelector(".backdrop"));
+  const welcome = document.querySelector(".welcome");
+  initWelcome(welcome);
+  // The site's own navigation stays out of the welcome screen, as the app
+  // has none there, and comes in once it has been scrolled past.
+  const nav = document.getElementById("site-nav");
+  new IntersectionObserver(([e]) => {
+    nav.classList.toggle("shown", !e.isIntersecting);
+  }, { rootMargin: "-64px 0px 0px 0px" }).observe(welcome);
 </script>
 
 <script>
@@ -626,7 +582,7 @@
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (data) {
         ((data && data.prints) || []).forEach(function (p) {
-          var plan = document.querySelector('.plans.sizes .plan[data-size="' + p.label + '"]');
+          var plan = document.querySelector('.plans .plan[data-size="' + p.label + '"]');
           if (!plan) return;
           var el = plan.querySelector(".price");
           var amount;
