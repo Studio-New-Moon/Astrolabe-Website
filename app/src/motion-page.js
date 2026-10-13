@@ -144,7 +144,8 @@ const wheel = createMotionWheel($("motion"));
 
 // The Appearance panel: the page's tokens, the instrument's colours and the
 // aspect lines drawn on it all follow the choice, and follow it live.
-mountAppearance();
+// The panel's opener sits in the navigation bar, where the app keeps its toolbar.
+mountAppearance({ into: document.getElementById("navTrailing") ?? document.body });
 let aspectInk = resolve().aspects;
 wheel.setInk(resolve().motion);
 window.addEventListener(EVENT, (e) => {
