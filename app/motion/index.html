@@ -43,6 +43,14 @@
   .nav-bar .back svg{ width: 24px; height: 24px; }
   .nav-bar .ap-open{ position: static; width: auto; height: auto; display: inline-flex; padding: 7px 13px 7px 9px; color: var(--brass); }
   .nav-bar .title{ white-space: nowrap; }
+  /* Below 480px the bar can't hold the back label, the title, and a
+     labelled Appearance button at once: the button keeps only its icon,
+     as on /chart/, and its name stays for screen readers. */
+  @media (max-width: 479px){
+    .nav-bar .ap-open{ padding: 0; width: 44px; height: 44px; justify-content: center; border: 0; background: none; }
+    .nav-bar .ap-open svg{ width: 22px; height: 22px; }
+    .nav-bar .ap-open span{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  }
   h1, h2, h3{ font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
   h1{ font-size: clamp(26px, 4.4vw, 38px); }
   h2{ font-size: clamp(22px, 3.4vw, 30px); }
