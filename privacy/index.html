@@ -16,103 +16,23 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The Follow My Astrolabe wordmark in brass on a night sky, over the line Your Path, Cast in Metal.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
-<style>
-  :root{
-    --night: #090B1C;
-    --ground: #17110a;
-    --panel: #221a10;
-    --ink: #ede0c4;
-    --muted: #a6926c;
-    --brass: #c8993f;
-    --rule: rgba(200,153,63,0.3);
-  }
-  /* ---------- The night the homepage opens on ----------
-     The hero's ground, its brass glow and its starfield, fixed behind the
-     content so the sky holds still while the page scrolls. The warm --panel
-     plates sit on top of it, which is the point: brass against the sky. */
-  html{ background: var(--night); }
-  body::before{
-    content: "";
-    position: fixed; inset: 0; z-index: -1;
-    background: radial-gradient(ellipse 900px 600px at 50% -10%,
-                                rgba(184,150,63,.14), transparent 60%);
-  }
-  .stars{
-    position: fixed; inset: 0; z-index: -1;
-    overflow: hidden; pointer-events: none;
-  }
-  /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
-     cream as 17px body copy does not read as a star, it reads as a full
-     stop dropped into the sentence — worst on the privacy policy, which is
-     the longest read on the site. Pale blue keeps them stars. */
-  .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
-
-  *{ box-sizing: border-box; }
-  body{
-    margin: 0;
-    background: transparent;
-    color: var(--ink);
-    font-family: "Spectral", Georgia, "Times New Roman", serif;
-    font-size: 17px;
-    line-height: 1.65;
-    padding: clamp(28px, 6vw, 72px) 20px 90px;
-  }
-  main{ max-width: 660px; margin: 0 auto; }
-  .eyebrow a{ color: var(--brass); text-decoration: none; }
-  .eyebrow a:hover{ text-decoration: underline; }
-  .eyebrow{
-    font-size: 12.5px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--brass);
-    margin-bottom: 8px;
-  }
-  h1{
-    font-size: clamp(28px, 5vw, 36px);
-    line-height: 1.15;
-    margin: 0 0 14px;
-  }
-  .dates{ color: var(--muted); font-size: 14.5px; margin-bottom: 26px; }
-  .lede{
-    font-size: 18px;
-    padding: 18px 20px;
-    background: var(--panel);
-    border-radius: 10px;
-    border: 1px solid var(--rule);
-    margin-bottom: 8px;
-  }
-  h2{
-    font-size: 22px;
-    margin: 46px 0 4px;
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 10px;
-  }
-  h3{ font-size: 17px; margin: 26px 0 6px; color: var(--brass); }
-  p, li{ margin: 10px 0; }
-  ul{ padding-left: 22px; }
-  a{ color: var(--brass); }
-  strong{ color: var(--ink); }
-  footer{
-    margin-top: 56px;
-    padding-top: 20px;
-    border-top: 1px solid var(--rule);
-    color: var(--muted);
-    font-size: 14px;
-    font-style: italic;
-  }
-</style>
+<link rel="icon" href="/assets/favicon.png">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
 </head>
-<body>
-<div class="stars" aria-hidden="true"></div>
+<body class="page reading">
+<header class="nav-bar">
+  <div class="leading">
+    <a class="back" href="/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></a>
+  </div>
+  <div class="title" aria-hidden="true">Privacy Policy</div>
+  <div class="trailing"></div>
+</header>
 <main>
-  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
-  <h1>Privacy Policy</h1>
+  <h1 class="visually-hidden">Privacy Policy</h1>
   <div class="dates">Effective date: August 25, 2026 &middot; Last updated: September 22, 2026</div>
 
-  <p class="lede">Follow My Astrolabe is made by Studio New Moon, and it comes two ways: this website, and an iPhone and iPad app that's in testing and isn't on the App Store. The short version for both: your chart is worked out on your own device. There are no accounts, no ads, and no cookies, and your birth details never leave your device. The website counts how many people visit its pages, without cookies and without identifying anyone; the app counts nothing. Beyond the ordinary requests any website makes to load its pages and fonts, information leaves your device only when you choose: ordering a print, which involves a payment and a postal address, subscribing, which involves a payment and an email address, asking for a reading on this site, which sends the positions in your chart but never your birth details, and sending us feedback from the app. All of it is spelled out below.</p>
+  <p class="lede card">Follow My Astrolabe is made by Studio New Moon, and it comes two ways: this website, and an iPhone and iPad app that's in testing and isn't on the App Store. The short version for both: your chart is worked out on your own device. There are no accounts, no ads, and no cookies, and your birth details never leave your device. The website counts how many people visit its pages, without cookies and without identifying anyone; the app counts nothing. Beyond the ordinary requests any website makes to load its pages and fonts, information leaves your device only when you choose: ordering a print, which involves a payment and a postal address, subscribing, which involves a payment and an email address, asking for a reading on this site, which sends the positions in your chart but never your birth details, and sending us feedback from the app. All of it is spelled out below.</p>
 
   <h2>The Website</h2>
 
@@ -207,24 +127,6 @@
 
   <footer><a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a><br><br>This policy is written to be genuinely accurate to how the website and the app work today, not boilerplate &mdash; when a feature changes what either does, as print ordering and feedback did, this document is revised alongside it rather than after the fact.</footer>
 </main>
-<script>
-  // The same fixed field the homepage hero carries, sized to the viewport
-  // rather than one section. Generated once and never animated, so it reads
-  // as a backdrop instead of a distraction.
-  (function () {
-    var field = document.querySelector(".stars");
-    if (!field) return;
-    var html = "";
-    for (var i = 0; i < 90; i++) {
-      html += '<span style="left:' + (Math.random() * 100) +
-              '%;top:' + (Math.random() * 100) +
-              '%;width:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;height:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;opacity:' + (Math.random() * 0.3 + 0.12).toFixed(2) + '"></span>';
-    }
-    field.innerHTML = html;
-  })();
-</script>
 <!-- Cloudflare Web Analytics: counts page views without cookies. Left off
      /account/unlock/ and /order/thank-you/, whose URLs carry a one-time code
      and a Stripe session id. -->

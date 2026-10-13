@@ -18,211 +18,87 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="robots" content="index">
 <link rel="icon" href="/assets/favicon.png">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
+<!-- Only for the "Engraved" type a visitor may have chosen on the Chart pages;
+     the files are fetched only when that face is in use. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<script type="module">
+  // The visitor's Appearance choice from the Chart pages, as the app's own
+  // Prints screen follows Settings. Brass & Ink with brass when there is none.
+  import { apply } from "/chart/src/appearance.js";
+  apply();
+</script>
 <style>
-  :root{
-    /* Buttons, struck from polished brass. */
-    --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 6%, #FDF1CD 14%, #F0D493 24%, #C9A24C 40%, #B08C3F 66%, #6D5424 82%, #B08C3F 89%, #F0D493 95%, #3D2F14 100%);
-    --metal-wear: url("/assets/metal/brass-polished-wear.png");
-    --on-metal: #1A1408;
-    --engrave: 0 1px 0 rgba(253,241,205,0.6);
-    --metal-lift: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.35), inset 1px 0 0 rgba(255,255,255,.14), inset -1px 0 0 rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.45);
-    --night: #090B1C;
-    --ground: #17110a;
-    --panel: #221a10;
-    --ink: #ede0c4;
-    --muted: #a6926c;
-    --brass: #c8993f;
-    --rule: rgba(200,153,63,0.3);
-  }
-  /* ---------- The night the homepage opens on ----------
-     The hero's ground, its brass glow and its starfield, fixed behind the
-     content so the sky holds still while the page scrolls. The warm --panel
-     plates sit on top of it, which is the point: brass against the sky. */
-  html{ background: var(--night); }
-  body::before{
-    content: "";
-    position: fixed; inset: 0; z-index: -1;
-    background: radial-gradient(ellipse 900px 600px at 50% -10%,
-                                rgba(184,150,63,.14), transparent 60%);
-  }
-  .stars{
-    position: fixed; inset: 0; z-index: -1;
-    overflow: hidden; pointer-events: none;
-  }
-  /* Cooler and fainter than the type, on purpose. A 1.7px dot in the same
-     cream as 17px body copy does not read as a star, it reads as a full
-     stop dropped into the sentence — worst on the privacy policy, which is
-     the longest read on the site. Pale blue keeps them stars. */
-  .stars span{ position: absolute; border-radius: 50%; background: #B9C7EA; }
-
-  *{ box-sizing: border-box; }
-  body{
-    margin: 0;
-    background: transparent;
-    color: var(--ink);
-    font-family: "Spectral", Georgia, "Times New Roman", serif;
-    font-size: 17px;
-    line-height: 1.65;
-    padding: clamp(28px, 6vw, 72px) 20px 90px;
-  }
-  main{ max-width: 660px; margin: 0 auto; }
-  .eyebrow a{ color: var(--brass); text-decoration: none; }
-  .eyebrow a:hover{ text-decoration: underline; }
-  .eyebrow{
-    font-size: 12.5px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--brass);
-    margin-bottom: 8px;
-  }
-  h1{
-    font-size: clamp(28px, 5vw, 36px);
-    line-height: 1.15;
-    margin: 0 0 14px;
-  }
-  .dates{ color: var(--muted); font-size: 14.5px; margin-bottom: 26px; }
-  .lede{
-    font-size: 18px;
-    padding: 18px 20px;
-    background: var(--panel);
-    border-radius: 10px;
-    border: 1px solid var(--rule);
-    margin-bottom: 8px;
-  }
-  h2{
-    font-size: 22px;
-    margin: 46px 0 4px;
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 10px;
-  }
-  h3{ font-size: 17px; margin: 26px 0 6px; color: var(--brass); }
-  p, li{ margin: 10px 0; }
-  ul{ padding-left: 22px; }
-  a{ color: var(--brass); }
-  strong{ color: var(--ink); }
-  .contact{
-    font-size: 19px;
-    padding: 20px;
-    background: var(--panel);
-    border: 1px solid var(--rule);
-    border-radius: 10px;
-    margin: 22px 0 8px;
-  }
-  .contact strong{ display: block; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brass); margin-bottom: 6px; }
-  footer{
-    margin-top: 56px;
-    padding-top: 20px;
-    border-top: 1px solid var(--rule);
-    color: var(--muted);
-    font-size: 14px;
-    font-style: italic;
-  }
-
-  /* ---- ordering ---- */
-  .order{ margin: 26px 0 8px; }
+  /* The app's Prints screen (PrintsView.swift): a muted line centered at the
+     top, plate labels over each group, and cards at 11pt corners with a
+     0.22 brass rule. Ordering keeps the website's one form. */
   .order[hidden]{ display: none !important; }
-  fieldset{ border: 0; padding: 0; margin: 0 0 22px; }
-  legend{
-    font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--brass); padding: 0; margin-bottom: 10px;
-  }
-  .signs{ display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
+  fieldset{ border: 0; padding: 0; margin: 0; min-width: 0; }
+  fieldset + fieldset{ margin-top: 18px; }
+  legend{ padding: 0; margin-bottom: 10px; }
+  .signs{ display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
   .signs label{
     display: flex; flex-direction: column; gap: 6px;
-    padding: 8px; border: 1px solid var(--rule); border-radius: 8px;
-    background: var(--panel); cursor: pointer; font-size: 15.5px;
+    padding: 8px; border: 1px solid rgba(176,140,63,0.22); border-radius: 11px;
+    background: var(--panel); cursor: pointer; font-size: 15px; color: var(--ink);
   }
-  .signs label .row{ display: flex; align-items: baseline; gap: 7px; }
+  .signs label .row{ display: flex; align-items: center; gap: 7px; }
   /* 4:3, the proportion the art is composed in and the print is cut to.
      `height: auto` is load-bearing: the width/height attributes are there so
      the row reserves space before the image arrives, and without this the
      attribute height wins and aspect-ratio is ignored. */
   .signs label img{
     display: block; width: 100%; height: auto; aspect-ratio: 4 / 3;
-    object-fit: cover; border-radius: 5px; background: var(--rule);
+    object-fit: cover; border-radius: 6px; background: var(--rule);
   }
-  .signs .glyph{ color: var(--brass); font-size: 17px; }
-  .sizes{ display: flex; flex-direction: column; gap: 8px; }
+  .signs .glyph{ color: var(--brass); font-size: 16px; font-variant-emoji: text; }
+  .signs label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+  .sizes{ display: grid; gap: 8px; }
+  /* Built by the script from the live catalogue, so styled by position
+     rather than class: Paywall's tier row, as /assets/app.css's .row-card. */
   .sizes label{
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
-    padding: 12px 14px; border: 1px solid var(--rule); border-radius: 8px;
-    background: var(--panel); cursor: pointer;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 3px 10px; cursor: pointer;
+    background: var(--panel); border: 1px solid rgba(176,140,63,0.25);
+    border-radius: 10px; padding: 12px; font-size: 15px; color: var(--ink);
   }
-  .sizes .dim{ color: var(--muted); font-size: 15px; }
-  .sizes .price{ margin-left: auto; font-variant-numeric: tabular-nums; }
-  input[type=radio]{ accent-color: var(--brass); margin: 0; flex: none; }
-  .signs label:has(:checked), .sizes label:has(:checked){
-    border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass);
-  }
-  .qty{ display: flex; align-items: center; gap: 10px; }
-  .qty select{
-    font-family: inherit; font-size: 16px; padding: 7px 10px;
-    border: 1px solid var(--rule); border-radius: 8px;
-    background: var(--panel); color: var(--ink);
-  }
-  button.buy{
-    font-family: inherit; font-size: 17px; font-weight: 600;
-    padding: 13px 22px; border: 1px solid var(--brass); border-radius: 8px;
-    background: var(--brass); color: var(--ground); cursor: pointer;
-  }
-  button.buy:disabled{ opacity: 0.55; cursor: default; }
-  .note{ color: var(--muted); font-size: 15px; margin-top: 12px; }
-  .problem{
-    padding: 14px 16px; border: 1px solid var(--brass); border-radius: 8px;
-    background: var(--panel); margin: 18px 0;
-  }
-  .problem[hidden]{ display: none !important; }
-  :focus-visible{ outline: 2px solid var(--brass); outline-offset: 2px; }
+  .sizes label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+  .sizes .dim{ color: var(--muted); font-size: 13px; }
+  .sizes .price{ margin-left: auto; font-family: var(--font-display); color: var(--resist); font-variant-numeric: tabular-nums; }
+  .qty{ display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .order .buy{ margin-top: 20px; }
+  .order .note{ text-align: center; margin-top: 10px; }
 
-  figure.look{ margin: 26px 0 8px; }
+  figure.look{ margin: 0; }
   figure.look img{
     display: block; width: 100%; height: auto; aspect-ratio: 4 / 3;
-    border-radius: 10px; border: 1px solid var(--rule);
+    border-radius: 11px; border: 1px solid rgba(176,140,63,0.22);
     background: var(--panel);
   }
-  figure.look figcaption{
-    color: var(--muted); font-size: 15px; font-style: italic; margin-top: 10px;
-  }
-
-  /* The app's metal buttons (Brass.polished, WearMarks, BrassBevel, EngravedText),
-     always polished brass here: this page has no Appearance panel. The wear image is
-     the chart pages' own, saved from chart/src/appearance.js. */
-  :root button.buy{
-    background: var(--metal-wear) center / cover no-repeat, var(--metal);
-    color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
-    border-color: transparent;
-  }
-  :root button.buy:active{ filter: brightness(.93); }
-  /* The app's plate label: small capitals, tracked. */
-  :root button.buy{
-    font-family: inherit; font-size: 16px; font-weight: 600;
-    letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
-  }
-
-  /* Every button sits on a plate, as /app/'s do: a dark panel with a faint
-     brass rule, holding the button together with what it does. Inside one,
-     --panel turns to the ground colour, so fields and choices that use it
-     still stand out from the plate rather than vanishing into it. */
-  .plate{
-    margin: 26px 0; padding: clamp(18px, 3vw, 26px);
-    border: 1px solid rgba(200,153,63,0.3); border-radius: 12px;
-    background: #221a10; --panel: #17110a;
-  }
-  .plate > :first-child{ margin-top: 0; }
-  .plate > :last-child{ margin-bottom: 0; }
+  figure.look figcaption{ color: var(--muted); font-size: 12px; margin-top: 8px; text-align: center; }
+  figure.look figcaption strong{ color: var(--ink); }
+  .sizes-list{ margin: 10px 0; padding: 0; list-style: none; }
+  .sizes-list li{ padding: 6px 0; border-top: 1px solid rgba(176,140,63,0.15); }
+  .sizes-list li:first-child{ border-top: 0; }
+  .sizes-list strong{ color: var(--resist); font-family: var(--font-display); font-weight: 400; }
 </style>
 </head>
-<body>
-<div class="stars" aria-hidden="true"></div>
+<body class="page">
+<header class="nav-bar">
+  <div class="leading">
+    <a class="back" href="/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></a>
+  </div>
+  <div class="title" aria-hidden="true">Prints</div>
+  <div class="trailing"></div>
+</header>
 <main>
-  <div class="eyebrow"><a href="/">Follow My Astrolabe</a></div>
-  <h1>Chart to Canvas.</h1>
-
-  <p class="lede">Something from Follow My Astrolabe, off the screen and onto
-  a wall &mdash; printed to order on real paper and shipped to you flat.</p>
+  <div class="intro">
+    <h1 class="plate-label">Chart to Canvas</h1>
+    <p>Something from Follow My Astrolabe, off the screen and onto a wall
+    &mdash; printed to order on real paper and shipped to you flat.</p>
+  </div>
 
   <figure class="look">
     <img id="preview" src="/assets/signs/aries.jpg"
@@ -233,8 +109,9 @@
     another below and this changes.</figcaption>
   </figure>
 
-  <h2>The object</h2>
-
+  <section class="card">
+    <h2>The Object</h2>
+  <div class="muted-prose">
   <p>Prints are produced on 170&nbsp;gsm coated silk stock, in landscape, at the
   proportions the image was composed in &mdash; so nothing is cropped to fit a
   frame it was never meant for. Each one is made when it's ordered rather than
@@ -243,15 +120,17 @@
 
   <p>Three sizes, from one that suits a shelf to one that takes a wall:</p>
 
-  <ul>
+  <ul class="sizes-list">
     <li><strong>12 &times; 16 in</strong> &mdash; 300 &times; 400 mm</li>
     <li><strong>18 &times; 24 in</strong> &mdash; 450 &times; 600 mm</li>
     <li><strong>24 &times; 32 in</strong> &mdash; 600 &times; 800 mm</li>
   </ul>
 
   <p>Prices are shown at checkout.</p>
+  </div>
+  </section>
 
-  <h2>Order one</h2>
+  <h2 class="plate-label">Order One</h2>
 
   <div class="problem" id="problem" hidden></div>
 
@@ -263,7 +142,7 @@
 
   <form class="order plate" id="order" hidden>
     <fieldset>
-      <legend>Sign</legend>
+      <legend class="plate-label">Sign</legend>
       <div class="signs">
         <label><input type="radio" name="sign" value="aries" checked><img src="/assets/signs/aries-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♈</span>Aries</span></label>
         <label><input type="radio" name="sign" value="taurus"><img src="/assets/signs/taurus-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♉</span>Taurus</span></label>
@@ -281,30 +160,32 @@
     </fieldset>
 
     <fieldset>
-      <legend>Size</legend>
+      <legend class="plate-label">Size</legend>
       <div class="sizes" id="sizes"></div>
     </fieldset>
 
     <fieldset>
-      <legend>Quantity</legend>
+      <legend class="plate-label">Quantity</legend>
       <div class="qty">
         <label for="qty">How many</label>
         <select id="qty" name="qty"></select>
       </div>
     </fieldset>
 
-    <button class="buy" type="submit" id="buy">Continue to checkout</button>
+    <button class="buy metal-button wide" type="submit" id="buy">Continue to checkout</button>
     <p class="note">Payment is handled by Stripe on their own page &mdash; we
     never see your card. Shipping address is collected there too.</p>
   </form>
 
+  <hr class="divider">
+
   <h2>Questions</h2>
 
-  <p>Anything about an order that's already placed &mdash; where it is, or
+  <p class="muted-prose">Anything about an order that's already placed &mdash; where it is, or
   something wrong with it &mdash; goes to the same address as everything else.</p>
 
-  <div class="contact">
-    <strong>Email</strong>
+  <div class="contact card">
+    <span class="plate-label">Email</span>
     <a href="mailto:support@followmyastrolabe.com">support@followmyastrolabe.com</a>
   </div>
 
@@ -415,7 +296,7 @@
     .catch(function () {
       problem("Ordering is temporarily unavailable — we can't reach the order " +
               "service, and we'd rather show you nothing than a price we can't " +
-              "honour. Please try again shortly, or email us.");
+              "honor. Please try again shortly, or email us.");
     });
 
   form.addEventListener("submit", function (e) {
@@ -453,24 +334,6 @@
       });
   });
 })();
-</script>
-<script>
-  // The same fixed field the homepage hero carries, sized to the viewport
-  // rather than one section. Generated once and never animated, so it reads
-  // as a backdrop instead of a distraction.
-  (function () {
-    var field = document.querySelector(".stars");
-    if (!field) return;
-    var html = "";
-    for (var i = 0; i < 90; i++) {
-      html += '<span style="left:' + (Math.random() * 100) +
-              '%;top:' + (Math.random() * 100) +
-              '%;width:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;height:' + (Math.random() * 1.6 + 0.6).toFixed(2) +
-              'px;opacity:' + (Math.random() * 0.3 + 0.12).toFixed(2) + '"></span>';
-    }
-    field.innerHTML = html;
-  })();
 </script>
 <!-- Cloudflare Web Analytics: counts page views without cookies. Left off
      /account/unlock/ and /order/thank-you/, whose URLs carry a one-time code

@@ -168,3 +168,139 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
 .screen{ padding: 20px; max-width: var(--readable); margin-inline: auto; }
 
 @media (prefers-reduced-motion: reduce){ *{ scroll-behavior: auto !important; } }
+
+/* ---------- pages (site-pages) ----------
+ * The pages around the web app: /chart/, /plans/, /prints/, /account/,
+ * /privacy/, /support/ and /order/thank-you/. Each carries `class="page"` on
+ * its body, so nothing here reaches the homepage or /app/. Sizes are the
+ * app's own: a screen's padding and its 22pt VStack spacing from
+ * BirthChartView, section titles at displayFont(20) as SettingsView sets
+ * them, row text at bodyFont(15) and prose at 14, notes at 12 and 11.
+ */
+.page *, .page *::before, .page *::after{ box-sizing: border-box; }
+.page{ font-synthesis-weight: none; }
+.page :focus-visible{ outline: 2px solid var(--bright); outline-offset: 2px; }
+.page main{ max-width: var(--readable); margin-inline: auto; padding: 20px 20px 56px; }
+.page main.form-width{ max-width: calc(var(--form) + 44px); padding-inline: 22px; }
+.page main.gallery-width{ max-width: calc(var(--gallery) + 32px); padding-inline: 16px; }
+:where(.page) p{ margin: 0; }
+:where(.page) p + p{ margin-top: 10px; }
+.page main > * + *{ margin-top: 22px; }
+.page main > p + p{ margin-top: 12px; }
+.page main > .visually-hidden:first-child + *,
+.page main > :is(h2, h3) + *{ margin-top: 0; }
+.page main > .dates + *{ margin-top: 10px; }
+.page main > h2 + h3{ margin-top: 12px; }
+
+/* The plate's own fill is the palette's panel, and only what sits inside it
+   turns to the ground. Declaring --panel on the plate itself made its own
+   background resolve to the ground, so a plate showed as an outline only. */
+.page .plate{ --panel: inherit; }
+.page .plate > *{ --panel: var(--ground); }
+
+/* The back control the app's navigation stack gives every pushed screen:
+   a chevron and the name of where it goes, in the bar's tint. */
+.nav-bar a.back{
+  display: inline-flex; align-items: center; gap: 3px; height: 44px; min-width: 0;
+  padding-right: 6px; color: var(--bright); text-decoration: none;
+  font-family: var(--font-body); font-size: 17px;
+}
+.nav-bar a.back svg{ width: 12px; height: 20px; flex: none; }
+.nav-bar a.back span{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page .nav-bar .title{ text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 58vw; }
+
+.visually-hidden{
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* BirthChartView's header: one muted line, centered. */
+.page .intro{ text-align: center; color: var(--muted); font-size: 14px; line-height: 1.45; max-width: 46ch; margin-inline: auto; }
+.page .intro .plate-label{ display: block; margin-bottom: 8px; }
+.page .note{ color: var(--muted); font-size: 12px; line-height: 1.45; }
+.page .note.center{ text-align: center; }
+.page .prose{ font-size: 14px; line-height: 1.55; }
+.page .muted-prose{ font-size: 13px; line-height: 1.5; color: var(--muted); }
+
+/* Section titles as Settings sets them: the display face at 20, in resist,
+   regular weight (the app's displayFont default). */
+.page h2, .page .section-title{
+  font-family: var(--font-display); font-size: 20px; font-weight: 400;
+  line-height: 1.25; color: var(--resist); margin: 0 0 6px; text-wrap: balance;
+}
+.page h3{
+  font-family: var(--font-display); font-size: 17px; font-weight: 400;
+  line-height: 1.3; color: var(--resist); margin: 22px 0 6px; text-wrap: balance;
+}
+/* A heading that is a plate label stays one: PlateLabel, whatever element. */
+.page .plate-label{
+  font-family: var(--font-body); font-size: 11px; font-weight: 600; line-height: 1.4;
+  letter-spacing: 1.6px; text-transform: uppercase; color: var(--brass);
+}
+.page .divider{ border: 0; border-top: 1px solid rgba(176,140,63,0.25); margin-block: 24px 0; }
+.page .plate h2{ margin-bottom: 6px; }
+.page .plate > p{ font-size: 13px; color: var(--muted); line-height: 1.5; }
+.page .plate > * + *{ margin-top: 12px; }
+
+/* Messages: the app's notes in fire for what went wrong, brass for news. */
+.page .problem, .page .said{
+  background: var(--panel); border: 1px solid rgba(176,140,63,0.4);
+  border-radius: 10px; padding: 12px 14px; font-size: 14px; line-height: 1.45;
+}
+.page .problem{ border-color: rgba(221,100,64,0.55); }
+
+/* Fields, as BirthDetailsForm draws them: the ground inside a 6pt corner
+   and a 0.4 brass rule, the entered text in resist. */
+.page input:not([type=radio]):not([type=checkbox]), .page select{
+  font-family: var(--font-body); font-size: 16px; color: var(--resist);
+  background: var(--ground); border: 1px solid rgba(176,140,63,0.4);
+  border-radius: 6px; padding: 9px; min-width: 0; max-width: 100%;
+}
+.page input:invalid{ border-color: rgba(221,100,64,0.55); }
+.page input[type=radio]{ accent-color: var(--brass); margin: 0; flex: none; }
+
+/* A labelled row, label leading and control trailing, as a Form row is. */
+.page .form-row{
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 6px 12px; font-size: 14px; color: var(--ink);
+}
+.page .form-row > :last-child{ margin-left: auto; }
+.page .form-col{ display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--ink); }
+
+/* Full-width metal, as "Cast My Chart" and "Subscribe" are struck. */
+.page .metal-button.wide{ display: flex; width: 100%; padding-block: 12px; }
+.page .metal-button:disabled{ opacity: .55; cursor: default; }
+.page .metal-button{ text-align: center; text-wrap: balance; }
+.page .quiet-button{ font-size: 13px; color: var(--brass); }
+.page .text-link{
+  font-family: var(--font-body); font-size: 13px; color: var(--muted); background: none;
+  border: 0; padding: 0; text-decoration: underline; cursor: pointer;
+}
+
+/* The app's selectable row (Paywall's tier rows, Settings' profile rows). */
+.page .row-card{
+  display: flex; flex-wrap: wrap; align-items: center; gap: 3px 12px;
+  background: var(--panel); border: 1px solid rgba(176,140,63,0.25);
+  border-radius: 10px; padding: 12px; font-size: 15px; color: var(--ink);
+}
+.page .row-card .trailing{ margin-left: auto; font-variant-numeric: tabular-nums; }
+.page .row-card .sub{ display: block; font-size: 11px; color: var(--bright); }
+.page .row-card:has(input:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+
+/* A contact card: plate label over the address. */
+.page .contact .plate-label{ display: block; margin-bottom: 4px; }
+.page .contact a{ font-size: 17px; overflow-wrap: anywhere; }
+
+/* The reading pages: the policy and support, as the app's detail screens
+   read, prose in the body face at 15 and titles in the display face. */
+.page.reading main{ font-size: 15px; line-height: 1.6; }
+.page.reading h2{ font-size: 22px; margin: 34px 0 8px; padding-top: 24px; border-top: 1px solid rgba(176,140,63,0.25); }
+.page.reading .card p{ font-size: 15px; }
+.page .dates{ font-size: 12px; color: var(--muted); }
+
+.page footer{
+  margin-top: 40px; padding-top: 16px; border-top: 1px solid rgba(176,140,63,0.2);
+  color: var(--muted); font-size: 12px; line-height: 1.6; text-align: center;
+}
+.page footer a{ color: var(--brass); }
+.page footer p{ margin-top: 6px; }
