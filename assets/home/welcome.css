@@ -1,0 +1,117 @@
+/* The app's welcome screen (WelcomeView.swift), shared by the homepage and by
+   the installed web app, which opens on it. Colours that differ between the
+   two (--metal, which follows Appearance in the web app) come from the page. */
+
+.welcome{ --title-gold: linear-gradient(180deg, #8A6C2E 0%, #D9B45F 9%, #FDF1CD 20%, #E6C47F 30%, #C19A4D 44%, #9D7C33 56%, #BD9540 66%, #F2DDA0 79%, #C29C48 90%, #7A5F28 100%); }
+.welcome .visually-hidden{
+  position:absolute !important; width:1px; height:1px; margin:-1px; padding:0; border:0;
+  overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap;
+}
+
+/* ================= The welcome screen (WelcomeView) =================
+   --k is the app's `scale`: 1 at compact width, side/272 at regular. */
+.welcome{
+  --k:1; --side:272px;
+  position:relative; min-height:100vh; min-height:100svh;
+  background:#090B1C; overflow:hidden; isolation:isolate;
+}
+@media (min-width:768px){ .welcome{ --k:1.4706; --side:400px; } }
+.welcome .sky, .welcome .shooting{
+  position:absolute; inset:0; width:100%; height:100%; pointer-events:none;
+}
+.welcome .sky{ z-index:0; }
+.welcome .shooting{ z-index:1; }
+.welcome-stack{
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+  min-height:100vh; min-height:100svh;
+  padding:0 16px; box-sizing:border-box;
+}
+.welcome-stack .spacer{ flex:1 1 0; }
+.welcome-stack .s1{ min-height:calc(20px * var(--k)); }
+.welcome-stack .s2{ min-height:calc(4px * var(--k)); }
+.welcome-stack .s3{ min-height:calc(36px * var(--k)); }
+
+.welcome .title{ display:flex; flex-direction:column; align-items:center; gap:calc(10px * var(--k)); width:100%; }
+.welcome .wordmark{
+  margin:0; display:flex; flex-direction:column; align-items:center; gap:calc(2px * var(--k));
+  font-family:'Metamorphous', Georgia, serif; font-weight:400; line-height:normal;
+}
+.welcome .wm-line{ position:relative; display:inline-block; }
+.welcome .wm-text{
+  display:inline-block; white-space:nowrap;
+  background:var(--title-gold); -webkit-background-clip:text; background-clip:text;
+  color:transparent; -webkit-text-fill-color:transparent;
+}
+/* SwiftUI shadow radius r is a CSS blur of 2r. */
+.welcome .wm-follow{ font-size:calc(15px * var(--k)); letter-spacing:4px;
+  filter:drop-shadow(0 1px 0 rgba(0,0,0,.85)) drop-shadow(0 2px 10px rgba(0,0,0,.45)); }
+.welcome .wm-astro{ font-size:calc(40px * var(--k)); letter-spacing:3px;
+  filter:drop-shadow(0 1px 0 rgba(0,0,0,.85)) drop-shadow(0 3px 14px rgba(0,0,0,.45)); }
+.welcome .wm-baseline{ display:inline-block; width:0; height:0; vertical-align:baseline; }
+.welcome .r-star{
+  position:absolute; left:0; top:0; pointer-events:none;
+  width:calc(120px * var(--k)); height:calc(120px * var(--k));
+}
+.welcome .tagline{
+  margin:0; box-sizing:border-box; width:100%;
+  max-width:calc(420px * var(--k)); padding:0 calc(20px * var(--k));
+  font-family:ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-style:italic; font-size:calc(16px * var(--k)); line-height:1.25;
+  color:rgba(232,200,122,.65); text-align:center;
+}
+.welcome .moon-glow{
+  display:block; flex:none;
+  width:calc(200px * var(--k)); height:calc(84px * var(--k)); margin-top:calc(6px * var(--k));
+}
+/* The view is taller than the disc's square so the throne and its rings
+   have room; the extra is handed straight back with a negative margin. */
+.welcome .instrument{
+  position:relative; flex:none;
+  width:var(--side); height:calc(var(--side) * 316 / 272);
+  margin-top:calc(var(--side) * -44 / 272);
+  touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent;
+  cursor:grab; outline:none; border-radius:50%;
+  transform:scale(.85); opacity:0;
+}
+.welcome .instrument:active{ cursor:grabbing; }
+.welcome .instrument:focus-visible{ box-shadow:0 0 0 2px rgba(232,200,122,.55); }
+.welcome.appeared .instrument{
+  transform:none; opacity:1;
+  transition:transform .9s cubic-bezier(0,0,.58,1) .15s, opacity .9s cubic-bezier(0,0,.58,1) .15s;
+}
+@media (prefers-reduced-motion: reduce){
+  .welcome .instrument{ transform:none; opacity:1; }
+  .welcome.appeared .instrument{ transition:none; }
+}
+.welcome .instrument canvas{ position:absolute; inset:0; width:100%; height:100%; }
+/* `.shadow(color: .black.opacity(0.55), radius: 28, y: 14)`, following
+   the silhouette as it narrows through the turn. */
+.welcome .instrument-shadow{
+  position:absolute; left:8%; right:8%;
+  top:calc(var(--side) * (44 / 272 + 0.08) + 14px); height:calc(var(--side) * 0.79);
+  border-radius:50%; background:rgba(0,0,0,.55); filter:blur(28px);
+  pointer-events:none;
+}
+
+/* ENTER: `wornBrassButton` + `brassBevel` + the engraved label. */
+.welcome .enter{
+  position:relative; flex:none; box-sizing:border-box;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:calc(168px * var(--k)); padding:calc(14px * var(--k)) 0;
+  border:0; border-radius:999px; text-decoration:none; cursor:pointer;
+  font-family:ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-weight:500; font-size:calc(15px * var(--k)); line-height:1.2;
+  letter-spacing:calc(3px * var(--k)); text-indent:calc(3px * var(--k)); text-transform:uppercase;
+  color:#1A1408; text-shadow:0 1px 0 rgba(253,241,205,.6);
+  background:var(--wear, none) center / 100% 100% no-repeat, var(--metal);
+  box-shadow:0 1px 4px rgba(0,0,0,.45);
+}
+.welcome .enter::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(0,0,0,.35));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.welcome .enter:active{ filter:brightness(.93); }
+.welcome .enter:focus-visible{ outline:2px solid #E8C87A; outline-offset:3px; }

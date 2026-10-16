@@ -1937,7 +1937,9 @@ export function initWelcome(root) {
       stars.setRunning(e.isIntersecting && !reduceMotion.matches);
     }).observe(root);
     document.addEventListener("visibilitychange", () => {
-      const on = document.visibilityState === "visible";
+      // The installed web app takes the welcome screen away once ENTER is
+      // pressed; coming back to the app then must not wake it up unseen.
+      const on = document.visibilityState === "visible" && root.isConnected;
       instrument.setVisible(on);
       stars.setRunning(on && !reduceMotion.matches);
     });

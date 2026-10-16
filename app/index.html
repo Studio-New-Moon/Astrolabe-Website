@@ -29,8 +29,20 @@
      device's own faces and loads nothing. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app.css">
+<link rel="stylesheet" href="/assets/home/welcome.css">
+<script>
+  // Installed on a phone, Astrolabe opens on its welcome screen, as the iPhone
+  // app does, once each time it is launched. Decided before the first paint so
+  // the app never flashes up behind it. In a browser tab it never shows.
+  (function () {
+    var installed = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    var seen = false;
+    try { seen = sessionStorage.getItem("astrolabe.app.welcomed") === "1"; } catch (e) {}
+    if (installed && !seen) document.documentElement.classList.add("welcoming");
+  })();
+</script>
 <style>
   /* The web app, laid out as the iPhone app is: one screen per tab under an
      inline navigation title, the system tab bar along the bottom, and detail
@@ -398,9 +410,38 @@
   .remove{ align-self: center; font-size: 13px; color: var(--danger); background: none; border: 0; padding: 8px; }
   .attribution{ font-size: 11px; color: var(--muted); text-align: center; }
   .attribution a{ color: var(--muted); }
+
+  /* The welcome screen the installed app opens on (assets/home/welcome.css),
+     laid over the app until ENTER. */
+  .welcome.app-welcome{ display:none; position:fixed; inset:0; z-index:1000; overflow-y:auto; }
+  html.welcoming .welcome.app-welcome{ display:block; }
+  html.welcoming, html.welcoming body{ overflow:hidden; }
 </style>
 </head>
 <body>
+<section class="welcome app-welcome" id="appWelcome" role="dialog" aria-modal="true" aria-label="Welcome">
+  <canvas class="sky" aria-hidden="true"></canvas>
+  <canvas class="shooting" aria-hidden="true"></canvas>
+  <div class="welcome-stack">
+    <div class="spacer s1"></div>
+    <div class="title">
+      <p class="wordmark">
+        <span class="visually-hidden">Follow My Astrolabe</span>
+        <span class="wm-line" aria-hidden="true"><span class="wm-text wm-follow">FOLLOW MY</span></span>
+        <span class="wm-line" aria-hidden="true"><span class="wm-text wm-astro">ASTROLABE<span class="wm-baseline"></span></span><canvas class="r-star"></canvas></span>
+      </p>
+      <p class="tagline">An Ancient Instrument for Navigating Your Way through the Stars.</p>
+    </div>
+    <canvas class="moon-glow" aria-hidden="true"></canvas>
+    <div class="instrument" role="img" tabindex="0" aria-label="A brass astrolabe. Drag left or right to turn it over.">
+      <div class="instrument-shadow" aria-hidden="true"></div>
+      <canvas aria-hidden="true"></canvas>
+    </div>
+    <div class="spacer s2"></div>
+    <button class="enter" type="button">Enter</button>
+    <div class="spacer s3"></div>
+  </div>
+</section>
 <a class="skip" href="#main">Skip to content</a>
 <div class="shell">
   <aside class="sidebar" id="sidebar" aria-label="Astrolabe">
@@ -590,6 +631,29 @@
 <div hidden id="appearanceHome"></div>
 
 <script type="module" src="/app/src/app.js"></script>
+<script type="module">
+  // The welcome screen, when the installed app is opening on it: the app
+  // behind it is inert until ENTER, which takes the welcome screen away for
+  // the rest of this launch.
+  const welcome = document.getElementById("appWelcome");
+  if (document.documentElement.classList.contains("welcoming")) {
+    const behind = [...document.body.children].filter((el) => el !== welcome && el.tagName !== "SCRIPT");
+    behind.forEach((el) => { el.inert = true; });
+    const { initWelcome } = await import("/assets/home/welcome.js");
+    initWelcome(welcome);
+    const enter = welcome.querySelector(".enter");
+    enter.focus({ preventScroll: true });
+    enter.addEventListener("click", () => {
+      try { sessionStorage.setItem("astrolabe.app.welcomed", "1"); } catch (e) {}
+      behind.forEach((el) => { el.inert = false; });
+      document.documentElement.classList.remove("welcoming");
+      welcome.remove();
+      document.getElementById("main")?.focus({ preventScroll: true });
+    });
+  } else {
+    welcome.remove();
+  }
+</script>
 <!-- Cloudflare Web Analytics: counts page views without cookies. Left off
      /account/unlock/ and /order/thank-you/, whose URLs carry a one-time code
      and a Stripe session id. -->

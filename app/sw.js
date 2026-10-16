@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. cache.addAll fails the whole install if any
 // entry 404s, so a renamed module has to be renamed here too.
 
-const CACHE = "astrolabe-app-v11";
+const CACHE = "astrolabe-app-v12";
 
 // Each installable page clears only caches with its own prefix. Caches are
 // shared across the site, and deleting everything that isn't ours would wipe
@@ -26,6 +26,8 @@ const SHELL = [
   "/app/",
   "/app/manifest.webmanifest",
   "/assets/app.css",
+  "/assets/home/welcome.css",
+  "/assets/home/welcome.js",
   // The Signs and Areas tabs show the sign art: the thumbnails up front, the
   // full portraits cached the first time a sign is opened.
   "/assets/signs/aquarius-thumb.jpg",
@@ -79,7 +81,9 @@ const SHELL = [
 // What this worker answers for. Everything else — fonts, /prints/, the
 // homepage — goes straight to the network untouched.
 // /assets/app.css is the app's look, shared by every page but the homepage.
-const MINE = ["/app/", "/chart/src/", "/chart/data/", "/chart/icons/", "/assets/app.css", "/assets/signs/"];
+const MINE = ["/app/", "/chart/src/", "/chart/data/", "/chart/icons/", "/assets/app.css", "/assets/signs/",
+  // the welcome screen the installed app opens on
+  "/assets/home/welcome.css", "/assets/home/welcome.js"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
