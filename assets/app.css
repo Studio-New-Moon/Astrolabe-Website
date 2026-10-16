@@ -37,6 +37,9 @@
   --font-display: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, Menlo, Consolas, monospace;
+  /* The metal buttons' engraved labels keep Spectral, the site's serif from
+     before it took the app's type, whichever type set Appearance has chosen. */
+  --font-button: "Spectral", Georgia, "Times New Roman", serif;
 
   /* The polished brass ramp (MetalFinish.brass, Brass.polished). */
   --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 6%, #FDF1CD 14%, #F0D493 24%, #C9A24C 40%, #B08C3F 66%, #6D5424 82%, #B08C3F 89%, #F0D493 95%, #3D2F14 100%);
@@ -100,9 +103,10 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
 /* Metal buttons: the app's `wornBrassButton` + `brassBevel` + engraved label. */
 .metal-button{
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: var(--font-body); font-size: 16px; font-weight: 600;
+  font-family: var(--font-button); font-size: 16px; font-weight: 600;
   letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
-  padding: 11px 22px; border-radius: 8px; border: 1px solid transparent; cursor: pointer;
+  padding: 11px clamp(16px, 5vw, 22px); border-radius: 8px; border: 1px solid transparent; cursor: pointer;
+  text-align: center;
   background: var(--metal-wear) center / cover no-repeat, var(--metal);
   color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
   text-decoration: none;

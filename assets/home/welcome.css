@@ -100,8 +100,8 @@
   display:inline-flex; align-items:center; justify-content:center;
   width:calc(168px * var(--k)); padding:calc(14px * var(--k)) 0;
   border:0; border-radius:999px; text-decoration:none; cursor:pointer;
-  font-family:ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  font-weight:500; font-size:calc(15px * var(--k)); line-height:1.2;
+  font-family:var(--font-button, "Spectral", Georgia, serif);
+  font-weight:600; font-size:calc(15px * var(--k)); line-height:1.2;
   letter-spacing:calc(3px * var(--k)); text-indent:calc(3px * var(--k)); text-transform:uppercase;
   color:#1A1408; text-shadow:0 1px 0 rgba(253,241,205,.6);
   background:var(--wear, none) center / 100% 100% no-repeat, var(--metal);
