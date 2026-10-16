@@ -19,6 +19,14 @@ import { resolve, EVENT } from "../../chart/src/appearance.js";
 const BLEED = 6;
 const RAIL_Y = 48;
 const RAIL_GAUGE = 26;
+/**
+ * How far the cast shadow reaches past the metal's own silhouette, in CSS
+ * pixels: the 1.1px drop plus about two standard deviations of the 1.2px
+ * blur. `contentClearance` measures only the metal, so on its own it lets
+ * the shadow land on whatever sits just inside it. Every margin below adds
+ * this, so nothing in a framed element is touched by the frame or its shadow.
+ */
+const SHADOW = 3.5;
 /** Measured off the built silhouette; see `deepestReachUnits` in Swift. */
 const DEEPEST_REACH_UNITS = 565;
 
@@ -400,6 +408,45 @@ function frameMarkup(w, h, cornerRadius, scale, tones) {
   return `<defs>${defs}</defs>${body}<g clip-path="url(#${id}c)">${corners}</g>`;
 }
 
+/**
+ * The least leading padding that keeps a disc of radius `r`, centred `cy`
+ * down a `w` × `h` card, clear of the two left-hand clusters and their
+ * shadow — tested against the ornament's own outline points rather than a
+ * bounding box, since the disc sits in the hollow between the clusters.
+ */
+function discClearance(w, h, radius, cy, r, min) {
+  if (!(w > 90 && h > 44)) return min;
+  const o = new Ornament({ x: 0, y: 0, w, h }, radius, 1);
+  const s = o.s, reach = r + 2 + SHADOW;
+  let pad = min;
+  for (const poly of o.polygons(w / (2 * s), h / (2 * s))) {
+    for (const p of poly) {
+      const x = p.x * s;
+      for (const y of [p.y * s, h - p.y * s]) {
+        const dy = y - cy;
+        if (Math.abs(dy) >= reach) continue;
+        pad = Math.max(pad, x + Math.sqrt(reach * reach - dy * dy) - r);
+      }
+    }
+  }
+  return Math.ceil(pad * 2) / 2;
+}
+
+/**
+ * How far in from the side edges the metal reaches anywhere between the top
+ * and bottom bands, in CSS pixels — the depth the side padding has to clear.
+ */
+function sideReach(w, h, radius, scale, band) {
+  if (!(w > 90 && h > 44)) return 0;
+  const o = new Ornament({ x: 0, y: 0, w, h }, radius, scale);
+  const s = o.s;
+  let reach = 0;
+  for (const poly of o.polygons(w / (2 * s), h / (2 * s))) {
+    for (const p of poly) if (p.y * s > band && p.y * s < h - band) reach = Math.max(reach, p.x * s);
+  }
+  return reach;
+}
+
 // ---------------------------------------------------------------- Mounting
 
 /**
@@ -428,14 +475,29 @@ function draw(svg) {
     const reach = w * (44 / 371);
     const atFull = contentClearance(w, h, 1);
     if (atFull > 0) scale = Math.min(1, reach / atFull);
-    const band = `${Math.max(16, reach + 2)}px`;
-    if (host.style.paddingBlock !== band) host.style.paddingBlock = band;
+    const band = Math.max(16, reach + 2 + SHADOW);
+    if (host.style.paddingBlock !== `${band}px`) host.style.paddingBlock = `${band}px`;
+    // The sides carry the cascade of small scrolls running down each edge,
+    // which reaches further in than the panel's ordinary 16px once the panel
+    // is wider than a phone. Measured off the ornament itself, beside the
+    // content only — the corner clusters above and below are the band's job.
+    const side = `${Math.max(16, Math.ceil(sideReach(w, h, radius, scale, band - 2 - SHADOW) + 2 + SHADOW))}px`;
+    if (host.style.paddingInline !== side) host.style.paddingInline = side;
   } else {
     // The card's own 13px, plus whatever more the cluster needs, plus 2px of
-    // air between glyph and metal. Settles in a step or two: the text below
-    // it is capped at two lines.
-    const reserve = `${13 + Math.max(0, contentClearance(w, h) + 2 - 13)}px`;
+    // air between glyph and metal and the shadow's reach. Settles in a step or
+    // two: the text below it is capped at two lines.
+    const reserve = `${13 + Math.max(0, contentClearance(w, h) + 2 + SHADOW - 13)}px`;
     if (host.style.paddingRight !== reserve) host.style.paddingRight = reserve;
+    // The leading edge holds the sign's medallion, which sits between the two
+    // left-hand clusters. Moved right only as far as it has to go to clear
+    // the actual metal, so the card keeps the app's layout wherever it can.
+    const disc = host.querySelector(":scope > .medallion");
+    if (disc) {
+      const hr = host.getBoundingClientRect(), dr = disc.getBoundingClientRect();
+      const lead = `${discClearance(w, h, radius, dr.top + dr.height / 2 - hr.top, dr.width / 2, 13)}px`;
+      if (host.style.paddingLeft !== lead) host.style.paddingLeft = lead;
+    }
   }
 
   const key = `${w}x${h}x${scale}x${tonesKey}`;
