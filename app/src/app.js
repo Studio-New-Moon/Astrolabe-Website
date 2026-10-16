@@ -21,6 +21,7 @@ import { julianDayFromLocal, anglesFor } from "../../chart/src/angles.js";
 import { longitudeOf, isRetrograde, PLANETS } from "../../chart/src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS } from "../../chart/src/points.js";
 import { mountInstrument } from "../../chart/src/instrument-view.js";
+import { studImage } from "../../chart/src/instrument.js";
 import { loadPlaces, searchPlaces } from "../../chart/src/places.js";
 import { readPass, refreshPass } from "../../chart/src/pass.js";
 import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId, selectProfile, requestPersistentStorage } from "./profiles.js";
@@ -324,8 +325,38 @@ function drawWheel() {
     $("flatWheel").innerHTML = chartWheelSVG(chart, {
       selectedHouse, showAspects: showAspectLines(),
       sunSign: signAt(body(chart, "sun").longitude).name,
+      studArt: wheelStudArt(),
     });
   }
+}
+
+// The Wheel's studs are the instrument's, struck at the size they'll show
+// (a stud is 0.072 of the wheel) in the current metal and finish. Each one
+// is kept, so tapping round the wheel doesn't strike them all again.
+const canStrikeStuds = (() => {
+  try { return typeof document.createElement("canvas").getContext("2d").createConicGradient === "function"; }
+  catch { return false; }
+})();
+const studCache = new Map();
+function wheelStudArt() {
+  const width = $("flatWheel").getBoundingClientRect().width;
+  if (!canStrikeStuds || !width) return undefined;
+  const px = Math.round(width * 0.072 * 2) / 2;
+  const { metal, tarnished } = resolve().instrument;
+  const dpr = window.devicePixelRatio || 1;
+  return (b) => {
+    const key = [b.name, b.retrograde, b.glyph, px, metal, tarnished, dpr].join("|");
+    if (!studCache.has(key)) {
+      try {
+        const { href, box } = studImage(b, px, { metal, tarnished, dpr });
+        studCache.set(key, { href, px, boxRatio: box / px });
+      } catch (err) {
+        console.error(err);
+        studCache.set(key, null);
+      }
+    }
+    return studCache.get(key);
+  };
 }
 
 $("styleToggle").addEventListener("click", (e) => {

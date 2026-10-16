@@ -1138,24 +1138,41 @@ export function drawInstrument(canvas, chart, options = {}) {
     sc.restore();
 
     // The glyph, engraved: dark above-left, light below-right, stacked the
-    // way SwiftUI stacks shadows, then laid onto the metal.
-    let t = makeLayer(box, box, dpr);
-    inkText(t.ctx, (PLANET_GLYPHS[body.name] ?? "?") + TEXT, `${d * 0.52}px ${font.symbol}`, m.onMetal, o, o);
-    t = withShadow(t, box, box, m.deep, 0.95, -1.0, -1.0, 0);
-    t = withShadow(t, box, box, m.deep, 0.55, -0.5, -0.5, 0);
-    t = withShadow(t, box, box, m.spec, 0.95, 1.0, 1.0, 0);
-    t = withShadow(t, box, box, m.spec, 0.55 * 0.95, 0.5, 0.5, 0);
-    t = withShadow(t, box, box, m.deep, 0.5, -0.4, -0.4, 2.2);
-    sc.save();
-    sc.setTransform(1, 0, 0, 1, 0, 0);
-    sc.drawImage(t.canvas, 0, 0);
-    sc.restore();
+    // way SwiftUI stacks shadows, then laid onto the metal. An empty glyph
+    // leaves the face bare for a caller that marks it itself (Lilith and
+    // Selena, whose shape no system font carries in both forms).
+    const glyph = body.glyph ?? PLANET_GLYPHS[body.name] ?? "?";
+    if (glyph) {
+      let t = makeLayer(box, box, dpr);
+      inkText(t.ctx, glyph + TEXT, `${d * 0.52}px ${font.symbol}`, m.onMetal, o, o);
+      t = withShadow(t, box, box, m.deep, 0.95, -1.0, -1.0, 0);
+      t = withShadow(t, box, box, m.deep, 0.55, -0.5, -0.5, 0);
+      t = withShadow(t, box, box, m.spec, 0.95, 1.0, 1.0, 0);
+      t = withShadow(t, box, box, m.spec, 0.55 * 0.95, 0.5, 0.5, 0);
+      t = withShadow(t, box, box, m.deep, 0.5, -0.4, -0.4, 2.2);
+      sc.save();
+      sc.setTransform(1, 0, 0, 1, 0, 0);
+      sc.drawImage(t.canvas, 0, 0);
+      sc.restore();
+    }
 
     const shadowed = withShadow(s, box, box, "#000000", 0.5, 0, 1, 2);
     c.save();
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.drawImage(shadowed.canvas, Math.round((at.x - o) * dpr), Math.round((at.y - o) * dpr));
     c.restore();
+  }
+
+  // One stud on its own, for `studImage`: the canvas becomes the stud's box
+  // and nothing else of the instrument is struck.
+  if (options.studOnly) {
+    const box = g.size * 0.072 + 16;
+    canvas.width = Math.ceil(box * dpr);
+    canvas.height = Math.ceil(box * dpr);
+    const sctx = canvas.getContext("2d");
+    sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawStud(sctx, options.studOnly, { x: box / 2, y: box / 2 });
+    return { box };
   }
 
   // ================================================================ compose
@@ -1217,4 +1234,23 @@ export function drawInstrument(canvas, chart, options = {}) {
     }),
     planets: studs.map(({ body, pos }) => ({ name: body.name, x: pos.x, y: pos.y, r: g.size * 0.036 })),
   };
+}
+
+/**
+ * One stud exactly as the instrument strikes it, as a PNG data URL, for the
+ * Wheel: the app puts the same `PlanetStud` on both of its charts, so the
+ * site does too rather than keeping a second, flatter stud of its own.
+ *
+ * `body` is `{ name, retrograde, glyph? }` — a `glyph` of "" leaves the face
+ * bare. `diameter` is the stud's on-screen size in CSS pixels, so the wear's
+ * hairlines come out as fine as they are on the instrument. The image is the
+ * stud's whole box, shadow included: `box` CSS pixels square, centred on the
+ * stud. Options are `drawInstrument`'s metal, tarnish and dpr.
+ */
+export function studImage(body, diameter, options = {}) {
+  const canvas = document.createElement("canvas");
+  const { box } = drawInstrument(canvas, { ascendantLongitude: 0, bodies: [] }, {
+    ...options, size: diameter / 0.072, keepStyleSize: true, studOnly: body,
+  });
+  return { href: canvas.toDataURL("image/png"), box };
 }

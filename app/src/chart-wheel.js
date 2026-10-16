@@ -20,6 +20,8 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 /**
  * `chart`: { asc, bodies: [{name, longitude, retrograde}], points: [...], angles: [{kind, longitude}] }
  * `opts`: { selectedHouse, selectedPlanet, selectedPoint, showAspects, sunSign }
+ * plus `studArt(body)`, which returns `{ href, px, boxRatio }` for the
+ * instrument's stud image, or nothing to keep the plain SVG stud.
  */
 export function chartWheelSVG(chart, opts = {}) {
   const s = S;
@@ -116,15 +118,32 @@ export function chartWheelSVG(chart, opts = {}) {
     const house = ((signAt(p.longitude).index - ascSign.index + 12) % 12) + 1;
     const glyph = isPlanet ? PLANET_GLYPHS[p.name] : POINT_INFO[p.name].glyph;
     const apside = p.name === "blackMoonLilith" || p.name === "whiteMoonSelena";
-    const glyphMark = apside
-      ? `<g transform="translate(${pos.x - d * 0.3},${pos.y - d * 0.3})" color="#1A1408"><g transform="scale(${(d * 0.6) / 24})">${moonApsideGlyph(p.name === "blackMoonLilith", 24).replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g></g>`
-      : `<text x="${pos.x}" y="${pos.y + d * 0.19}" text-anchor="middle" font-size="${d * 0.52}" fill="var(--on-metal)" class="cw-glyph">${glyph}</text>`;
+    const apsideMark = apside
+      ? `<g transform="translate(${pos.x - d * 0.3},${pos.y - d * 0.3})" color="var(--on-metal, #1A1408)"><g transform="scale(${(d * 0.6) / 24})">${moonApsideGlyph(p.name === "blackMoonLilith", 24).replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g></g>`
+      : "";
+    // The instrument's own stud, struck by `studImage`, when the page can
+    // draw one: the app puts the same PlanetStud on both charts. `art.px` is
+    // the stud's on-screen diameter, which sets how a point of the app's
+    // (the selection ring's 2pt) measures in this 1000-unit drawing.
+    const art = opts.studArt?.({ name: p.name, retrograde: p.retrograde, glyph: apside ? "" : glyph });
+    let face;
+    if (art) {
+      const pt = d / art.px;
+      const box = d * art.boxRatio;
+      face = `<image href="${art.href}" x="${pos.x - box / 2}" y="${pos.y - box / 2}" width="${box}" height="${box}"/>` +
+        apsideMark +
+        `<circle class="cw-ring" cx="${pos.x}" cy="${pos.y}" r="${d / 2 - pt}" fill="none" stroke="var(--fire, #DD6440)"` +
+        ` stroke-width="${2 * pt}" opacity="${lit ? 1 : 0}"${lit ? ` style="filter: drop-shadow(0 0 ${5 * pt}px var(--fire, #DD6440))"` : ""}/>`;
+    } else {
+      face = `<circle cx="${pos.x}" cy="${pos.y + 3}" r="${d / 2}" fill="#000" opacity=".35"/>` +
+        `<circle class="cw-ring" cx="${pos.x}" cy="${pos.y}" r="${d / 2}" fill="url(#cwStud)" stroke="${lit ? "var(--bright)" : "#3D2F14"}" stroke-width="${lit ? 5 : 1.6}"/>` +
+        `<circle cx="${pos.x}" cy="${pos.y}" r="${d / 2 - 5}" fill="none" stroke="#3D2F14" stroke-opacity=".35" stroke-width="1.4"/>` +
+        (apside ? apsideMark
+          : `<text x="${pos.x}" y="${pos.y + d * 0.19}" text-anchor="middle" font-size="${d * 0.52}" fill="var(--on-metal)" class="cw-glyph">${glyph}</text>`);
+    }
     out.push(`<g class="cw-stud" role="button" tabindex="0" data-${p.kind}="${p.name}"` +
       ` aria-label="${esc(name)} at ${deg}° ${sign.name}${p.retrograde ? " ℞" : ""}, House ${ROMAN[house - 1]}"${lit ? ' aria-pressed="true"' : ""}>` +
-      `<circle cx="${pos.x}" cy="${pos.y + 3}" r="${d / 2}" fill="#000" opacity=".35"/>` +
-      `<circle cx="${pos.x}" cy="${pos.y}" r="${d / 2}" fill="url(#cwStud)" stroke="${lit ? "var(--bright)" : "#3D2F14"}" stroke-width="${lit ? 5 : 1.6}"/>` +
-      `<circle cx="${pos.x}" cy="${pos.y}" r="${d / 2 - 5}" fill="none" stroke="#3D2F14" stroke-opacity=".35" stroke-width="1.4"/>` +
-      glyphMark + `</g>`);
+      face + `</g>`);
   }
 
   // The four angles: a tick on the rim and a capsule label, nudged clear of studs.
