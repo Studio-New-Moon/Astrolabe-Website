@@ -275,7 +275,17 @@
   .sizes .name{ font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; color:var(--brass); }
   .sizes .price{ font-family:var(--font-display); font-weight:600; font-size:28px; color:var(--resist); margin:6px 0 2px; }
   .sizes .desc{ font-size:14px; color:var(--muted); margin-top:6px; }
+  .sizes .price .from{ font-family:var(--font-body, inherit); font-weight:400; font-size:13px; color:var(--muted); margin-right:5px; }
   @media (max-width:640px){ .sizes{ grid-template-columns:1fr; } }
+  /* The five papers, built from the live catalogue under the size cards. */
+  .papers{ max-width:var(--gallery); margin:22px auto 0; }
+  .papers[hidden]{ display:none; }
+  .papers > .plate-label{ display:block; text-align:center; margin-bottom:10px; }
+  .papers ul{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; }
+  .papers li{ background:var(--panel); border:1px solid rgba(176,140,63,0.22); border-radius:10px; padding:10px 12px; text-align:center; }
+  .papers .paper-name{ color:var(--ink); font-size:15px; }
+  .papers .paper-detail{ color:var(--muted); font-size:13px; margin-top:2px; }
+  .papers .paper-price{ font-family:var(--font-display); color:var(--resist); font-size:14px; margin-top:6px; font-variant-numeric:tabular-nums; }
   .center-plate{ max-width:var(--readable); margin:18px auto 0; text-align:center; }
   .center-plate .action{ justify-content:center; }
   .fine{ max-width:var(--readable); margin:16px auto 0; font-size:13px; color:var(--muted); text-align:center; }
@@ -484,7 +494,7 @@
     <div class="head">
       <span class="plate-label">Chart to Canvas</span>
       <h2 id="prints-title">Your Sign, Off the Screen and On the Wall.</h2>
-      <p>Any of the twelve signs, printed to order on 170&nbsp;gsm coated silk and shipped to you flat. Every print keeps the proportions the art was drawn in, so nothing gets cropped to fit.</p>
+      <p>Any of the twelve signs, printed to order on your choice of five papers and shipped to you flat. Every print keeps the proportions the art was drawn in, so nothing gets cropped to fit.</p>
     </div>
     <div class="sizes plans">
       <div class="card plan" data-size="Small">
@@ -503,8 +513,12 @@
         <div class="desc">24 &times; 32 in &middot; 600 &times; 800 mm</div>
       </div>
     </div>
+    <div class="papers" id="papers" hidden>
+      <span class="plate-label">Papers</span>
+      <ul></ul>
+    </div>
     <div class="plate center-plate">
-      <div class="action"><a class="metal-button" href="/prints/">Choose Your Print</a><p class="note">Any of the twelve signs, in any of the three sizes</p></div>
+      <div class="action"><a class="metal-button" href="/prints/">Choose Your Print</a><p class="note">Any of the twelve signs, in any of the three sizes, on any of the five papers</p></div>
     </div>
     <p class="fine">Ships to addresses in the United States. Checkout is handled by Stripe, and each print is made and mailed by our print partner.</p>
   </div>
@@ -581,18 +595,53 @@
     fetch("https://astrolabe-gelato-broker.astrolabe-gelato-broker.workers.dev/catalogue")
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (data) {
-        ((data && data.prints) || []).forEach(function (p) {
+        var prints = (data && data.prints) || [];
+        function money(cents, currency) {
+          try {
+            return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "usd" })
+              .format(cents / 100);
+          } catch (e) { return "$" + (cents / 100).toFixed(2); }
+        }
+        var hasPapers = prints.length > 0 && prints.every(function (p) {
+          return p.papers && p.papers.length > 1;
+        });
+        prints.forEach(function (p) {
           var plan = document.querySelector('.plans .plan[data-size="' + p.label + '"]');
           if (!plan) return;
           var el = plan.querySelector(".price");
-          var amount;
-          try {
-            amount = new Intl.NumberFormat("en-US", { style: "currency", currency: p.currency || "usd" })
-              .format(p.unitCents / 100);
-          } catch (e) { amount = "$" + (p.unitCents / 100).toFixed(2); }
-          el.textContent = amount;
+          var cents = hasPapers
+            ? Math.min.apply(null, p.papers.map(function (q) { return q.unitCents; }))
+            : p.unitCents;
+          el.textContent = money(cents, p.currency);
+          if (hasPapers) {
+            var from = document.createElement("span");
+            from.className = "from";
+            from.textContent = "from";
+            el.insertBefore(from, el.firstChild);
+          }
           el.hidden = false;
         });
+
+        // Each paper with what it costs from the smallest size to the
+        // largest; every size lists the same papers in the same order.
+        if (hasPapers) {
+          var list = document.querySelector("#papers ul");
+          prints[0].papers.forEach(function (paper, i) {
+            var cents = prints.map(function (p) { return p.papers[i].unitCents; });
+            var li = document.createElement("li");
+            [["paper-name", paper.paper], ["paper-detail", paper.detail],
+             ["paper-price", money(Math.min.apply(null, cents), prints[0].currency) +
+               " \u2013 " + money(Math.max.apply(null, cents), prints[0].currency)]]
+              .forEach(function (part) {
+                var d = document.createElement("div");
+                d.className = part[0];
+                d.textContent = part[1];
+                li.appendChild(d);
+              });
+            list.appendChild(li);
+          });
+          document.getElementById("papers").hidden = false;
+        }
       })
       .catch(function () {});
   })();
