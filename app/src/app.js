@@ -80,7 +80,13 @@ document.querySelector("dialog.ap")?.addEventListener("close", () => {
 
 // ---------------------------------------------------------------- the five tabs
 
+// In a browser the website adds a sixth, Home, first: it leaves the app for the
+// homepage, the welcome screen with the rest of the site below it. The
+// installed app leaves it out, since it opens on its own welcome screen and the
+// homepage is outside it.
+const INSTALLED = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const TABS = [
+  ...(INSTALLED ? [] : [{ id: "home", title: "Home", icon: "home", fill: "homeFill", href: "/" }]),
   { id: "chart", title: "Chart", icon: "chart", fill: "chartFill" },
   { id: "areas", title: "Areas", icon: "areas", fill: "areasFill" },
   { id: "signs", title: "Signs", icon: "signs", fill: "signsFill" },
@@ -91,15 +97,15 @@ const TABS = [
 function buildTabs() {
   // Phone: the system tab bar along the bottom.
   $("tabBar").innerHTML = TABS.map((t) =>
-    `<a href="#${t.id}" data-tab="${t.id}"><span class="ic"><span class="line">${icon(t.icon)}</span><span class="fill">${icon(t.fill)}</span>` +
+    `<a href="${t.href || "#" + t.id}" data-tab="${t.id}"><span class="ic"><span class="line">${icon(t.icon)}</span><span class="fill">${icon(t.fill)}</span>` +
     `${t.badge ? `<span class="badge" aria-hidden="true">${t.badge}</span>` : ""}</span>` +
     `<span>${t.title}</span>${t.badge ? `<span class="sr-only">, coming soon</span>` : ""}</a>`).join("");
   // iPad and wider: the floating pill, with the sidebar button first.
   $("topTabs").innerHTML =
     `<button type="button" id="sidebarOpen" aria-label="Show Sidebar" aria-controls="sidebar" aria-expanded="false">${icon("sidebar")}</button>` +
-    TABS.map((t) => `<a href="#${t.id}" data-tab="${t.id}">${t.title}${t.badge ? `<span class="badge" aria-hidden="true">${t.badge}</span><span class="sr-only">, coming soon</span>` : ""}</a>`).join("");
+    TABS.map((t) => `<a href="${t.href || "#" + t.id}" data-tab="${t.id}">${t.title}${t.badge ? `<span class="badge" aria-hidden="true">${t.badge}</span><span class="sr-only">, coming soon</span>` : ""}</a>`).join("");
   $("sideTabs").innerHTML = TABS.map((t) =>
-    `<a href="#${t.id}" data-tab="${t.id}">${icon(t.icon)}<span>${t.title}</span>${t.badge ? `<span class="badge" aria-hidden="true">${t.badge}</span><span class="sr-only">, coming soon</span>` : ""}</a>`).join("");
+    `<a href="${t.href || "#" + t.id}" data-tab="${t.id}">${icon(t.icon)}<span>${t.title}</span>${t.badge ? `<span class="badge" aria-hidden="true">${t.badge}</span><span class="sr-only">, coming soon</span>` : ""}</a>`).join("");
   $("sidebarClose").innerHTML = icon("sidebar");
   const setSidebar = (open) => {
     document.body.classList.toggle("sidebar-open", open);
@@ -118,7 +124,7 @@ let route = { tab: "chart", page: null };
 
 function parseRoute() {
   const [tab, page] = location.hash.replace(/^#/, "").split("/");
-  if (!TABS.some((t) => t.id === tab)) return { tab: "chart", page: null };
+  if (!TABS.some((t) => t.id === tab && !t.href)) return { tab: "chart", page: null };
   return { tab, page: page || null };
 }
 

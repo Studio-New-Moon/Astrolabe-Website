@@ -10,6 +10,9 @@ const svg = (body, { fill = false, label = "" } = {}) =>
   ` stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 
 export const ICONS = {
+  // house, house.fill: the website's own Home tab, back to the welcome screen
+  home: svg(`<path d="M3.6 10.6 12 3.7l8.4 6.9"/><path d="M5.8 9.1v10.1a1.4 1.4 0 0 0 1.4 1.4h3.3v-5.4h3v5.4h3.3a1.4 1.4 0 0 0 1.4-1.4V9.1"/>`),
+  homeFill: svg(`<path d="M12 2.9a1 1 0 0 1 .64.23l8.5 7a1 1 0 0 1-1.27 1.55L19 10.9v8.3a2.4 2.4 0 0 1-2.4 2.4h-3.1v-5.6h-3v5.6H7.4A2.4 2.4 0 0 1 5 19.2v-8.3l-.87.72a1 1 0 1 1-1.27-1.55l8.5-7A1 1 0 0 1 12 2.9Z"/>`, { fill: true }),
   // circle.circle
   chart: svg(`<circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="12" r="4.6"/>`),
   chartFill: svg(`<path fill-rule="evenodd" d="M12 1.8a10.2 10.2 0 1 1 0 20.4 10.2 10.2 0 0 1 0-20.4Zm0 4.6a5.6 5.6 0 1 0 0 11.2 5.6 5.6 0 0 0 0-11.2Zm0 2a3.6 3.6 0 1 1 0 7.2 3.6 3.6 0 0 1 0-7.2Z"/>`, { fill: true }),
