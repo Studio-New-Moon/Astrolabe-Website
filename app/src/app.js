@@ -28,6 +28,7 @@ import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId
 import { fetchReadings, readerDay } from "./readings.js";
 import { ICONS, moonApsideGlyph } from "./icons.js";
 import { chartWheelSVG } from "./chart-wheel.js";
+import { filigree, mountFiligrees } from "./filigree.js";
 import { mountSky } from "./sky.js";
 import {
   SIGNS, signAt, ROMAN, ORDINAL, rulerOf, rulerSubject, subject, PLANET_NAMES, PLANET_GLYPHS, POINT_INFO, ANGLE_INFO,
@@ -535,22 +536,6 @@ const isFreeArea = (id) => entitled || id === "purpose";
 
 function areaSign(c, area) { return area.house ? c.houseSign(area.house) : c.ascSign; }
 
-// FiligreeFrame, approximated: a scribed double line and a scrolled bracket
-// in each corner, in the metal's tones. The app draws hand-tuned Bézier
-// ornament; this keeps its weight and placement.
-function filigree() {
-  const corner = `<path d="M3 34V14A11 11 0 0 1 14 3h20" fill="none" stroke="var(--bright)" stroke-width="1.6"/>` +
-    `<path d="M8 30c0-10 5-17 13-20" fill="none" stroke="var(--brass)" stroke-width="1.2"/>` +
-    `<path d="M16 20.5a4.5 4.5 0 1 1 4.5 4.5 2.6 2.6 0 1 1 2.4-3.2" fill="none" stroke="var(--bright)" stroke-width="1.3" stroke-linecap="round"/>` +
-    `<path d="M6 40c2-3 2-6 0-9M40 6c-3 2-6 2-9 0" fill="none" stroke="var(--brass)" stroke-width="1.1" stroke-linecap="round"/>` +
-    `<circle cx="27" cy="9" r="1.5" fill="var(--bright)"/><circle cx="9" cy="27" r="1.5" fill="var(--bright)"/>`;
-  return `<svg class="filigree" aria-hidden="true">` +
-    `<rect x="1.5" y="1.5" rx="11" style="width:calc(100% - 3px);height:calc(100% - 3px)" fill="none" stroke="var(--brass)" stroke-width="1.6"/>` +
-    `<rect x="5" y="5" rx="8" style="width:calc(100% - 10px);height:calc(100% - 10px)" fill="none" stroke="var(--brass)" stroke-opacity=".45" stroke-width=".8"/>` +
-    `<g>${corner}</g><g style="transform: translateX(100%) scaleX(-1)">${corner}</g>` +
-    `<g style="transform: translateY(100%) scaleY(-1)">${corner}</g><g style="transform: translate(100%,100%) scale(-1,-1)">${corner}</g></svg>`;
-}
-
 function renderAreas() {
   const el = $("areasBody");
   if (!chart) {
@@ -568,12 +553,13 @@ function renderAreas() {
       `<span class="plate-label">${area.house ? `House ${ROMAN[area.house - 1]}` : "Chart Ruler"}</span></span>` +
       `<span class="s">${s.name} · ${ruler}</span><span class="c">${esc(area.covers)}</span></span>` +
       (isFreeArea(area.id) ? "" : `<span class="lock" role="img" aria-label="With a subscription">${icon("lock")}</span>`) +
-      (framed ? filigree() : "") + `</a>`;
+      (framed ? filigree({ radius: 11, mode: "card" }) : "") + `</a>`;
   };
   el.innerHTML =
     `<p class="intro">Six ways of reading the same wheel. The first is the planet that rules the whole chart; the other five are houses.</p>` +
     `<div style="padding-block:10px">${card(AREAS[0])}</div>` +
     `<div class="area-grid">${AREAS.slice(1).map(card).join("")}</div>` + passMismatchNote();
+  mountFiligrees(el);
 }
 
 let shownPeriod = "daily";
@@ -623,10 +609,11 @@ function renderArea(id) {
   out.push(`<div class="section horoscope"><span class="plate-label">Horoscope</span>` +
     `<div class="periods" role="group" aria-label="Period">` + PERIODS.map(([p, t]) =>
       `<button type="button" data-period="${p}" aria-pressed="${p === shownPeriod}"${locked(p) ? ` aria-label="${t}, subscribers only"` : ""}>${t}${locked(p) ? icon("lock") : ""}</button>`).join("") +
-    `</div><div class="h-panel">${signTile(s, { full: true })}<span class="plate-label">${esc(strip)}</span>${reading}${filigree()}</div>` +
+    `</div><div class="h-panel">${signTile(s, { full: true })}<span class="plate-label">${esc(strip)}</span>${reading}${filigree({ radius: 12, mode: "panel" })}</div>` +
     `<p class="hint">${entitled ? "Subscribed — daily, weekly, monthly, and yearly are all open." : "The daily is free for every life area. Weekly, monthly, and yearly come with a subscription."}</p></div>`);
   out.push(passMismatchNote());
   el.innerHTML = out.join("");
+  mountFiligrees(el);
 }
 
 $("areaBody").addEventListener("click", (e) => {
