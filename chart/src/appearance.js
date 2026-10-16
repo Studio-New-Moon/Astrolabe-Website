@@ -34,7 +34,7 @@ export const SCHEMES = [
   },
   {
     id: "plum", name: "Plum & Turquoise", isDark: true,
-    blurb: "Jewelled dark — plum, turquoise, and rose, straight off the batik cloth.",
+    blurb: "Jeweled dark — plum, turquoise, and rose, straight off the batik cloth.",
     ground: "#1A1026", panel: "#261634", resist: "#F7E7F5", ink: "#EEDCEC", muted: "#A187B0",
     plate: "#120A1C", engraving: "#7A5F92", horizonLine: "#2FA8AD", fire: "#E0714B",
   },
