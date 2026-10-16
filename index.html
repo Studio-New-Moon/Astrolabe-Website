@@ -90,6 +90,13 @@
     color:var(--muted); text-decoration:none;
   }
   .nav-links a:hover{ color:var(--bright); }
+  /* The way into the web app, first and in the bright brass: on a desktop
+     browser the welcome screen has no ENTER, so this is what replaces it. */
+  .nav-links a.nav-app{ color:var(--bright); }
+  /* Narrower, the menu keeps to one line by dropping the two it can spare:
+     Instrument is a section just below, and Privacy is in the footer. */
+  @media (max-width:900px){ .nav-links{ gap:18px; } .nav-links a.nav-minor{ display:none; } }
+  @media (max-width:680px){ .nav-links{ gap:12px; } .nav-links a{ letter-spacing:1.2px; } }
   @media (max-width:600px){ .nav-links{ display:none; } }
 
   main{ display:block; }
@@ -226,12 +233,13 @@
   <div class="inner">
     <a class="nav-name" href="#top" aria-label="Follow My Astrolabe, back to the top"><span class="small">FOLLOW MY</span>ASTROLABE</a>
     <nav class="nav-links" aria-label="Sections">
+      <a class="nav-app" href="/app/">Open the App</a>
       <a href="/chart/">Cast a Chart</a>
       <a href="#readings">Readings</a>
-      <a href="#instrument">Instrument</a>
+      <a class="nav-minor" href="#instrument">Instrument</a>
       <a href="#signs">Signs</a>
       <a href="#prints">Prints</a>
-      <a href="/privacy/">Privacy</a>
+      <a class="nav-minor" href="/privacy/">Privacy</a>
     </nav>
   </div>
 </header>
