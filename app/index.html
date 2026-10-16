@@ -31,6 +31,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app.css">
+<script src="/assets/fit-buttons.js" defer></script>
 <link rel="stylesheet" href="/assets/home/welcome.css">
 <script>
   // Installed on a phone, Astrolabe opens on its welcome screen, as the iPhone
@@ -199,8 +200,12 @@
   .placement-row{ display: flex; align-items: center; gap: 10px; width: 100%; padding: 2px 0; background: none; border: 0; text-align: left; }
   .placement-row .g{ min-width: 24px; color: var(--bright); font-size: 16px; display: inline-flex; }
   .placement-row .g .ab{ font-family: var(--font-body); font-size: 16px; }
-  .placement-row .n{ width: 92px; flex: none; font-size: 14px; color: var(--ink); line-height: 1.25; }
-  .placement-row .d{ font-size: 13px; color: var(--muted); }
+  /* Names and positions each keep to one line: the name column is at least
+     92px, wider for Black Moon Lilith, and both letter smaller on the
+     narrowest screens rather than wrap. */
+  .placement-row .n{ min-width: 92px; flex: none; font-size: 14px; color: var(--ink); line-height: 1.25; white-space: nowrap; }
+  .placement-row .d{ font-size: 13px; color: var(--muted); white-space: nowrap; }
+  @media (max-width: 360px){ .placement-row{ gap: 8px; } .placement-row .n{ font-size: 13px; min-width: 84px; } .placement-row .d{ font-size: 12px; } }
   .placement-row .rx{ font-size: 12px; }
   .motion-card{ display: none; }
   @media (min-width: 600px) and (min-height: 600px){ .motion-card{ display: flex; } }

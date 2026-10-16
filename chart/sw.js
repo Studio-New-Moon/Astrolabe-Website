@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. A name that stays the same keeps serving the
 // old file list to anyone offline until they next load the page online.
 
-const CACHE = "astrolabe-chart-v9";
+const CACHE = "astrolabe-chart-v10";
 
 // Every file the page needs to cast a chart with no signal. cache.addAll fails
 // the whole install if any one of these 404s, so a renamed module has to be
@@ -24,6 +24,7 @@ const SHELL = [
   "/chart/",
   "/chart/manifest.webmanifest",
   "/assets/app.css",
+  "/assets/fit-buttons.js",
   "/chart/src/angles.js",
   "/chart/src/appearance.js",
   "/chart/src/appearance-panel.js",
@@ -79,7 +80,7 @@ self.addEventListener("fetch", (event) => {
   // to the network untouched; offline they fall back to the serif stack.
   if (url.origin !== self.location.origin) return;
   // /chart/ is this page's own; /assets/app.css is the app's look, which it shares.
-  if (!url.pathname.startsWith("/chart/") && url.pathname !== "/assets/app.css") return;
+  if (!url.pathname.startsWith("/chart/") && url.pathname !== "/assets/app.css" && url.pathname !== "/assets/fit-buttons.js") return;
 
   event.respondWith(
     fetch(req)

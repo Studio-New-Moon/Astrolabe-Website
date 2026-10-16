@@ -24,6 +24,7 @@
      type (FontSet.nativeSky), which the device already carries. -->
 <link href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Spectral:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/app.css">
+<script src="/assets/fit-buttons.js" defer></script>
 <link rel="stylesheet" href="/assets/home/welcome.css">
 <style>
   /* The homepage is the app's welcome screen, so it keeps the welcome
@@ -132,7 +133,11 @@
     background:#221a10; border:1px solid rgba(200,153,63,0.3); border-radius:12px;
     padding:clamp(16px, 3vw, 22px);
   }
-  .plate.actions{ display:grid; gap:18px; }
+  .plate.actions{ display:grid; grid-template-columns:minmax(0, 1fr); gap:18px; }
+  .plate .action{ min-width:0; }
+  /* On the narrowest phones the card and its plate give back a little width,
+     so button labels keep their size on one line. */
+  @media (max-width:360px){ .feature.card{ padding-inline:14px; } .plate{ padding-inline:12px; } }
   .plate .action{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
   .plate .note{ margin:0; font-size:14px; color:var(--muted); flex:1 1 220px; }
   .feature .plate{ margin-top:18px; }

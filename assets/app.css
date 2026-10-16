@@ -107,14 +107,18 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
   letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
   padding: 11px clamp(16px, 5vw, 22px); border-radius: 8px; border: 1px solid transparent; cursor: pointer;
   text-align: center;
+  /* One line, always: /assets/fit-buttons.js letters a label smaller when it
+     would not otherwise fit the room its button has. */
+  white-space: nowrap; max-width: 100%;
   background: var(--metal-wear) center / cover no-repeat, var(--metal);
   color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
   text-decoration: none;
 }
 .metal-button:active{ filter: brightness(.93); }
 .quiet-button{
-  font-family: var(--font-body); font-size: 15px; padding: 10px 16px; border-radius: 8px;
+  font-family: var(--font-body); font-size: 15px; padding: 10px clamp(12px, 4vw, 16px); border-radius: 8px;
   border: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer;
+  white-space: nowrap; max-width: 100%;
 }
 
 /* The inline navigation title the app's screens carry (17pt semibold). */
@@ -274,7 +278,7 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
 /* Full-width metal, as "Cast My Chart" and "Subscribe" are struck. */
 .page .metal-button.wide{ display: flex; width: 100%; padding-block: 12px; }
 .page .metal-button:disabled{ opacity: .55; cursor: default; }
-.page .metal-button{ text-align: center; text-wrap: balance; }
+.page .metal-button{ text-align: center; }
 .page .quiet-button{ font-size: 13px; color: var(--brass); }
 .page .text-link{
   font-family: var(--font-body); font-size: 13px; color: var(--muted); background: none;
