@@ -1,16 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<!-- Subscriptions were dropped on 2026-10-16: every reading is free now, so
-     the old plan and account pages send anyone who still has the link to the
-     web app. Kept as a redirect rather than deleted so that link still lands. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening your posters — Follow My Astrolabe</title>
+<meta name="description" content="Opening a Follow My Astrolabe sign-in link shows your posters in this browser.">
 <meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0; url=/app/">
-<link rel="canonical" href="https://www.followmyastrolabe.com/app/">
-<title>Follow My Astrolabe</title>
+<link rel="icon" href="/assets/favicon.png">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
+<script src="/assets/fit-buttons.js" defer></script>
+<style>
+  #state{ font-size: 15px; color: var(--ink); }
+</style>
 </head>
-<body>
-<p>Every reading is free now. <a href="/app/">Open the app</a>.</p>
+<body class="page">
+<header class="nav-bar">
+  <div class="leading">
+    <a class="back" href="/app/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Chart</span></a>
+  </div>
+  <div class="title" aria-hidden="true">Your Posters</div>
+  <div class="trailing"></div>
+</header>
+<main class="form-width">
+  <h1 class="visually-hidden">Opening your posters</h1>
+  <div class="card">
+    <span class="plate-label">This Browser</span>
+    <p id="state">One moment, signing you in.</p>
+  </div>
+  <div class="problem" id="problem" hidden></div>
+  <p class="note" id="againNote" hidden>A link works once. You can always ask
+  for another from <a href="/account/">your posters page</a>.</p>
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+  </footer>
+</main>
+<script type="module">
+  import { call, writePass } from "/account/src/posters.js";
+  const state = document.getElementById("state");
+  const problem = document.getElementById("problem");
+  const code = new URLSearchParams(location.search).get("code");
+
+  function failed(message) {
+    state.textContent = "You're not signed in here.";
+    problem.textContent = message;
+    problem.hidden = false;
+    document.getElementById("againNote").hidden = false;
+  }
+
+  // The code is spent the moment it's redeemed, so take it out of the address
+  // bar and the history straight away: a reload or a back button then can't
+  // try a code that no longer works.
+  history.replaceState(null, "", location.pathname);
+
+  if (!code) {
+    failed("This page needs the link from your email. Open that link rather than this page on its own.");
+  } else {
+    try {
+      const { ok, body } = await call("/account/redeem", { code });
+      if (!ok || !body.pass) {
+        failed(body.error ?? "That link has been used already, or it's expired.");
+      } else if (!writePass(body.pass)) {
+        failed("This browser won't let the site store anything, so it can't keep you signed in. A private window does that; an ordinary one should work.");
+      } else {
+        state.textContent = "You're signed in. Taking you to your posters…";
+        location.replace("/account/");
+      }
+    } catch {
+      failed("Couldn't reach the order service just now. Try the link again in a minute.");
+    }
+  }
+</script>
+<!-- No Cloudflare Web Analytics beacon here, on purpose: this URL carries a
+     one-time sign-in code (?code=), and the beacon reports the full URL. -->
 </body>
 </html>

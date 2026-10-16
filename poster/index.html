@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom Chart Poster — Follow My Astrolabe</title>
+<meta name="description" content="Artwork of your own birth chart, in the Follow My Astrolabe batik style. A digital poster made for you within three days, which you can then have printed.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Follow My Astrolabe">
+<meta property="og:title" content="Custom Chart Poster — Follow My Astrolabe">
+<meta property="og:description" content="Artwork of your own birth chart, in the Follow My Astrolabe batik style, made for you within three days.">
+<meta property="og:url" content="https://www.followmyastrolabe.com/poster/">
+<meta name="robots" content="index">
+<link rel="icon" href="/assets/favicon.png">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
+<script src="/assets/fit-buttons.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<script type="module">
+  import { apply } from "/chart/src/appearance.js";
+  apply();
+</script>
+<style>
+  .steps{ margin: 10px 0 0; padding-left: 1.3em; }
+  .steps li{ margin: 6px 0; }
+  .people{ display: grid; gap: 8px; }
+  .people label{
+    display: flex; flex-wrap: wrap; align-items: center; gap: 3px 10px; cursor: pointer;
+    background: var(--panel); border: 1px solid rgba(176,140,63,0.25);
+    border-radius: 10px; padding: 12px; font-size: 15px; color: var(--ink);
+  }
+  .people label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+  .people label.unavailable{ cursor: default; opacity: 0.6; }
+  .people .sub{ color: var(--muted); font-size: 13px; flex-basis: 100%; }
+  .price-line{ display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; font-size: 15px; }
+  .price-line .price{ font-family: var(--font-display); color: var(--resist); font-size: 20px; }
+  fieldset{ border: 0; padding: 0; margin: 0; min-width: 0; }
+  legend{ padding: 0; margin-bottom: 10px; }
+</style>
+</head>
+<body class="page">
+<header class="nav-bar">
+  <div class="leading">
+    <a class="back" href="/prints/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Prints</span></a>
+  </div>
+  <div class="title" aria-hidden="true">Chart Poster</div>
+  <div class="trailing"></div>
+</header>
+<main class="form-width">
+  <div class="intro">
+    <h1 class="plate-label">Custom Chart Poster</h1>
+    <p>Artwork of your own birth chart: the symbols your planets, signs, and
+    houses call for, brought together in one piece in our batik style.</p>
+  </div>
+
+  <section class="card">
+    <h2>How It Works</h2>
+    <ol class="steps muted-prose">
+      <li>Choose whose chart it is, and pay $9.99.</li>
+      <li>We make the artwork from that chart. A person checks and refines every
+      one before it reaches you, and it's ready within three days.</li>
+      <li>We email you a link. Look at it, then approve it or ask for a change.</li>
+      <li>Once you've approved it, download it, and if you like, order a print
+      of it on any of our papers and sizes.</li>
+    </ol>
+  </section>
+
+  <div class="problem" id="problem" hidden></div>
+
+  <noscript>
+    <p class="problem" style="display:block">Ordering needs JavaScript, because
+    your chart is worked out in your browser.</p>
+  </noscript>
+
+  <form class="plate" id="order" hidden>
+    <fieldset>
+      <legend class="plate-label">Whose Chart</legend>
+      <div class="people" id="people"></div>
+    </fieldset>
+    <p class="note" id="none" hidden>There's no chart saved in this browser yet.
+    <a href="/app/">Cast one in the app</a>, with an exact birth time, and come back.</p>
+
+    <div class="price-line"><span>Digital poster</span><span class="price">$9.99</span></div>
+    <button class="buy metal-button wide" type="submit" id="buy" disabled>Continue to checkout</button>
+    <p class="note">Payment is on Stripe's own page, and the poster comes to the
+    email address you pay with. Your name, birth date, time, and place stay in
+    this browser: we're sent only the positions in the chart, the same ones a
+    reading uses. <a href="/privacy/#poster">How we handle them</a>.</p>
+  </form>
+
+  <p class="note center">Already ordered one? <a href="/account/">See your posters</a>.</p>
+
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+  </footer>
+</main>
+<script type="module">
+  import { listProfiles, selectedProfileId } from "/app/src/profiles.js";
+  import { natalPositions } from "/app/src/positions.js";
+  import { call } from "/account/src/posters.js";
+
+  const form = document.getElementById("order");
+  const people = document.getElementById("people");
+  const buy = document.getElementById("buy");
+  const problem = document.getElementById("problem");
+
+  const profiles = listProfiles();
+  const selected = selectedProfileId();
+
+  function dateLabel(p) {
+    const [y, m, d] = p.date.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  }
+
+  let firstUsable = null;
+  for (const p of profiles) {
+    const usable = p.timeMode === "exact";
+    const label = document.createElement("label");
+    if (!usable) label.className = "unavailable";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "who";
+    input.value = p.id;
+    input.disabled = !usable;
+    if (usable && (p.id === selected || !firstUsable)) {
+      if (firstUsable) firstUsable.checked = false;
+      input.checked = true;
+      firstUsable = input;
+    }
+    const name = document.createElement("span");
+    name.textContent = p.name || "Unnamed chart";
+    const sub = document.createElement("span");
+    sub.className = "sub";
+    sub.textContent = usable
+      ? `${dateLabel(p)} · ${p.place?.name ?? "birthplace saved"}`
+      : "Needs an exact birth time first. Edit it in the app.";
+    label.append(input, name, sub);
+    people.appendChild(label);
+  }
+  document.getElementById("none").hidden = profiles.length > 0;
+  buy.disabled = !firstUsable;
+  form.hidden = false;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    problem.hidden = true;
+    const id = form.elements.who?.value ?? form.querySelector('input[name="who"]:checked')?.value;
+    const positions = natalPositions(profiles.find((p) => p.id === id));
+    if (!positions) {
+      problem.textContent = "That chart can't be worked out yet. Check its birth time and place in the app.";
+      problem.hidden = false;
+      return;
+    }
+    buy.disabled = true;
+    buy.textContent = "Taking you to checkout…";
+    try {
+      const { ok, body } = await call("/poster/checkout", { positions });
+      if (ok && body.url) { window.location.href = body.url; return; }
+      problem.textContent = body.error ?? "Couldn't start checkout. Please try again.";
+    } catch {
+      problem.textContent = "Couldn't reach the order service just now. Please try again in a minute.";
+    }
+    problem.hidden = false;
+    buy.disabled = false;
+    buy.textContent = "Continue to checkout";
+  });
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1b4ff25c9c9c4923b92ff0101dc01c16"}'></script>
+</body>
+</html>

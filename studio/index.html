@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poster Studio — Follow My Astrolabe</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/assets/favicon.png">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
+<script src="/assets/fit-buttons.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<script type="module">
+  import { apply } from "/chart/src/appearance.js";
+  apply();
+</script>
+<style>
+  .page main{ max-width: 980px; }
+  .field{ display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .field input, .field textarea{ width: 100%; }
+  .field textarea{ min-height: 70px; resize: vertical; font: inherit; }
+  .orders{ display: grid; gap: 8px; }
+  .orders button{
+    display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; text-align: left; width: 100%;
+    background: var(--panel); border: 1px solid rgba(176,140,63,0.25); border-radius: 10px;
+    padding: 12px; font: inherit; color: var(--ink); cursor: pointer;
+  }
+  .orders button[aria-current="true"]{ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+  .orders .due{ margin-left: auto; color: var(--muted); font-size: 13px; }
+  .orders .late{ color: var(--resist); }
+  .badge{ font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--bright); }
+  .detail{ display: grid; gap: 16px; }
+  .images{ display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .images figure{ margin: 0; }
+  .images img{ display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid rgba(176,140,63,0.22); background: var(--panel); }
+  .images figcaption{ color: var(--muted); font-size: 12px; margin-top: 6px; }
+  .placements{ margin: 0; padding-left: 1.1em; font-size: 13px; line-height: 1.55; }
+  .quote{ border-left: 2px solid rgba(176,140,63,0.4); padding-left: 10px; margin: 6px 0; white-space: pre-wrap; font-size: 14px; }
+  .warn{ color: var(--resist); font-size: 13px; margin: 4px 0 0; }
+  .row{ display: flex; flex-wrap: wrap; gap: 8px; }
+  .row > *{ flex: 1 1 200px; min-width: 0; }
+</style>
+</head>
+<body class="page">
+<header class="nav-bar">
+  <div class="leading"></div>
+  <div class="title" aria-hidden="true">Poster Studio</div>
+  <div class="trailing"></div>
+</header>
+<main>
+  <h1 class="visually-hidden">Poster Studio</h1>
+  <div class="said" id="said" hidden></div>
+  <div class="problem" id="problem" hidden></div>
+
+  <section class="plate" id="keyForm" hidden>
+    <h2>Studio Key</h2>
+    <p>Paste the studio key. It's kept in this browser only, so you'll be asked
+    once per browser.</p>
+    <div class="field">
+      <label for="key">Key</label>
+      <input type="password" id="key" autocomplete="off">
+    </div>
+    <button class="buy metal-button wide" type="button" id="saveKey">Open the studio</button>
+  </section>
+
+  <section id="studio" hidden>
+    <h2 class="plate-label">Orders</h2>
+    <div class="orders" id="orders"></div>
+    <p class="note" id="empty" hidden>No posters have been ordered yet.</p>
+    <hr class="divider">
+    <div class="detail" id="detail"></div>
+    <hr class="divider">
+    <button class="plain quiet-button" type="button" id="forgetKey">Forget the key in this browser</button>
+  </section>
+</main>
+<script type="module">
+  import { BROKER, longDay } from "/account/src/posters.js";
+
+  const KEY = "astrolabe.studioKey";
+  const $ = (id) => document.getElementById(id);
+  const said = $("said"), problem = $("problem");
+  const tell = (m) => { said.textContent = m; said.hidden = false; problem.hidden = true; };
+  const complain = (m) => { problem.textContent = m; problem.hidden = false; said.hidden = true; };
+
+  const getKey = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
+  const auth = () => ({ Authorization: `Bearer ${getKey()}` });
+
+  const LABELS = {
+    in_progress: "To make",
+    changes_requested: "Change asked",
+    proof_ready: "With customer",
+    approved: "Approved",
+  };
+  const ORDER = { changes_requested: 0, in_progress: 1, proof_ready: 2, approved: 3 };
+
+  function el(tag, props = {}, ...children) {
+    const node = Object.assign(document.createElement(tag), props);
+    node.append(...children);
+    return node;
+  }
+
+  let posters = [];
+  let current = new URLSearchParams(location.search).get("poster");
+  const objectUrls = [];
+
+  async function api(path, init = {}) {
+    const res = await fetch(BROKER + path, { ...init, headers: { ...auth(), ...(init.headers ?? {}) } });
+    if (res.status === 401) {
+      try { localStorage.removeItem(KEY); } catch {}
+      showKeyForm("That key wasn't accepted. Paste it again.");
+      throw new Error("unauthorized");
+    }
+    return res;
+  }
+
+  function showKeyForm(message) {
+    $("studio").hidden = true;
+    $("keyForm").hidden = false;
+    if (message) complain(message);
+  }
+
+  async function imageFor(posterId, which) {
+    const res = await api(`/studio/file?poster=${posterId}&which=${which}`);
+    if (!res.ok) return null;
+    const url = URL.createObjectURL(await res.blob());
+    objectUrls.push(url);
+    return url;
+  }
+
+  function renderList() {
+    const box = $("orders");
+    box.replaceChildren();
+    $("empty").hidden = posters.length > 0;
+    const sorted = [...posters].sort((a, b) =>
+      (ORDER[a.status] - ORDER[b.status]) || String(a.dueBy).localeCompare(String(b.dueBy)));
+    for (const p of sorted) {
+      const late = p.status === "in_progress" || p.status === "changes_requested"
+        ? Date.parse(p.dueBy) < Date.now() : false;
+      const button = el("button", { type: "button" },
+        el("span", { className: "badge" }, (p.testMode ? "Test · " : "") + (LABELS[p.status] ?? p.status)),
+        el("span", {}, p.email),
+        el("span", { className: "due" + (late ? " late" : "") },
+          p.status === "approved" ? `approved ${longDay(p.approvedAt)}` : `due ${longDay(p.dueBy)}${late ? " (late)" : ""}`));
+      if (p.id === current) button.setAttribute("aria-current", "true");
+      button.addEventListener("click", () => {
+        current = p.id;
+        history.replaceState(null, "", `?poster=${p.id}`);
+        renderList();
+        renderDetail();
+      });
+      box.append(button);
+    }
+  }
+
+  async function renderDetail() {
+    const box = $("detail");
+    while (objectUrls.length) URL.revokeObjectURL(objectUrls.pop());
+    const p = posters.find((x) => x.id === current);
+    if (!p) { box.replaceChildren(el("p", { className: "note" }, "Choose an order above.")); return; }
+
+    const head = el("section", { className: "card" },
+      el("span", { className: "plate-label" }, `${LABELS[p.status] ?? p.status}${p.testMode ? " · Stripe test mode" : ""}`),
+      el("p", {}, `${p.email} · paid ${longDay(p.paidAt)} · due ${longDay(p.dueBy)}`));
+    for (const m of p.messages) head.append(el("p", { className: "quote" }, `${longDay(m.at)}: ${m.text}`));
+
+    const placements = el("section", { className: "card" },
+      el("span", { className: "plate-label" }, "Placements"),
+      el("ul", { className: "placements" }, ...p.placements.map((l) => el("li", {}, l))));
+
+    const draftFig = el("figure", {}, el("figcaption", {}, p.hasDraft ? "FLUX draft (loading…)" : (p.draftError ? `No draft: ${p.draftError}` : "No draft yet.")));
+    const finalFig = el("figure", {}, el("figcaption", {}, p.final ? `Your artwork, ${p.final.width}×${p.final.height}` : "No artwork uploaded yet."));
+    const images = el("div", { className: "images" }, draftFig, finalFig);
+
+    const redraft = el("button", { className: "plain quiet-button", type: "button" }, p.hasDraft ? "Make a new draft" : "Make a draft");
+    redraft.addEventListener("click", async () => {
+      redraft.disabled = true; redraft.textContent = "Making a draft (about 20 seconds)…";
+      try {
+        const res = await api("/studio/redraft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ poster: p.id }) });
+        const body = await res.json();
+        if (body.poster) Object.assign(p, body.poster);
+        body.ok ? tell("New draft made.") : complain(`The draft failed: ${body.error}`);
+        renderDetail();
+      } catch (e) { if (e.message !== "unauthorized") complain("Couldn't reach the order service."); }
+    });
+
+    const file = el("input", { type: "file", accept: "image/png,image/jpeg", id: "upload" });
+    const upload = el("button", { className: "buy metal-button wide", type: "button" }, p.final ? "Replace the artwork" : "Upload the artwork");
+    const warnings = el("div", {});
+    upload.addEventListener("click", async () => {
+      const f = file.files[0];
+      if (!f) return complain("Choose a PNG or JPEG first.");
+      upload.disabled = true; upload.textContent = "Uploading…";
+      try {
+        const res = await api(`/studio/final?poster=${p.id}`, { method: "PUT", headers: { "Content-Type": f.type }, body: f });
+        const body = await res.json();
+        if (!res.ok) { complain(body.error ?? "Upload failed."); }
+        else {
+          Object.assign(p, body.poster);
+          tell(body.warnings.length ? "Uploaded, with warnings below." : "Uploaded. Send it as a proof when you're happy with it.");
+          await renderDetail();
+          $("warnings")?.replaceChildren(...body.warnings.map((w) => el("p", { className: "warn" }, w)));
+          return;
+        }
+      } catch (e) { if (e.message !== "unauthorized") complain("Couldn't reach the order service."); }
+      upload.disabled = false; upload.textContent = p.final ? "Replace the artwork" : "Upload the artwork";
+    });
+    warnings.id = "warnings";
+
+    const note = el("textarea", { id: "note", maxLength: 2000, placeholder: "Optional: a note to the customer, shown with the proof" });
+    const send = el("button", { className: "buy metal-button wide", type: "button" },
+      p.proofSentAt ? "Send the updated proof" : "Send the proof to the customer");
+    send.disabled = !p.final || p.status === "approved";
+    send.addEventListener("click", async () => {
+      send.disabled = true; send.textContent = "Sending…";
+      try {
+        const res = await api("/studio/send-proof", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ poster: p.id, note: note.value }) });
+        const body = await res.json();
+        if (!res.ok) complain(body.error ?? "Couldn't send it.");
+        else {
+          Object.assign(p, body.poster);
+          body.emailed ? tell("Proof sent. The customer has been emailed a link.") : complain("Marked as sent, but the email didn't go out. Check the order service's logs.");
+          renderList(); return renderDetail();
+        }
+      } catch (e) { if (e.message !== "unauthorized") complain("Couldn't reach the order service."); }
+      send.disabled = false;
+    });
+
+    const work = el("section", { className: "plate" },
+      el("span", { className: "plate-label" }, "Artwork"),
+      images,
+      el("div", { className: "row" }, redraft),
+      el("div", { className: "field" }, el("label", { htmlFor: "upload" }, "Finished artwork: landscape 4:3, ideally 6000×4500 PNG"), file),
+      warnings,
+      upload,
+      el("div", { className: "field" }, el("label", { htmlFor: "note" }, "Note to the customer"), note),
+      send);
+    if (p.status === "approved") work.append(el("p", { className: "note" }, "The customer has approved this one. Uploading a new file now changes what they download and print."));
+
+    box.replaceChildren(head, placements, work);
+
+    if (p.hasDraft) imageFor(p.id, "draft").then((u) => { if (u) { draftFig.prepend(el("img", { src: u, alt: "FLUX draft" })); draftFig.querySelector("figcaption").textContent = "FLUX draft, a starting point only"; } }).catch(() => {});
+    if (p.final) imageFor(p.id, "final").then((u) => { if (u) finalFig.prepend(el("img", { src: u, alt: "Your artwork" })); }).catch(() => {});
+  }
+
+  async function load() {
+    if (!getKey()) return showKeyForm();
+    try {
+      const res = await api("/studio/posters");
+      if (!res.ok) return complain("Couldn't load the orders.");
+      posters = (await res.json()).posters;
+    } catch (e) {
+      if (e.message !== "unauthorized") complain("Couldn't reach the order service.");
+      return;
+    }
+    $("keyForm").hidden = true;
+    $("studio").hidden = false;
+    if (!current && posters[0]) current = posters[0].id;
+    renderList();
+    renderDetail();
+  }
+
+  $("saveKey").addEventListener("click", () => {
+    const value = $("key").value.trim();
+    if (!value) return;
+    try { localStorage.setItem(KEY, value); } catch { return complain("This browser won't store the key. Use an ordinary window, not a private one."); }
+    $("key").value = "";
+    problem.hidden = true;
+    load();
+  });
+  $("forgetKey").addEventListener("click", () => {
+    try { localStorage.removeItem(KEY); } catch {}
+    tell("The key is forgotten in this browser.");
+    showKeyForm();
+  });
+
+  load();
+</script>
+</body>
+</html>

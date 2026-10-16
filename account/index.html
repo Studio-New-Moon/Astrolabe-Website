@@ -1,16 +1,295 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<!-- Subscriptions were dropped on 2026-10-16: every reading is free now, so
-     the old plan and account pages send anyone who still has the link to the
-     web app. Kept as a redirect rather than deleted so that link still lands. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your posters — Follow My Astrolabe</title>
+<meta name="description" content="See your Custom Chart Posters, approve them, download them, and order prints of them.">
 <meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0; url=/app/">
-<link rel="canonical" href="https://www.followmyastrolabe.com/app/">
-<title>Follow My Astrolabe</title>
+<link rel="icon" href="/assets/favicon.png">
+<meta name="theme-color" content="#14100A">
+<link rel="stylesheet" href="/assets/app.css">
+<script src="/assets/fit-buttons.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<script type="module">
+  import { apply } from "/chart/src/appearance.js";
+  apply();
+</script>
+<style>
+  .field{ display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .field input, .field textarea{ width: 100%; }
+  .field textarea{ min-height: 90px; resize: vertical; font: inherit; }
+  .poster{ display: grid; gap: 12px; }
+  .poster + .poster{ margin-top: 18px; }
+  .poster .status{ font-size: 15px; color: var(--ink); margin: 0; }
+  .poster .art{
+    display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain;
+    border-radius: 11px; border: 1px solid rgba(176,140,63,0.22); background: var(--panel);
+  }
+  .poster .quote{ border-left: 2px solid rgba(176,140,63,0.4); padding-left: 10px; margin: 0; color: var(--muted); font-size: 14px; white-space: pre-wrap; }
+  .poster .actions{ display: grid; gap: 8px; }
+  .print-form{ display: grid; gap: 10px; }
+  .print-form .row{ display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .print-form select{ max-width: 70%; }
+  .print-form .total{ font-family: var(--font-display); color: var(--resist); font-variant-numeric: tabular-nums; }
+</style>
 </head>
-<body>
-<p>Every reading is free now. <a href="/app/">Open the app</a>.</p>
+<body class="page">
+<header class="nav-bar">
+  <div class="leading">
+    <a class="back" href="/app/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Chart</span></a>
+  </div>
+  <div class="title" aria-hidden="true">Your Posters</div>
+  <div class="trailing"></div>
+</header>
+<main class="form-width">
+  <h1 class="visually-hidden">Your posters</h1>
+
+  <div class="said" id="said" hidden></div>
+  <div class="problem" id="problem" hidden></div>
+
+  <section class="card" id="loading">
+    <p>Checking this browser…</p>
+  </section>
+
+  <section class="plate" id="signIn" hidden>
+    <h2>See Your Posters</h2>
+    <p>Type the email address you paid with and we'll send you a link. Opening
+    it shows your posters in the browser you open it in. There's no password.</p>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input type="email" id="email" autocomplete="email" placeholder="you@example.com">
+    </div>
+    <button class="buy metal-button wide" type="button" id="send">Email me a link</button>
+    <p class="note">We send a link only to an address that has ordered a poster,
+    and we say the same thing either way, so this page can't tell a stranger
+    who has.</p>
+  </section>
+
+  <div id="posters"></div>
+
+  <section class="plate" id="signOut" hidden>
+    <h2>This Browser</h2>
+    <p>Signing out forgets your posters here. It doesn't delete anything, and
+    you can ask for a new link whenever you like.</p>
+    <button class="plain quiet-button" type="button" id="forget">Sign out of this browser</button>
+  </section>
+
+  <p class="note center">Want another? <a href="/poster/">Order a Custom Chart Poster</a>.</p>
+
+  <footer>
+    <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
+  </footer>
+</main>
+<script type="module">
+  import { BROKER, call, clearPass, longDay, money, readPass, writePass } from "/account/src/posters.js";
+
+  const $ = (id) => document.getElementById(id);
+  const said = $("said"), problem = $("problem"), list = $("posters");
+
+  function tell(message) { said.textContent = message; said.hidden = false; problem.hidden = true; }
+  function complain(message) { problem.textContent = message; problem.hidden = false; }
+  const unreachable = "Couldn't reach the order service just now. Please try again in a minute.";
+
+  function signedOut() {
+    $("loading").hidden = true;
+    $("signIn").hidden = false;
+    $("signOut").hidden = true;
+    list.replaceChildren();
+  }
+
+  let catalogue = null;
+  async function loadCatalogue() {
+    if (!catalogue) {
+      const res = await fetch(`${BROKER}/catalogue`);
+      if (!res.ok) throw new Error("catalogue");
+      catalogue = await res.json();
+    }
+    return catalogue;
+  }
+
+  async function artworkBlob(posterId) {
+    const res = await fetch(`${BROKER}/account/poster-image`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pass: readPass(), posterId }),
+    });
+    if (!res.ok) throw new Error("image");
+    return res.blob();
+  }
+
+  function el(tag, props = {}, ...children) {
+    const node = Object.assign(document.createElement(tag), props);
+    node.append(...children);
+    return node;
+  }
+
+  function statusLine(p) {
+    switch (p.status) {
+      case "in_progress": return `Being made now. It will be ready by ${longDay(p.dueBy)}, and we'll email you when it is.`;
+      case "proof_ready": return "Ready for you to look at. Approve it, or tell us what you'd like changed.";
+      case "changes_requested": return "You asked for a change. We'll email you when the new version is ready.";
+      case "approved": return "Approved, and yours to download or have printed.";
+      default: return "";
+    }
+  }
+
+  async function renderPoster(p, index) {
+    const box = el("section", { className: "plate poster" });
+    box.append(el("span", { className: "plate-label" }, `Poster ${index + 1} · ordered ${longDay(p.paidAt)}`));
+    box.append(el("p", { className: "status" }, statusLine(p)));
+
+    if (!p.hasArtwork) return box;
+
+    const img = el("img", { className: "art", alt: "Your Custom Chart Poster" });
+    box.append(img);
+    let blob = null;
+    artworkBlob(p.id).then((b) => { blob = b; img.src = URL.createObjectURL(b); })
+      .catch(() => complain("Your poster's artwork couldn't be loaded just now. Please reload in a minute."));
+
+    if (p.proofNote && p.status !== "approved") box.append(el("p", { className: "quote" }, p.proofNote));
+    const lastAsk = p.messages.at(-1);
+    if (p.status === "changes_requested" && lastAsk) {
+      box.append(el("p", { className: "quote" }, `You asked: ${lastAsk.text}`));
+    }
+
+    if (p.status === "proof_ready") {
+      const approve = el("button", { className: "buy metal-button wide", type: "button" }, "Approve this poster");
+      const field = el("div", { className: "field" },
+        el("label", { htmlFor: `change-${p.id}` }, "Or ask for a change"),
+        el("textarea", { id: `change-${p.id}`, maxLength: 2000, placeholder: "What would you like different?" }));
+      const ask = el("button", { className: "plain quiet-button", type: "button" }, "Send my change");
+      approve.addEventListener("click", async () => {
+        approve.disabled = true;
+        try {
+          const { ok, body } = await call("/account/poster-approve", { pass: readPass(), posterId: p.id });
+          if (ok) { tell("Approved. You can download it now, or order a print of it below."); return load(); }
+          complain(body.error ?? "Couldn't approve it just now.");
+        } catch { complain(unreachable); }
+        approve.disabled = false;
+      });
+      ask.addEventListener("click", async () => {
+        const message = field.querySelector("textarea").value.trim();
+        if (!message) { complain("Say what you'd like changed first."); return; }
+        ask.disabled = true;
+        try {
+          const { ok, body } = await call("/account/poster-change", { pass: readPass(), posterId: p.id, message });
+          if (ok) { tell("Thank you. We'll email you when the new version is ready."); return load(); }
+          complain(body.error ?? "Couldn't send that just now.");
+        } catch { complain(unreachable); }
+        ask.disabled = false;
+      });
+      box.append(el("div", { className: "actions" }, approve, field, ask));
+    }
+
+    if (p.status === "approved") {
+      const download = el("button", { className: "buy metal-button wide", type: "button" }, "Download your poster");
+      download.addEventListener("click", async () => {
+        try {
+          const b = blob ?? await artworkBlob(p.id);
+          const a = el("a", { href: URL.createObjectURL(b), download: `astrolabe-chart-poster.${b.type === "image/jpeg" ? "jpg" : "png"}` });
+          document.body.append(a); a.click(); a.remove();
+        } catch { complain("Couldn't download it just now. Please try again."); }
+      });
+      box.append(download, await printForm(p));
+    }
+    return box;
+  }
+
+  async function printForm(p) {
+    const form = el("form", { className: "print-form" });
+    form.append(el("span", { className: "plate-label" }, "Order a Print"));
+    let data;
+    try { data = await loadCatalogue(); } catch {
+      form.append(el("p", { className: "note" }, "Prints can't be ordered just now: we can't reach the order service for current prices."));
+      return form;
+    }
+    const sizes = data.prints;
+    const size = el("select", { id: `size-${p.id}` }, ...sizes.map((s, i) => el("option", { value: String(i) }, `${s.label}, ${s.dimensions}`)));
+    const paper = el("select", { id: `paper-${p.id}` }, ...sizes[0].papers.map((x, i) => el("option", { value: String(i) }, x.paper)));
+    const qty = el("select", { id: `qty-${p.id}` }, ...Array.from({ length: Math.min(data.maxQuantity || 1, 10) }, (_, i) => el("option", { value: String(i + 1) }, String(i + 1))));
+    const total = el("span", { className: "total" });
+    const detail = el("p", { className: "note" });
+    const chosen = () => sizes[Number(size.value)].papers[Number(paper.value)];
+    const refresh = () => {
+      total.textContent = money(chosen().unitCents * Number(qty.value), sizes[0].currency);
+      detail.textContent = chosen().detail ?? "";
+    };
+    [size, paper, qty].forEach((s) => s.addEventListener("change", refresh));
+    form.append(
+      el("div", { className: "row" }, el("label", { htmlFor: size.id }, "Size"), size),
+      el("div", { className: "row" }, el("label", { htmlFor: paper.id }, "Paper"), paper),
+      detail,
+      el("div", { className: "row" }, el("label", { htmlFor: qty.id }, "How many"), qty),
+      el("div", { className: "row" }, el("span", {}, "Total"), total),
+    );
+    const buy = el("button", { className: "buy metal-button wide", type: "submit" }, "Continue to checkout");
+    form.append(buy, el("p", { className: "note" }, "Prints are landscape, made to order, and shipped to you flat. Payment and your shipping address are taken on Stripe's own page."));
+    refresh();
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      buy.disabled = true; buy.textContent = "Taking you to checkout…";
+      try {
+        const { ok, body } = await call("/create-checkout-session", {
+          posterId: p.id, pass: readPass(), productUid: chosen().productUid,
+          quantity: Number(qty.value), channel: "web",
+        });
+        if (ok && body.url) { window.location.href = body.url; return; }
+        complain(body.error ?? "Couldn't start checkout. Please try again.");
+      } catch { complain(unreachable); }
+      buy.disabled = false; buy.textContent = "Continue to checkout";
+    });
+    return form;
+  }
+
+  async function load() {
+    const pass = readPass();
+    if (!pass) return signedOut();
+    let result;
+    try { result = await call("/account/posters", { pass }); } catch {
+      $("loading").hidden = true;
+      return complain(unreachable);
+    }
+    if (result.status === 401) { clearPass(); return signedOut(); }
+    if (!result.ok) { $("loading").hidden = true; return complain(result.body.error ?? "Couldn't load your posters."); }
+    if (result.body.pass) writePass(result.body.pass);
+    $("loading").hidden = true;
+    $("signIn").hidden = true;
+    $("signOut").hidden = false;
+    const posters = result.body.posters;
+    if (!posters.length) {
+      list.replaceChildren(el("section", { className: "card" }, el("p", {}, "There are no posters on this account yet.")));
+      return;
+    }
+    list.replaceChildren(...await Promise.all(posters.map(renderPoster)));
+  }
+
+  $("send").addEventListener("click", async () => {
+    const email = $("email").value.trim();
+    problem.hidden = true;
+    if (!email.includes("@")) return complain("That doesn't look like an email address.");
+    const button = $("send");
+    button.disabled = true; button.textContent = "Sending…";
+    try {
+      const { ok, status, body } = await call("/account/link", { email });
+      if (ok || status === 204) tell("If that address has ordered a poster, a link is on its way. It works once and lasts half an hour.");
+      else complain(body.error ?? "Couldn't send a link just now.");
+    } catch { complain(unreachable); }
+    button.disabled = false; button.textContent = "Email me a link";
+  });
+
+  $("forget").addEventListener("click", () => {
+    clearPass();
+    tell("Signed out of this browser.");
+    signedOut();
+  });
+
+  load();
+</script>
+<!-- Cloudflare Web Analytics: counts page views without cookies. Left off
+     /account/unlock/, whose URL carries a one-time sign-in code. -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1b4ff25c9c9c4923b92ff0101dc01c16"}'></script>
 </body>
 </html>
