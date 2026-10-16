@@ -67,6 +67,9 @@
   .sizes label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
   .sizes .dim{ color: var(--muted); font-size: 13px; }
   .sizes .price{ margin-left: auto; font-family: var(--font-display); color: var(--resist); font-variant-numeric: tabular-nums; }
+  .paper{ display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .paper select{ max-width: 70%; }
+  .paper-detail{ color: var(--muted); font-size: 13px; margin: 8px 0 0; }
   .qty{ display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
   .order .buy{ margin-top: 20px; }
   .order .note{ text-align: center; margin-top: 10px; }
@@ -112,7 +115,7 @@
   <section class="card">
     <h2>The Object</h2>
   <div class="muted-prose">
-  <p>Prints are produced on 170&nbsp;gsm coated silk stock, in landscape, at the
+  <p>Prints are produced in landscape, at the
   proportions the image was composed in &mdash; so nothing is cropped to fit a
   frame it was never meant for. Each one is made when it's ordered rather than
   pulled from a shelf, by a print partner who produces it and ships it directly
@@ -126,7 +129,9 @@
     <li><strong>24 &times; 32 in</strong> &mdash; 600 &times; 800 mm</li>
   </ul>
 
-  <p>Prices are shown at checkout.</p>
+  <p>And five papers: a semi-gloss and a matte, each in a standard and a
+  heavier weight, and a 250&nbsp;gsm archival matte on off-white stock made
+  to last. The price below changes with the paper you choose.</p>
   </div>
   </section>
 
@@ -162,6 +167,15 @@
     <fieldset>
       <legend class="plate-label">Size</legend>
       <div class="sizes" id="sizes"></div>
+    </fieldset>
+
+    <fieldset id="paperSet" hidden>
+      <legend class="plate-label">Paper</legend>
+      <div class="paper">
+        <label for="paper">Stock</label>
+        <select id="paper" name="paper"></select>
+      </div>
+      <p class="paper-detail" id="paperDetail"></p>
     </fieldset>
 
     <fieldset>
@@ -201,6 +215,9 @@
   var form = document.getElementById("order");
   var sizesEl = document.getElementById("sizes");
   var qtyEl = document.getElementById("qty");
+  var paperSetEl = document.getElementById("paperSet");
+  var paperEl = document.getElementById("paper");
+  var paperDetailEl = document.getElementById("paperDetail");
   var buyEl = document.getElementById("buy");
   var problemEl = document.getElementById("problem");
   var previewEl = document.getElementById("preview");
@@ -252,6 +269,35 @@
     } catch (e) { return "$" + (cents / 100).toFixed(2); }
   }
 
+  var sizes = [];
+  var priceEls = [];
+
+  function selectedSize() {
+    var checked = form.querySelector('input[name="size"]:checked');
+    return sizes[checked ? Number(checked.value) : 0];
+  }
+  function selectedPaper() {
+    var size = selectedSize();
+    return size.papers[Number(paperEl.value) || 0] || size.papers[0];
+  }
+
+  // Each size card shows its price on the chosen paper, and each paper in
+  // the dropdown its price at the chosen size, so the number beside the
+  // button is always the one checkout will charge.
+  function refresh() {
+    var paperIndex = Number(paperEl.value) || 0;
+    sizes.forEach(function (size, i) {
+      var paper = size.papers[paperIndex] || size.papers[0];
+      priceEls[i].textContent = money(paper.unitCents, size.currency);
+    });
+    var size = selectedSize();
+    Array.prototype.forEach.call(paperEl.options, function (opt, i) {
+      var paper = size.papers[i];
+      if (paper) opt.textContent = paper.paper + " \u2014 " + money(paper.unitCents, size.currency);
+    });
+    paperDetailEl.textContent = selectedPaper().detail || "";
+  }
+
   // Sizes and prices are read from the order service, never written into this
   // page — one source of truth, so a price here can never drift from the one
   // actually charged.
@@ -261,13 +307,26 @@
       var prints = (data && data.prints) || [];
       if (!prints.length) throw new Error("empty catalogue");
 
-      prints.forEach(function (p, i) {
+      // A catalogue from before papers existed has no `papers`; one paper
+      // per size, and no dropdown to show.
+      sizes = prints.map(function (p) {
+        return {
+          label: p.label,
+          dimensions: p.dimensions,
+          currency: p.currency,
+          papers: (p.papers && p.papers.length) ? p.papers
+            : [{ productUid: p.productUid, paper: "", detail: "", unitCents: p.unitCents }]
+        };
+      });
+
+      sizes.forEach(function (p, i) {
         var label = document.createElement("label");
         var input = document.createElement("input");
         input.type = "radio";
-        input.name = "productUid";
-        input.value = p.productUid;
+        input.name = "size";
+        input.value = String(i);
         if (i === 0) input.checked = true;
+        input.addEventListener("change", refresh);
         label.appendChild(input);
         var name = document.createElement("span");
         name.textContent = p.label;
@@ -278,10 +337,21 @@
         label.appendChild(dim);
         var price = document.createElement("span");
         price.className = "price";
-        price.textContent = money(p.unitCents, p.currency);
         label.appendChild(price);
+        priceEls.push(price);
         sizesEl.appendChild(label);
       });
+
+      // Every size carries the same papers in the same order, so the
+      // dropdown is built once and only its prices follow the size.
+      sizes[0].papers.forEach(function (paper, i) {
+        var opt = document.createElement("option");
+        opt.value = String(i);
+        paperEl.appendChild(opt);
+      });
+      paperEl.addEventListener("change", refresh);
+      paperSetEl.hidden = sizes[0].papers.length < 2;
+      refresh();
 
       var max = Math.min(Number(data.maxQuantity) || 1, 10);
       for (var q = 1; q <= max; q++) {
@@ -306,7 +376,7 @@
     buyEl.textContent = "Taking you to checkout…";
 
     var body = {
-      productUid: form.elements.productUid.value,
+      productUid: selectedPaper().productUid,
       sign: form.elements.sign.value,
       quantity: Number(qtyEl.value),
       channel: "web"
