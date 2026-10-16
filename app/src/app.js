@@ -345,7 +345,7 @@ function wheelStudArt() {
   const { metal, tarnished } = resolve().instrument;
   const dpr = window.devicePixelRatio || 1;
   return (b) => {
-    const key = [b.name, b.retrograde, b.glyph, px, metal, tarnished, dpr].join("|");
+    const key = [b.name, b.retrograde, b.glyph, b.apside, px, metal, tarnished, dpr].join("|");
     if (!studCache.has(key)) {
       try {
         const { href, box } = studImage(b, px, { metal, tarnished, dpr });

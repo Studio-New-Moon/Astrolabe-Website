@@ -125,13 +125,14 @@ export function chartWheelSVG(chart, opts = {}) {
     // draw one: the app puts the same PlanetStud on both charts. `art.px` is
     // the stud's on-screen diameter, which sets how a point of the app's
     // (the selection ring's 2pt) measures in this 1000-unit drawing.
-    const art = opts.studArt?.({ name: p.name, retrograde: p.retrograde, glyph: apside ? "" : glyph });
+    const art = opts.studArt?.(apside
+      ? { name: p.name, retrograde: p.retrograde, apside: p.name === "blackMoonLilith" }
+      : { name: p.name, retrograde: p.retrograde, glyph });
     let face;
     if (art) {
       const pt = d / art.px;
       const box = d * art.boxRatio;
       face = `<image href="${art.href}" x="${pos.x - box / 2}" y="${pos.y - box / 2}" width="${box}" height="${box}"/>` +
-        apsideMark +
         `<circle class="cw-ring" cx="${pos.x}" cy="${pos.y}" r="${d / 2 - pt}" fill="none" stroke="var(--fire, #DD6440)"` +
         ` stroke-width="${2 * pt}" opacity="${lit ? 1 : 0}"${lit ? ` style="filter: drop-shadow(0 0 ${5 * pt}px var(--fire, #DD6440))"` : ""}/>`;
     } else {

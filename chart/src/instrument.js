@@ -152,6 +152,32 @@ class SeededRandom {
 }
 
 // ---------------------------------------------------------------------------
+// Lilith and Selena's crescent over a cross, on the same 24-unit grid as
+// `moonApsideGlyph` in app/src/icons.js. Lilith is filled *and* stroked, so
+// its silhouette grows by the same half line width Selena's outline does
+// (the reason is in MoonApsideGlyph.swift).
+
+const APSIDE_CRESCENT = "M15.6 2.6a6.4 6.4 0 1 0 0 11.6 5.3 5.3 0 1 1 0-11.6Z";
+const APSIDE_CROSS = "M10.4 15v6.6M7.4 18.4h6";
+
+function drawApside(c, cx, cy, size, filled, color) {
+  c.save();
+  c.translate(cx - size / 2, cy - size / 2);
+  c.scale(size / 24, size / 24);
+  c.fillStyle = color;
+  c.strokeStyle = color;
+  c.lineJoin = "round";
+  c.lineCap = "round";
+  const crescent = new Path2D(APSIDE_CRESCENT);
+  if (filled) c.fill(crescent);
+  c.lineWidth = 1.5;
+  c.stroke(crescent);
+  c.lineWidth = 1.6;
+  c.stroke(new Path2D(APSIDE_CROSS));
+  c.restore();
+}
+
+// ---------------------------------------------------------------------------
 // Layers.
 
 function makeLayer(width, height, dpr) {
@@ -1138,13 +1164,15 @@ export function drawInstrument(canvas, chart, options = {}) {
     sc.restore();
 
     // The glyph, engraved: dark above-left, light below-right, stacked the
-    // way SwiftUI stacks shadows, then laid onto the metal. An empty glyph
-    // leaves the face bare for a caller that marks it itself (Lilith and
-    // Selena, whose shape no system font carries in both forms).
+    // way SwiftUI stacks shadows, then laid onto the metal. Lilith and Selena
+    // (`body.apside`: true filled, false outlined) are drawn rather than
+    // typed, as `MoonApsideGlyph` does, since no system font carries both
+    // forms; they take the same engraving. An empty glyph leaves the face bare.
     const glyph = body.glyph ?? PLANET_GLYPHS[body.name] ?? "?";
-    if (glyph) {
+    if (glyph || typeof body.apside === "boolean") {
       let t = makeLayer(box, box, dpr);
-      inkText(t.ctx, glyph + TEXT, `${d * 0.52}px ${font.symbol}`, m.onMetal, o, o);
+      if (typeof body.apside === "boolean") drawApside(t.ctx, o, o, d * 0.56, body.apside, m.onMetal);
+      else inkText(t.ctx, glyph + TEXT, `${d * 0.52}px ${font.symbol}`, m.onMetal, o, o);
       t = withShadow(t, box, box, m.deep, 0.95, -1.0, -1.0, 0);
       t = withShadow(t, box, box, m.deep, 0.55, -0.5, -0.5, 0);
       t = withShadow(t, box, box, m.spec, 0.95, 1.0, 1.0, 0);
@@ -1241,8 +1269,8 @@ export function drawInstrument(canvas, chart, options = {}) {
  * Wheel: the app puts the same `PlanetStud` on both of its charts, so the
  * site does too rather than keeping a second, flatter stud of its own.
  *
- * `body` is `{ name, retrograde, glyph? }` — a `glyph` of "" leaves the face
- * bare. `diameter` is the stud's on-screen size in CSS pixels, so the wear's
+ * `body` is `{ name, retrograde, glyph?, apside? }` — `apside` true or false
+ * draws Lilith's or Selena's crescent; a `glyph` of "" leaves the face bare. `diameter` is the stud's on-screen size in CSS pixels, so the wear's
  * hairlines come out as fine as they are on the instrument. The image is the
  * stud's whole box, shadow included: `box` CSS pixels square, centred on the
  * stud. Options are `drawInstrument`'s metal, tarnish and dpr.
