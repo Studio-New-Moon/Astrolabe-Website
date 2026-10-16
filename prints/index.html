@@ -144,7 +144,7 @@
 
   <figure class="look">
     <div class="sheet" id="sheet">
-      <img id="preview" src="/assets/signs/aries.jpg"
+      <img id="preview" src="/assets/prints/aries.jpg"
            alt="Aries, illustrated in a batik style"
            width="1600" height="1200" fetchpriority="high">
     </div>
@@ -284,7 +284,7 @@
   function showSign(sign) {
     var name = SIGN_NAMES[sign];
     if (!name) return;
-    previewEl.src = "/assets/signs/" + sign + ".jpg";
+    previewEl.src = "/assets/prints/" + sign + ".jpg";
     previewEl.alt = name + ", illustrated in a batik style";
     previewNameEl.textContent = name;
   }
