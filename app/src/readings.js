@@ -11,10 +11,6 @@
 // before, and a reading that calls itself today's should not.
 
 import { natalPositions } from "./positions.js";
-// One place knows where a pass lives and how it is refreshed: /account/unlock/
-// writes it, this only reads it. Reading never throws — a private window, or
-// storage switched off, means the free reading rather than a broken page.
-import { readPass } from "../../chart/src/pass.js";
 
 /// Where the readings come from. A different one can be set in this browser —
 /// `localStorage.setItem("astrolabe.readings.endpoint", "http://localhost:8791/readings")` —
@@ -57,12 +53,7 @@ export async function fetchReadings(profile, { rulers = "modern", areas, periods
   if (areas) body.areas = areas;
   if (periods) body.periods = periods;
 
-  // The pass rides along when there is one. The server verifies it and
-  // composes the paid readings; without it, the paid words are never written,
-  // so there is nothing in the reply for anyone to dig out.
   const headers = { "Content-Type": "application/json" };
-  const pass = readPass();
-  if (pass) headers["X-Astrolabe-Pass"] = pass;
 
   let response;
   try {

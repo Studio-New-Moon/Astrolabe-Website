@@ -170,7 +170,7 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
 @media (prefers-reduced-motion: reduce){ *{ scroll-behavior: auto !important; } }
 
 /* ---------- pages (site-pages) ----------
- * The pages around the web app: /chart/, /plans/, /prints/, /account/,
+ * The pages around the web app: /chart/, /prints/,
  * /privacy/, /support/ and /order/thank-you/. Each carries `class="page"` on
  * its body, so nothing here reaches the homepage or /app/. Sizes are the
  * app's own: a screen's padding and its 22pt VStack spacing from

@@ -1,84 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Opening your readings — Follow My Astrolabe</title>
-<meta name="description" content="Opening a Follow My Astrolabe sign-in link unlocks the readings in this browser.">
+<meta charset="utf-8">
+<!-- Subscriptions were dropped on 2026-10-16: every reading is free now, so
+     the old plan and account pages send anyone who still has the link to the
+     web app. Kept as a redirect rather than deleted so that link still lands. -->
 <meta name="robots" content="noindex">
-<link rel="icon" href="/assets/favicon.png">
-<meta name="theme-color" content="#14100A">
-<link rel="stylesheet" href="/assets/app.css">
-<style>
-  #state{ font-size: 15px; color: var(--ink); }
-</style>
+<meta http-equiv="refresh" content="0; url=/app/">
+<link rel="canonical" href="https://www.followmyastrolabe.com/app/">
+<title>Follow My Astrolabe</title>
 </head>
-<body class="page">
-<header class="nav-bar">
-  <div class="leading">
-    <a class="back" href="/app/"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Chart</span></a>
-  </div>
-  <div class="title" aria-hidden="true">Your Readings</div>
-  <div class="trailing"></div>
-</header>
-<main class="form-width">
-  <h1 class="visually-hidden">Opening your readings</h1>
-  <div class="card">
-    <span class="plate-label">This Browser</span>
-    <p id="state">One moment — unlocking this browser.</p>
-  </div>
-
-  <div class="problem" id="problem" hidden></div>
-
-  <div class="plate" id="next" hidden>
-    <p><a class="metal-button wide" href="/app/">Go to your charts</a></p>
-    <p class="note center">The readings will be open.</p>
-  </div>
-
-  <p class="note" id="againNote" hidden>A link works once. You can always ask
-  for another from <a href="/account/">your account page</a>.</p>
-  <footer>
-    <a href="/">Follow My Astrolabe</a> &middot; <a href="/support/">Support</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; Studio New Moon
-  </footer>
-</main>
-<script type="module">
-  import { writePass } from "/chart/src/pass.js";
-  const BROKER = "https://astrolabe-gelato-broker.astrolabe-gelato-broker.workers.dev";
-  const state = document.getElementById("state");
-  const problem = document.getElementById("problem");
-  const code = new URLSearchParams(location.search).get("code");
-
-  function failed(message) {
-    state.textContent = "This browser isn't unlocked.";
-    problem.textContent = message; problem.hidden = false;
-    document.getElementById("againNote").hidden = false;
-  }
-
-  if (!code) {
-    failed("This page needs the link from your email — open that link rather than this page on its own.");
-  } else {
-    try {
-      const res = await fetch(`${BROKER}/pass/redeem`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok || !body.pass) {
-        failed(body.error ?? "That link has been used already, or it's expired.");
-      } else if (!writePass(body.pass)) {
-        failed("This browser won't let the site store anything, so it can't stay unlocked. A private window does that; an ordinary one should work.");
-      } else {
-        state.textContent = "This browser is unlocked. Your readings are open.";
-        document.getElementById("next").hidden = false;
-        document.getElementById("againNote").hidden = false;
-      }
-    } catch {
-      failed("Couldn't reach the site's server just now. Try the link again in a minute.");
-    }
-  }
-</script>
-<!-- No Cloudflare Web Analytics beacon here, on purpose: this URL carries a one-time pass code (?code=),
-     and the beacon reports the full URL. Every other page carries it. -->
+<body>
+<p>Every reading is free now. <a href="/app/">Open the app</a>.</p>
 </body>
 </html>

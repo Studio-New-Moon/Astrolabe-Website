@@ -138,8 +138,6 @@
   .chev{ width: 13px; height: 13px; color: var(--brass); flex: none; stroke-width: 2.6; }
   .chev svg{ width: 100%; height: 100%; display: block; }
   .chev svg path{ stroke-width: 3; }
-  .lock{ width: 11px; height: 11px; color: var(--brass); opacity: .7; flex: none; }
-  .lock svg{ width: 100%; height: 100%; display: block; }
   .glyph{ font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", system-ui, sans-serif; font-variant-emoji: text; }
   .display{ font-family: var(--font-display); color: var(--resist); font-weight: 400; margin: 0; }
   .divider{ height: 1px; background: color-mix(in srgb, var(--brass) 25%, transparent); border: 0; margin: 0; }
@@ -251,9 +249,6 @@
   .plate-word i:nth-of-type(1){ left: 5px; top: 4px; } .plate-word i:nth-of-type(2){ right: 5px; top: 4px; }
   .plate-word i:nth-of-type(3){ left: 5px; bottom: 4px; } .plate-word i:nth-of-type(4){ right: 5px; bottom: 4px; }
   .plate-desc{ font-size: 15px; color: var(--ink); text-align: center; padding-top: 4px; }
-  .plate-lock{ display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; letter-spacing: 1.4px;
-               text-transform: uppercase; color: var(--bright); background: none; border: 0; padding: 6px 4px; }
-  .plate-lock svg{ width: 9px; height: 9px; }
   .sign-row{ display: flex; align-items: center; gap: 10px; text-align: left; }
   .sign-row .big{ font-size: 34px; }
   .sign-row .nm{ font-size: 19px; color: var(--ink); }
@@ -655,8 +650,7 @@
   }
 </script>
 <!-- Cloudflare Web Analytics: counts page views without cookies. Left off
-     /account/unlock/ and /order/thank-you/, whose URLs carry a one-time code
-     and a Stripe session id. -->
+     /order/thank-you/, whose URL carries a Stripe session id. -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1b4ff25c9c9c4923b92ff0101dc01c16"}'></script>
 </body>
 </html>

@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. A name that stays the same keeps serving the
 // old file list to anyone offline until they next load the page online.
 
-const CACHE = "astrolabe-chart-v8";
+const CACHE = "astrolabe-chart-v9";
 
 // Every file the page needs to cast a chart with no signal. cache.addAll fails
 // the whole install if any one of these 404s, so a renamed module has to be
@@ -32,7 +32,6 @@ const SHELL = [
   "/chart/src/instrument.js",
   "/chart/src/install-guide.js",
   "/chart/src/instrument-view.js",
-  "/chart/src/pass.js",
   "/chart/src/places.js",
   // The place tables, but not the town lists themselves: those are one file
   // per letter, several megabytes together, and each is cached the first time

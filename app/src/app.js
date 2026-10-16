@@ -8,11 +8,9 @@
 //
 // What a reading says is never written here. Horoscopes, nameplates, and the
 // whole-chart summary come from the reading server, which runs the app's own
-// Swift (readings.js); this file only lays them out, and gates nothing the
-// server hasn't already gated. The few paid sections drawn here from the
-// chart's own facts follow the app's rule — free is every thing in the chart,
-// paid is every relation between things — and open on the server's word that
-// this browser holds a subscription.
+// Swift (readings.js); this file only lays them out. Everything here is free:
+// subscriptions were dropped on 2026-10-16, and prints are the only thing the
+// site sells.
 
 import { mountAppearance } from "../../chart/src/appearance-panel.js";
 import { resolve, EVENT } from "../../chart/src/appearance.js";
@@ -23,7 +21,6 @@ import { pointLongitude, pointIsRetrograde, POINTS } from "../../chart/src/point
 import { mountInstrument } from "../../chart/src/instrument-view.js";
 import { studImage } from "../../chart/src/instrument.js";
 import { loadPlaces, searchPlaces } from "../../chart/src/places.js";
-import { readPass, refreshPass } from "../../chart/src/pass.js";
 import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId, selectProfile, requestPersistentStorage } from "./profiles.js";
 import { fetchReadings, readerDay } from "./readings.js";
 import { ICONS, moonApsideGlyph } from "./icons.js";
@@ -248,16 +245,11 @@ const dispositor = (c, house) => {
 
 // ---------------------------------------------------------------- readings
 
-let entitled = false;
 let readings = null;
 let readingsFor = null;
 let readingsError = null;
 let readingsLoading = false;
 let inFlight = null;
-
-// Asked once when the app opens: extends a pass near its end, drops one that
-// has finished. A network failure keeps the pass.
-refreshPass().catch(() => {});
 
 async function loadReadings(profile) {
   const key = profile.id ?? "example";
@@ -271,7 +263,6 @@ async function loadReadings(profile) {
     const answer = await fetchReadings(profile, { signal: controller.signal });
     if (controller !== inFlight) return;
     readings = answer;
-    entitled = answer?.entitled === true;
     if (!answer) readingsError = "Readings need an exact birth time.";
   } catch (e) {
     if (controller !== inFlight) return;
@@ -288,12 +279,6 @@ function rerenderReadingViews() {
   // A sheet open over the change is refreshed in place, never re-focused,
   // and the profile form is left alone so nothing typed into it is lost.
   if ($("sheet").open && sheetStack.length && sheetStack.at(-1).kind !== "editor") renderTopSheet({ refresh: true });
-}
-
-/** The one failure with no error in it: a pass that opens nothing. */
-function passMismatchNote() {
-  if (entitled || !readings || !readPass()) return "";
-  return `<p class="notice">This browser has a subscription pass, but the readings came back locked. It may have ended. <a href="/account/">Ask for a fresh link.</a></p>`;
 }
 
 // ---------------------------------------------------------------- the chart tab
@@ -433,7 +418,7 @@ function renderReadout() {
       `<span class="pos"><span class="glyph">${signAt(a.longitude).glyph}</span> ${label(a.longitude)}</span>` +
       `<span class="nm">${ANGLE_INFO[a.kind].name}</span></button>`).join("") +
     `</div></div><hr class="divider">` +
-    `<p class="note">${entitled ? "Tap a House or Planet to open it." : "Tap a House or Planet to see what a subscription opens up."}</p>` +
+    `<p class="note">Tap a House or Planet to open it.</p>` +
     `<p class="small">${esc(houseCountingNote(c))}</p>` +
     (wheelStyle() === "instrument"
       ? `<hr class="divider"><p class="small">The outer ring is fixed and carries the houses. The pierced disc above it turns and carries the zodiac — the tapered blades reaching off its ring are star pointers, each aimed at one real bright star. Brass studs riding the disc are the planets.</p>`
@@ -537,9 +522,6 @@ function renderWhole() {
 
 // ---------------------------------------------------------------- Areas
 
-/** The one area every chart gets free, as the pricing tiers promise. */
-const isFreeArea = (id) => entitled || id === "purpose";
-
 function areaSign(c, area) { return area.house ? c.houseSign(area.house) : c.ascSign; }
 
 function renderAreas() {
@@ -558,13 +540,12 @@ function renderAreas() {
       `<span class="txt"><span class="top"><span class="t">${area.title}</span>` +
       `<span class="plate-label">${area.house ? `House ${ROMAN[area.house - 1]}` : "Chart Ruler"}</span></span>` +
       `<span class="s">${s.name} · ${ruler}</span><span class="c">${esc(area.covers)}</span></span>` +
-      (isFreeArea(area.id) ? "" : `<span class="lock" role="img" aria-label="With a subscription">${icon("lock")}</span>`) +
       (framed ? filigree({ radius: 11, mode: "card" }) : "") + `</a>`;
   };
   el.innerHTML =
     `<p class="intro">Six ways of reading the same wheel. The first is the planet that rules the whole chart; the other five are houses.</p>` +
     `<div style="padding-block:10px">${card(AREAS[0])}</div>` +
-    `<div class="area-grid">${AREAS.slice(1).map(card).join("")}</div>` + passMismatchNote();
+    `<div class="area-grid">${AREAS.slice(1).map(card).join("")}</div>`;
   mountFiligrees(el);
 }
 
@@ -586,7 +567,7 @@ function renderArea(id) {
   if (served) {
     const desc = served.nameplateDescription
       ? `<p class="plate-desc">${md(served.nameplateDescription)}</p>`
-      : `<button type="button" class="plate-lock" data-paywall aria-label="Read what ${esc(served.nameplate)} means for you, with a subscription">${icon("lock")}<span>The Rest with a Subscription</span></button>`;
+      : "";
     plate = `<div class="nameplate"><div class="plate-word" role="img" aria-label="${esc(served.nameplate)}"><i></i><i></i><i></i><i></i>${esc(served.nameplate)}</div>${desc}</div>`;
   } else {
     plate = `<p class="hint">${esc(readingsError ?? "Reading the plate…")}</p>`;
@@ -599,8 +580,6 @@ function renderArea(id) {
   out.push(area.house ? houseBody(c, area.house) : purposeBody(c));
 
   // Horoscope (AreaHoroscopeSection).
-  const locked = (p) => p !== "daily" && !entitled;
-  if (locked(shownPeriod)) shownPeriod = "daily";
   const h = readings?.horoscopes?.find((x) => x.area === id && x.period === shownPeriod);
   const strip = `${shownPeriod.toUpperCase()} · ${area.title.toUpperCase()} · ${s.name.toUpperCase()}`;
   let reading;
@@ -614,10 +593,9 @@ function renderArea(id) {
   }
   out.push(`<div class="section horoscope"><span class="plate-label">Horoscope</span>` +
     `<div class="periods" role="group" aria-label="Period">` + PERIODS.map(([p, t]) =>
-      `<button type="button" data-period="${p}" aria-pressed="${p === shownPeriod}"${locked(p) ? ` aria-label="${t}, subscribers only"` : ""}>${t}${locked(p) ? icon("lock") : ""}</button>`).join("") +
+      `<button type="button" data-period="${p}" aria-pressed="${p === shownPeriod}">${t}</button>`).join("") +
     `</div><div class="h-panel">${signTile(s, { full: true })}<span class="plate-label">${esc(strip)}</span>${reading}${filigree({ radius: 12, mode: "panel" })}</div>` +
-    `<p class="hint">${entitled ? "Subscribed — daily, weekly, monthly, and yearly are all open." : "The daily is free for every life area. Weekly, monthly, and yearly come with a subscription."}</p></div>`);
-  out.push(passMismatchNote());
+    `</div>`);
   el.innerHTML = out.join("");
   mountFiligrees(el);
 }
@@ -625,7 +603,6 @@ function renderArea(id) {
 $("areaBody").addEventListener("click", (e) => {
   const p = e.target.closest("button[data-period]");
   if (p) {
-    if (p.dataset.period !== "daily" && !entitled) return openSheet({ kind: "paywall" });
     shownPeriod = p.dataset.period;
     renderArea(route.page);
     $("areaBody").querySelector(`button[data-period="${shownPeriod}"]`)?.focus();
@@ -656,16 +633,13 @@ function aspectRow(a) {
     `<span class="k glyph${tight ? " tight" : ""}" aria-hidden="true">${a.kind.glyph}</span>` +
     `<span class="tx"><span>${esc(aspectTitle(a))}</span><span>${sub}</span></span><span class="chev">${icon("chevronRight")}</span></button>`;
 }
-const cta = (promise) => `<div class="button-plate"><button type="button" class="metal-button wide" data-paywall>Connect It</button><p>${esc(promise)}</p></div>`;
-
-/** HouseReadingBody: the teaser, or the whole of it for a subscriber. */
+/** HouseReadingBody: what sits in the house, what it's tied to, and where its ruler went. */
 function houseBody(c, house) {
   const s = c.houseSign(house), roman = ROMAN[house - 1];
   const inHouse = c.bodies.filter((b) => c.houseOf(b.longitude) === house);
   const pts = c.points.filter((p) => c.houseOf(p.longitude) === house);
   const aspects = c.aspects.filter((a) => inHouse.some((b) => b.name === a.a || b.name === a.b));
   const pointHouseList = pts.map((p) => POINT_INFO[p.name].houseDescriptor).join(" and ");
-  const pointNameList = pts.map((p) => POINT_INFO[p.name].name).join(" and ");
   const headerTitle = !inHouse.length && !pts.length ? "Nobody home" : !inHouse.length ? "Not Quite Empty" : "What sits here";
   const occupants = (introSaid) => {
     let h = `<div class="section"><span class="plate-label">${headerTitle}</span>`;
@@ -681,32 +655,20 @@ function houseBody(c, house) {
     ? `<div class="section"><span class="plate-label">What It's Tied To</span><p class="small">Aspects from your ${roman} out to the rest of the chart. Tighter is louder — anything within two degrees is doing real work. Tap one to see what it means.</p>` +
       aspects.slice(0, 6).map(aspectRow).join("") + `</div>`
     : "";
-  if (entitled) {
-    const d = dispositor(c, house);
-    let ruler = `<div class="section"><span class="plate-label">Where Its Ruler Went</span>`;
-    if (d) {
-      const dh = c.houseOf(d.longitude);
-      if (dh === house) {
-        ruler += `<p>${s.name} answers to ${subject(planetName(d.name))}, and ${subject(planetName(d.name))} sits right here — this house rules itself, running on its own terms rather than through anywhere else.</p>`;
-      } else {
-        ruler += `<p>${s.name} answers to ${subject(planetName(d.name))}, and your ${planetName(d.name)} sits at ${label(d.longitude, d.retrograde)} in the ${ORDINAL[dh - 1]} — your ${HOUSE_TITLES[dh - 1]} house.</p>` +
-          `<p>However your ${roman} behaves, it tends to play out there: ${esc(HOUSE_ESSENCES[dh - 1])}</p>`;
-      }
+  const d = dispositor(c, house);
+  let ruler = `<div class="section"><span class="plate-label">Where Its Ruler Went</span>`;
+  if (d) {
+    const dh = c.houseOf(d.longitude);
+    if (dh === house) {
+      ruler += `<p>${s.name} answers to ${subject(planetName(d.name))}, and ${subject(planetName(d.name))} sits right here — this house rules itself, running on its own terms rather than through anywhere else.</p>`;
     } else {
-      ruler += `<p>${s.name} answers to ${rulerSubject(s)}.</p>`;
+      ruler += `<p>${s.name} answers to ${subject(planetName(d.name))}, and your ${planetName(d.name)} sits at ${label(d.longitude, d.retrograde)} in the ${ORDINAL[dh - 1]} — your ${HOUSE_TITLES[dh - 1]} house.</p>` +
+        `<p>However your ${roman} behaves, it tends to play out there: ${esc(HOUSE_ESSENCES[dh - 1])}</p>`;
     }
-    return `<div class="stack gap-18" style="text-align:left">${occupants(false)}${aspectSection}${ruler}</div></div>`;
+  } else {
+    ruler += `<p>${s.name} answers to ${rulerSubject(s)}.</p>`;
   }
-  let headline;
-  if (!inHouse.length && !pts.length) headline = `Your ${roman} has no planet in it, and is read through ${rulerSubject(s)} instead.`;
-  else if (!inHouse.length) headline = `Your ${roman} has no planet in it, but it does house ${pointHouseList} — it's still read through ${rulerSubject(s)} too.`;
-  else {
-    headline = `You have ${inHouse.length} ${inHouse.length === 1 ? "planet" : "planets"} in your ${roman}${inHouse.length === 1 ? "" : ", and they are aspected across the chart"}.`;
-    if (pts.length) headline += ` ${pointNameList} ${pts.length > 1 ? "are" : "is"} there too.`;
-  }
-  return `<div class="stack gap-14" style="text-align:left"><p class="body15" style="font-size:15px">${headline}</p>` +
-    (inHouse.length || pts.length ? occupants(true) : "") + aspectSection +
-    cta("A subscription opens where this house's ruler landed.") + `</div>`;
+  return `<div class="stack gap-18" style="text-align:left">${occupants(false)}${aspectSection}${ruler}</div></div>`;
 }
 
 /** PurposeReadingBody: the chart ruler, where it sits, and what it's tied to. */
@@ -859,7 +821,6 @@ function renderTopSheet({ refresh = false } = {}) {
     case "house": html = houseSheet(spec.house); break;
     case "aspect": html = aspectSheet(spec.a, spec.b); break;
     case "sign": html = signSheet(spec.index); break;
-    case "paywall": html = paywallSheet(); break;
     case "settings": titleEl.textContent = "Settings"; html = settingsSheet(); break;
     case "editor": titleEl.textContent = spec.profile ? "Edit Profile" : "Add Profile"; break;
   }
@@ -892,7 +853,6 @@ function handleDetailClick(e) {
   if (asp) { const [a, b] = asp.dataset.aspect.split("|"); return openSheet({ kind: "aspect", a, b }); }
   const side = t.closest("button[data-side]");
   if (side) return openSheet({ kind: "planet", name: side.dataset.side });
-  if (t.closest("[data-paywall]")) return openSheet({ kind: "paywall" });
   return false;
 }
 
@@ -940,15 +900,9 @@ function planetSheet(name) {
     `</div></details></div>` : "";
   const out = [detailHead(PLANET_GLYPHS[name], planetName(name), `${label(b.longitude, b.retrograde)} · House ${ROMAN[h - 1]}`)];
   if (b.retrograde) out.push(`<p class="lede">${esc(retrogradeNote(planetName(name)))}</p>`);
-  if (entitled) {
-    out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
-    if (rules.length) out.push(section("What It Governs", esc(rulesText)));
-    out.push(anglesCard);
-  } else {
-    out.push(`<p class="body14">Your ${planetName(name)} sits in House ${ROMAN[h - 1]} and makes ${aspects.length} ${aspects.length === 1 ? "angle" : "angles"} to the rest of the chart.</p>`);
-    out.push(anglesCard);
-    out.push(cta(rules.length ? "A subscription opens what this house covers and what this planet governs from here." : "A subscription opens what this house covers."));
-  }
+  out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
+  if (rules.length) out.push(section("What It Governs", esc(rulesText)));
+  out.push(anglesCard);
   return out.join("");
 }
 
@@ -1031,15 +985,6 @@ function signSheet(index) {
   return out.join("");
 }
 
-function paywallSheet() {
-  return `<div class="stack gap-16"><span class="plate-label">Make the Connections</span>` +
-    `<h2 class="display" style="font-size:25px">Connect It</h2>` +
-    `<p class="body15">Every placement in your chart is already open. A subscription opens how they interact with each other: each house read through its ruler, what every planet governs from where it sits, every life area's nameplate described, and every area's weekly, monthly, and yearly horoscope.</p>` +
-    `<div class="button-plate"><a class="metal-button wide" href="/plans/">See the Plans</a>` +
-    `<p>$9.99 a month or $79.99 a year, through Stripe. No account and no password: a link we email you unlocks this browser.</p></div>` +
-    `<p class="notice" style="text-align:left">Already subscribed? <a href="/account/">Unlock this browser.</a></p></div>`;
-}
-
 // ---------------------------------------------------------------- Settings
 
 function openSettings() { openSheet({ kind: "settings" }); }
@@ -1061,11 +1006,6 @@ function settingsSheet() {
     `<h3>Appearance</h3><p class="blurb">The color scheme, the metal the instrument is struck from, and the type — the same choices the app offers, kept in this browser.</p>` +
     `<button type="button" class="add-row" data-open-appearance aria-haspopup="dialog"><span style="flex:1">Color, Metal, and Type</span><span class="chev">${icon("chevronRight")}</span></button>` +
     `<hr class="divider">` +
-    `<div class="stack gap-8"><p class="nm" style="font-size:15px">${entitled ? "Subscriber" : "Not Subscribed"}</p>` +
-    (entitled
-      ? `<p class="blurb" style="font-size:11px">Manage or cancel your subscription from <a href="/account/" style="color:var(--bright)">your account page</a>.</p>`
-      : `<a href="/plans/" style="font-size:13px;color:var(--brass)">Subscribe</a><a href="/account/" style="font-size:13px;color:var(--muted)">Already subscribed? Unlock this browser.</a>`) +
-    `</div><hr class="divider">` +
     `<p class="links"><a href="/">Follow My Astrolabe</a> · <a href="/prints/">Prints</a> · <a href="/support/">Support</a> · <a href="/privacy/">Privacy Policy</a> · Studio New Moon</p></div>`;
 }
 
