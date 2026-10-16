@@ -75,10 +75,48 @@
   .order .note{ text-align: center; margin-top: 10px; }
 
   figure.look{ margin: 0; }
-  figure.look img{
-    display: block; width: 100%; height: auto; aspect-ratio: 4 / 3;
+  /* The sheet the preview sits on. Its finish follows the paper chosen
+     below, set by the script as data-paper: a raking sheen for the
+     semi-glosses, a flatter, softer image for the mattes, warm off-white
+     stock for the archival, and a deeper edge for the heavier sheets. An
+     impression only, and the caption says so. */
+  .sheet{
+    position: relative; overflow: hidden;
     border-radius: 11px; border: 1px solid rgba(176,140,63,0.22);
     background: var(--panel);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 3px 8px rgba(0,0,0,0.25);
+    transition: box-shadow 0.35s ease;
+  }
+  .sheet img{
+    display: block; width: 100%; height: auto; aspect-ratio: 4 / 3;
+    transition: filter 0.35s ease;
+  }
+  .sheet::after{
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    opacity: 0; transition: opacity 0.35s ease;
+  }
+  .sheet[data-paper="semi-gloss"] img,
+  .sheet[data-paper="heavy-semi-gloss"] img{ filter: contrast(1.04) saturate(1.06); }
+  .sheet[data-paper="semi-gloss"]::after,
+  .sheet[data-paper="heavy-semi-gloss"]::after{
+    opacity: 1;
+    background: linear-gradient(115deg,
+      rgba(255,255,255,0) 26%, rgba(255,255,255,0.09) 39%,
+      rgba(255,255,255,0.24) 47%, rgba(255,255,255,0.09) 55%,
+      rgba(255,255,255,0) 68%);
+  }
+  .sheet[data-paper="matte"] img,
+  .sheet[data-paper="heavy-matte"] img{ filter: contrast(0.9) saturate(0.88) brightness(1.03); }
+  .sheet[data-paper="archival-matte"] img{ filter: contrast(0.92) saturate(0.86) brightness(1.03); }
+  .sheet[data-paper="archival-matte"]::after{
+    opacity: 1; background: #f1e4c6; mix-blend-mode: multiply;
+  }
+  .sheet[data-paper^="heavy"],
+  .sheet[data-paper="archival-matte"]{
+    box-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 1px 0 1px rgba(0,0,0,0.12), 0 7px 16px rgba(0,0,0,0.35);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .sheet, .sheet img, .sheet::after{ transition: none; }
   }
   figure.look figcaption{ color: var(--muted); font-size: 12px; margin-top: 8px; text-align: center; }
   figure.look figcaption strong{ color: var(--ink); }
@@ -104,12 +142,17 @@
   </div>
 
   <figure class="look">
-    <img id="preview" src="/assets/signs/aries.jpg"
-         alt="Aries, illustrated in a batik style"
-         width="1600" height="1200" fetchpriority="high">
-    <figcaption><strong id="previewName">Aries</strong> &mdash; the image a
-    print is made from, shown here at a fraction of its printed size. Pick
-    another below and this changes.</figcaption>
+    <div class="sheet" id="sheet">
+      <img id="preview" src="/assets/signs/aries.jpg"
+           alt="Aries, illustrated in a batik style"
+           width="1600" height="1200" fetchpriority="high">
+    </div>
+    <figcaption><strong id="previewName">Aries</strong><span id="previewPaper"
+    hidden> on <strong id="previewPaperName"></strong></span> &mdash; the
+    image a print is made from, shown here at a fraction of its printed size.
+    Pick another below and this changes.<span id="finishNote" hidden> The
+    paper's finish is only suggested here; no screen can show how a sheet
+    catches the light.</span></figcaption>
   </figure>
 
   <section class="card">
@@ -222,6 +265,10 @@
   var problemEl = document.getElementById("problem");
   var previewEl = document.getElementById("preview");
   var previewNameEl = document.getElementById("previewName");
+  var sheetEl = document.getElementById("sheet");
+  var previewPaperEl = document.getElementById("previewPaper");
+  var previewPaperNameEl = document.getElementById("previewPaperName");
+  var finishNoteEl = document.getElementById("finishNote");
 
   // The preview is outside the form on purpose: the form stays hidden until
   // the catalogue loads, and the art should carry the page whether or not the
@@ -296,6 +343,18 @@
       if (paper) opt.textContent = paper.paper + " \u2014 " + money(paper.unitCents, size.currency);
     });
     paperDetailEl.textContent = selectedPaper().detail || "";
+
+    // The preview takes on the chosen paper's finish. A catalogue without
+    // papers names none, and the preview stays plain.
+    var paperName = selectedPaper().paper || "";
+    if (paperName) {
+      sheetEl.setAttribute("data-paper", paperName.toLowerCase().replace(/[^a-z]+/g, "-"));
+      previewPaperNameEl.textContent = paperName;
+    } else {
+      sheetEl.removeAttribute("data-paper");
+    }
+    previewPaperEl.hidden = !paperName;
+    finishNoteEl.hidden = !paperName;
   }
 
   // Sizes and prices are read from the order service, never written into this
