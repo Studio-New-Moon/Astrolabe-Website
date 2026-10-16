@@ -27,6 +27,7 @@ import { listProfiles, getProfile, saveProfile, deleteProfile, selectedProfileId
 import { fetchReadings, readerDay } from "./readings.js";
 import { ICONS, moonApsideGlyph } from "./icons.js";
 import { chartWheelSVG } from "./chart-wheel.js";
+import { mountSky } from "./sky.js";
 import {
   SIGNS, signAt, ROMAN, ORDINAL, rulerOf, rulerSubject, subject, PLANET_NAMES, PLANET_GLYPHS, POINT_INFO, ANGLE_INFO,
   HOUSE_TITLES, HOUSE_COVERS, HOUSE_ESSENCES, AREAS, ASPECT_KINDS, matchAspect, TAROT, SIGN_READINGS,
@@ -144,6 +145,7 @@ function navBar(r) {
   } else if (r.tab === "tarot") {
     title = "Tarot";
   } else if (r.tab === "sky") {
+    lead.push(feedback);
     title = "Sky Navigator";
   }
   $("navLeading").innerHTML = lead.join("");
@@ -168,6 +170,7 @@ function show(r) {
   if (screen === "areas") renderAreas();
   if (screen === "area") renderArea(r.page);
   if (screen === "tarot") startDeck(); else stopDeck();
+  if (screen === "sky") sky?.show(); else sky?.hide();
   window.scrollTo(0, r.page ? 0 : (scrollMemory[routeKey(r)] ?? 0));
 }
 
@@ -776,32 +779,12 @@ function startDeck() {
 }
 function stopDeck() { clearTimeout(deckTimer); }
 
-// ---------------------------------------------------------------- Sky (Coming Soon)
+// ---------------------------------------------------------------- Sky
 
-function renderSky() {
-  // A stand-in dial, blurred under the ribbon: the zodiac on the outer ring
-  // and the constellations' own uneven spans inside, which is the point the
-  // Sky Navigator makes. Nothing here moves or reads a sensor.
-  const ring = (r, labels, fs) => labels.map((t, i) => {
-    const a = (i * 30 + 15 - 90) * Math.PI / 180;
-    return `<text x="${120 + r * Math.cos(a)}" y="${120 + r * Math.sin(a) + fs * 0.35}" font-size="${fs}" text-anchor="middle" fill="var(--resist)">${t}</text>`;
-  }).join("");
-  const ticks = Array.from({ length: 12 }, (_, i) => {
-    const a = i * 30 * Math.PI / 180;
-    return `<line x1="${120 + 84 * Math.cos(a)}" y1="${120 + 84 * Math.sin(a)}" x2="${120 + 112 * Math.cos(a)}" y2="${120 + 112 * Math.sin(a)}" stroke="var(--brass)" stroke-width="1.2"/>`;
-  }).join("");
-  const dial = `<svg class="sky-dial" viewBox="0 0 240 240" aria-hidden="true">` +
-    `<circle cx="120" cy="120" r="116" fill="var(--panel)" stroke="var(--bright)" stroke-width="5"/>` +
-    `<circle cx="120" cy="120" r="84" fill="none" stroke="var(--brass)" stroke-width="2"/>` +
-    `<circle cx="120" cy="120" r="54" fill="color-mix(in srgb, var(--el-air) 24%, var(--ground))" stroke="var(--brass)"/>` + ticks +
-    ring(98, SIGNS.map((s) => s.glyph), 16) +
-    `<path d="M120 46 L131 120 L120 112 L109 120 Z" fill="var(--bright)"/></svg>`;
-  $("skyBody").innerHTML =
-    `<div class="soon-head"><h2>The Sky Navigator Is on Its Way</h2>` +
-    `<p>Hold your device up and the instrument follows the sky. It shows two things at once, because they aren't the same thing: the zodiac sign you're pointing at, and the real constellation behind it. In a browser it needs your compass, motion sensors, and location, so it's coming to the website later.</p></div>` +
-    `<div class="preview-card" style="width:240px"><div class="clip round">${dial}</div>${ribbon(36)}</div>` +
-    `<p class="hint">Nothing here reads your location or your sensors yet.</p>`;
-}
+// The Sky Navigator lives in sky.js: the dial, the stars actually there, and
+// the sensors. It listens only while its tab is showing.
+let sky = null;
+function renderSky() { sky = mountSky($("skyBody")); }
 
 // ---------------------------------------------------------------- sheets
 
