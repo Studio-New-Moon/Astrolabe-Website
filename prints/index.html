@@ -302,14 +302,29 @@
     document.querySelectorAll('input[name="sign"]'),
     function (input) {
       input.addEventListener("change", function () {
-        if (input.checked) showSign(input.value);
+        if (!input.checked) return;
+        showSign(input.value);
+        // Keep the choice in the address, so a reload or Back returns to it
+        // rather than to the sign the buyer arrived from (or to Aries).
+        var url = new URL(location.href);
+        url.searchParams.set("sign", input.value);
+        history.replaceState(history.state, "", url);
       });
     }
   );
 
-  // A browser restoring a previous selection on reload fires no change event,
-  // so read the checked radio once rather than assuming it is still Aries.
+  // Arriving from a sign (/prints/?sign=leo), that sign is the one chosen, so
+  // nobody who tapped Order on Leo lands on Aries. Changing the pick rewrites
+  // ?sign= (above), so the address always names the current choice and a
+  // reload or Back restores it. Without ?sign=, read the checked radio once:
+  // a browser restoring a selection fires no change event.
   (function () {
+    var wanted = new URLSearchParams(location.search).get("sign");
+    wanted = wanted && wanted.toLowerCase();
+    if (wanted && SIGN_NAMES[wanted]) {
+      var input = document.querySelector('input[name="sign"][value="' + wanted + '"]');
+      if (input) input.checked = true;
+    }
     var checked = document.querySelector('input[name="sign"]:checked');
     if (checked && checked.value !== "aries") showSign(checked.value);
   })();

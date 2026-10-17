@@ -970,7 +970,7 @@ function signSheet(index) {
     `<div class="rcard" style="gap:10px"><span class="plate-label">Buy a Print</span>` +
     `<p style="font-size:12px;color:var(--muted)">This tile, printed on real paper — the same art, straight from the original file.</p>` +
     `<p style="font: 400 15px var(--font-display); color: var(--resist)">12 × 16 to 24 × 32 in · prices at checkout</p>` +
-    `<a class="metal-button" href="/prints/#order" style="align-self:flex-start;font-size:11px;letter-spacing:1.6px;padding:9px 14px;border-radius:7px" aria-label="Order the ${s.name} print">Order</a></div>`,
+    `<a class="metal-button" href="/prints/?sign=${s.name.toLowerCase()}#order" style="align-self:flex-start;font-size:11px;letter-spacing:1.6px;padding:9px 14px;border-radius:7px" aria-label="Order the ${s.name} print">Order</a></div>`,
     section("When It Runs Unchecked", esc(r.shadow)),
   ];
   if (c) {
