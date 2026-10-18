@@ -50,6 +50,15 @@
   /* The night behind everything below the welcome screen: the same sky's
      stars and constellations, without its planets, held still. */
   .backdrop{ position:fixed; inset:0; width:100vw; height:100lvh; z-index:-1; pointer-events:none; }
+  /* The text sections sit straight on the sky, with no card, so the sky
+     calms to a trace behind the reading column; a constellation line or a
+     star landing inside a sentence reads as stray punctuation. On a wide
+     screen it stays at full strength in the margins. */
+  .backdrop{
+    --calm: rgba(0,0,0,.14);
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(50% - 480px), var(--calm) calc(50% - 360px), var(--calm) calc(50% + 360px), #000 calc(50% + 480px), #000 100%);
+            mask-image: linear-gradient(to right, #000 0, #000 calc(50% - 480px), var(--calm) calc(50% - 360px), var(--calm) calc(50% + 360px), #000 calc(50% + 480px), #000 100%);
+  }
 
   /* On a desktop browser the welcome screen has no ENTER: the site's menu is
      shown over it from the start instead, as the way in. */
@@ -107,8 +116,10 @@
   .band{ padding-block:clamp(28px, 6vw, 56px); }
   .band:first-child{ padding-top:clamp(40px, 8vw, 72px); }
 
-  /* The app's card, holding one feature: plate label, title, prose. */
-  .feature.card{ padding:clamp(18px, 4vw, 26px); }
+  /* One feature: plate label, title, prose. No box around it, so it reads
+     on the night like The Whole Point; plates (buttons) and screenshot
+     frames keep theirs. */
+  .feature.card{ background:none; border:0; border-radius:0; padding:clamp(18px, 4vw, 26px) 0; }
   .feature .plate-label{ display:block; margin:0 0 8px; }
   .feature h2, .head h2{
     font-family:var(--font-display); font-weight:600; color:var(--resist);
@@ -135,9 +146,9 @@
   }
   .plate.actions{ display:grid; grid-template-columns:minmax(0, 1fr); gap:18px; }
   .plate .action{ min-width:0; }
-  /* On the narrowest phones the card and its plate give back a little width,
-     so button labels keep their size on one line. */
-  @media (max-width:360px){ .feature.card{ padding-inline:14px; } .plate{ padding-inline:12px; } }
+  /* On the narrowest phones the plate gives back a little width, so
+     button labels keep their size on one line. */
+  @media (max-width:360px){ .plate{ padding-inline:12px; } }
   .plate .action{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
   .plate .note{ margin:0; font-size:14px; color:var(--muted); flex:1 1 220px; }
   .feature .plate{ margin-top:18px; }
