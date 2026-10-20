@@ -130,7 +130,6 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
 :root .ig-actions .ig-go:active{ filter: brightness(.93); }
 .framed-button{ position: relative; display: inline-flex; max-width: 100%; vertical-align: middle; }
 .framed-button > .metal-button{ position: relative; z-index: 1; }
-.framed-button.wide{ display: flex; width: 100%; }
 .filigree{ position: absolute; inset: -6px; pointer-events: none; width: calc(100% + 12px); height: calc(100% + 12px); overflow: visible; }
 .quiet-button{
   font-family: var(--font-body); font-size: 15px; padding: 10px clamp(12px, 4vw, 16px); border-radius: 8px;

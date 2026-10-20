@@ -1209,4 +1209,3 @@ installGuide({
     : "",
 });
 mountFiligrees($("installHint"));
-mountFiligrees($("empty"));
