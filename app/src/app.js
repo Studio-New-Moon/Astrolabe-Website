@@ -1208,3 +1208,4 @@ installGuide({
     ? "Do this before you add anyone: the Home Screen app keeps its saved people separate from Safari's."
     : "",
 });
+mountFiligrees($("installHint"));

@@ -17,14 +17,19 @@
   // The panel a button sits in: its right edge is the room the label has,
   // even where a flex or grid row would otherwise stretch to the label.
   var PANEL = ".plate, .button-plate, .sheet-body, .install, .ig-sheet, .welcome-stack, form, section, main, header, nav";
+  // A framed button counts its frame: the holder is what has to fit.
+  function outer(button) {
+    return button.closest(".framed-button") || button;
+  }
   function roomRight(button) {
-    var panel = button.parentElement && button.parentElement.closest(PANEL);
+    var box = outer(button);
+    var panel = box.parentElement && box.parentElement.closest(PANEL);
     if (!panel) return Infinity;
     var box = panel.getBoundingClientRect();
     return box.right - (parseFloat(getComputedStyle(panel).paddingRight) || 0);
   }
   function tooLong(button, edge) {
-    return button.scrollWidth > button.clientWidth + 1 || button.getBoundingClientRect().right > edge + 0.5;
+    return button.scrollWidth > button.clientWidth + 1 || outer(button).getBoundingClientRect().right > edge + 0.5;
   }
 
   function fit(button) {
@@ -54,6 +59,7 @@
     fitAll();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(soon);
     window.addEventListener("resize", soon);
+    window.addEventListener("astrolabe:framed", soon);
     // Buttons drawn later, or shown when a sheet or a hidden section opens.
     new MutationObserver(soon).observe(document.body, {
       childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "open", "class"],

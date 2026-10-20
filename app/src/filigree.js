@@ -13,7 +13,7 @@
 // number here, and change both together: this is a port, and the two are
 // meant to draw the same metal.
 
-import { resolve, EVENT } from "../../chart/src/appearance.js";
+import { resolve, EVENT, METALS } from "../../chart/src/appearance.js";
 
 /** Room past the framed element's own edge for the rail and the cast shadow. */
 const BLEED = 6;
@@ -483,6 +483,20 @@ function draw(svg) {
     // content only — the corner clusters above and below are the band's job.
     const side = `${Math.max(16, Math.ceil(sideReach(w, h, radius, scale, band - 2 - SHADOW) + 2 + SHADOW))}px`;
     if (host.style.paddingInline !== side) host.style.paddingInline = side;
+  } else if (mode === "button") {
+    // A button given emphasis (the install buttons, the homepage's first Cast
+    // Your Chart): the frame sits around it in a band of its own, the corner
+    // clusters held to a 20px reach that suits a button's height rather than
+    // a card's, with the button centred in the band.
+    const reach = 20;
+    const atFull = contentClearance(w, h, 1);
+    if (atFull > 0) scale = Math.min(1, reach / atFull);
+    const band = `${Math.ceil(reach + 2 + SHADOW)}px`;
+    if (host.style.padding !== band) {
+      host.style.padding = band;
+      // The holder just grew; /assets/fit-buttons.js re-measures the label.
+      window.dispatchEvent(new Event("astrolabe:framed"));
+    }
   } else {
     // The card's own 13px, plus whatever more the cluster needs, plus 2px of
     // air between glyph and metal and the shadow's reach. Settles in a step or
@@ -500,11 +514,15 @@ function draw(svg) {
     }
   }
 
-  const key = `${w}x${h}x${scale}x${tonesKey}`;
+  // A frame can name its metal (data-metal) where what it frames is struck in
+  // a fixed one, as the homepage's buttons are always polished brass.
+  const own = svg.dataset.metal && METALS.find((m) => m.id === svg.dataset.metal);
+  const metal = own || tones;
+  const key = `${w}x${h}x${scale}x${metal.id}`;
   if (lastSize.get(svg) === key) return;
   lastSize.set(svg, key);
   svg.setAttribute("viewBox", `0 0 ${w + 2 * BLEED} ${h + 2 * BLEED}`);
-  svg.innerHTML = frameMarkup(w, h, radius, scale, tones);
+  svg.innerHTML = frameMarkup(w, h, radius, scale, metal);
 }
 
 let tones = resolve().metal;

@@ -242,7 +242,6 @@
   .area-card .s{ font-size: 13px; color: var(--muted); }
   .area-card .c{ font-size: 11px; color: color-mix(in srgb, var(--muted) 80%, transparent);
                  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .filigree{ position: absolute; inset: -6px; pointer-events: none; width: calc(100% + 12px); height: calc(100% + 12px); overflow: visible; }
   .area-head{ display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
   .area-head h2{ font: 400 30px var(--font-display); color: var(--resist); margin: 0; }
   .nameplate{ display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
@@ -465,7 +464,7 @@
             <p><strong>Keep Astrolabe on your Home Screen.</strong> It opens like an app,
             and it works with no signal.</p>
             <div class="actions">
-              <button class="metal-button" type="button" data-install-go>Show Me How</button>
+              <span class="framed-button"><button class="metal-button" type="button" data-install-go>Show Me How</button><svg class="filigree" aria-hidden="true" data-radius="10" data-mode="button"></svg></span>
               <button class="later" type="button" data-dismiss>Not now</button>
             </div>
           </div>

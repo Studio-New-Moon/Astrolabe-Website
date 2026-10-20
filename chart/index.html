@@ -94,14 +94,6 @@
   tr.picked td:first-child{ box-shadow: inset 3px 0 0 var(--brass); padding-left: 8px; }
   td .rx{ color: var(--fire); font-size: 12px; }
 
-  /* The install guide's own action, struck in the chosen metal. */
-  :root .ig-actions .ig-go{
-    background: var(--metal-wear) center / cover no-repeat, var(--metal);
-    color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
-    border-color: transparent; font-family: var(--font-button); font-size: 16px; font-weight: 600;
-    letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase;
-  }
-  :root .ig-actions .ig-go:active{ filter: brightness(.93); }
 </style>
 </head>
 <body class="page">
@@ -121,7 +113,7 @@
   <div class="install plate" id="installHint" hidden>
     <p><strong>Keep Cast a Chart on your Home Screen.</strong> It opens like an
     app, and it works with no signal.</p>
-    <button class="go metal-button" type="button" data-install-go>Show Me How</button>
+    <span class="framed-button"><button class="go metal-button" type="button" data-install-go>Show Me How</button><svg class="filigree" aria-hidden="true" data-radius="10" data-mode="button"></svg></span>
     <button class="later text-link" type="button" data-dismiss>Not now</button>
   </div>
 
@@ -430,6 +422,8 @@ installGuide({
   hint: $("installHint"),
   key: "astrolabe.installHint.dismissed",
 });
+// The banner's button sits in the filigree, as the app's does.
+import("/app/src/filigree.js").then((m) => m.mountFiligrees($("installHint"))).catch(() => {});
 </script>
 <!-- Cloudflare Web Analytics: counts page views without cookies. Left off
      /order/thank-you/, whose URL carries a Stripe session id. -->

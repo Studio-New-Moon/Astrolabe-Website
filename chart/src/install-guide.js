@@ -157,7 +157,7 @@ const CSS = `
 .ig-key svg{ width: 19px; height: 19px; flex: none; color: var(--brass); }
 .ig-note{ margin: 14px 0 0; padding: 10px 12px; border-radius: 8px; text-align: left;
   background: #17110a; font-size: 14.5px; color: var(--muted); }
-.ig-actions{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
+.ig-actions{ display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin-top: 18px; }
 .ig-actions button{ font-family: inherit; font-size: 15px; cursor: pointer; border-radius: 8px;
   padding: 9px 18px; border: 1px solid rgba(200,153,63,0.3); background: transparent; color: var(--muted); }
 .ig-sheet:focus{ outline: none; }
@@ -259,7 +259,7 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
         ${steps}
         ${note && !(r && r.outside) ? `<p class="ig-note">${note}</p>` : ""}
         <div class="ig-actions">
-          ${oneTap ? `<button class="ig-go" type="button">Install</button>` : ""}
+          ${oneTap ? `<span class="framed-button"><button class="ig-go" type="button">Install</button><svg class="filigree" aria-hidden="true" data-radius="10" data-mode="button"></svg></span>` : ""}
           <button class="ig-close" type="button">Close</button>
         </div>
       </div>
@@ -268,6 +268,9 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
     scrim.querySelector(".ig-close").addEventListener("click", close);
     scrim.querySelector(".ig-go")?.addEventListener("click", nativePrompt);
     document.body.append(scrim);
+    // The one-tap Install sits in the filigree. Loaded when wanted, so a page
+    // that cannot reach it (offline, say) still gets a working button.
+    if (oneTap) import("/app/src/filigree.js").then((m) => m.mountFiligrees(scrim)).catch(() => {});
     document.addEventListener("keydown", onKey);
     // The dialog itself takes focus, not a button: on touch a focused button
     // draws its ring, which reads as a styling mistake. Tab reaches the buttons.

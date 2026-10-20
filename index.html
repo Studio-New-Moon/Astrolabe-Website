@@ -311,7 +311,7 @@
       <p>Most horoscopes start from your sun sign. This chart starts from your rising sign instead, the sign coming up over the horizon at the minute and place you were born, and counts every house from it. That's how whole-sign houses work, the oldest way of reading a chart.</p>
       <p>If the sign on your wheel isn't the one you expected, that's not a mistake. It's the more personal one.</p>
       <div class="plate actions">
-        <div class="action"><a class="metal-button" href="/chart/">Cast Your Chart</a><p class="note">Free, and laid out from your rising sign, not your sun</p></div>
+        <div class="action"><span class="framed-button"><a class="metal-button" href="/chart/">Cast Your Chart</a><svg class="filigree" aria-hidden="true" data-radius="10" data-mode="button" data-metal="brass"></svg></span><p class="note">Free, and laid out from your rising sign, not your sun</p></div>
         <div class="action"><a class="metal-button" href="/app/">Read Your Horoscope</a><p class="note">Today's reading, free, from your whole chart</p></div>
       </div>
     </div>
@@ -518,6 +518,9 @@
 
 <script type="module">
   import { initWelcome, initBackdrop } from "/assets/home/welcome.js";
+  // The first Cast Your Chart sits in the filigree; loaded when wanted, so
+  // the button works whether or not the frame arrives.
+  import("/app/src/filigree.js").then((m) => m.mountFiligrees(document.querySelector("main"))).catch(() => {});
   initBackdrop(document.querySelector(".backdrop"));
   const welcome = document.querySelector(".welcome");
   initWelcome(welcome);

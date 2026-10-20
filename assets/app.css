@@ -115,6 +115,22 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
   text-decoration: none;
 }
 .metal-button:active{ filter: brightness(.93); }
+
+/* A button given emphasis sits in the app's filigree frame (app/src/filigree.js,
+   mode "button"), which pads this holder to clear its own metal. */
+/* The install guide's one-tap Install (chart/src/install-guide.js), struck in
+   the chosen metal on every page that shows the guide. :root outranks the
+   guide's own flat fallback. */
+:root .ig-actions .ig-go{
+  background: var(--metal-wear) center / cover no-repeat, var(--metal);
+  color: var(--on-metal); text-shadow: var(--engrave); box-shadow: var(--metal-lift);
+  border-color: transparent; font-family: var(--font-button); font-size: 16px; font-weight: 600;
+  letter-spacing: clamp(.06em, .3vw, .14em); text-transform: uppercase; white-space: nowrap;
+}
+:root .ig-actions .ig-go:active{ filter: brightness(.93); }
+.framed-button{ position: relative; display: inline-flex; max-width: 100%; vertical-align: middle; }
+.framed-button > .metal-button{ position: relative; z-index: 1; }
+.filigree{ position: absolute; inset: -6px; pointer-events: none; width: calc(100% + 12px); height: calc(100% + 12px); overflow: visible; }
 .quiet-button{
   font-family: var(--font-body); font-size: 15px; padding: 10px clamp(12px, 4vw, 16px); border-radius: 8px;
   border: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer;
