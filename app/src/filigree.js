@@ -474,7 +474,7 @@ function draw(svg) {
     Object.assign(svg.style, { position: "absolute", inset: `-${BLEED}px`, width: `calc(100% + ${2 * BLEED}px)`,
       height: `calc(100% + ${2 * BLEED}px)`, pointerEvents: "none", overflow: "visible" });
   }
-  const w = host.offsetWidth, h = host.offsetHeight;
+  let w = host.offsetWidth, h = host.offsetHeight;
   const mode = svg.dataset.mode, radius = +svg.dataset.radius;
   let scale = 1;
 
@@ -503,6 +503,10 @@ function draw(svg) {
     const band = `${Math.ceil(reach + 2 + SHADOW)}px`;
     if (host.style.padding !== band) {
       host.style.padding = band;
+      // Measured again now the band is in, so the frame is drawn to the box
+      // it actually sits on rather than the one it was before the band
+      // (which left it short of the edges, floating inside its box).
+      w = host.offsetWidth; h = host.offsetHeight;
       // The holder just grew; /assets/fit-buttons.js re-measures the label.
       window.dispatchEvent(new Event("astrolabe:framed"));
     }
@@ -527,11 +531,22 @@ function draw(svg) {
   // a fixed one, as the homepage's buttons are always polished brass.
   const own = svg.dataset.metal && METALS.find((m) => m.id === svg.dataset.metal);
   const metal = own || tones;
-  const key = `${w}x${h}x${scale}x${metal.id}`;
+  // data-edge="flush" lays the rail along the host's own edge (a framed
+  // plate, whose border the rail replaces) instead of inside it: the frame is
+  // drawn that much larger and set out by the same amount.
+  // The frame is positioned from inside the host's border, so the rail is
+  // set out by half the border too, to run along the border's middle.
+  const out = svg.dataset.edge === "flush" ? RAIL_Y * unitsPerPoint(w, h, scale) + host.clientTop / 2 : 0;
+  const fw = w + 2 * out, fh = h + 2 * out;
+  const key = `${fw}x${fh}x${scale}x${metal.id}`;
   if (lastSize.get(svg) === key) return;
   lastSize.set(svg, key);
-  svg.setAttribute("viewBox", `0 0 ${w + 2 * BLEED} ${h + 2 * BLEED}`);
-  svg.innerHTML = frameMarkup(w, h, radius, scale, metal);
+  if (out) {
+    const pad = BLEED + out;
+    Object.assign(svg.style, { inset: `-${pad}px`, width: `calc(100% + ${2 * pad}px)`, height: `calc(100% + ${2 * pad}px)` });
+  }
+  svg.setAttribute("viewBox", `0 0 ${fw + 2 * BLEED} ${fh + 2 * BLEED}`);
+  svg.innerHTML = frameMarkup(fw, fh, radius, scale, metal);
 }
 
 let tones = resolve().metal;
@@ -544,6 +559,12 @@ const observer = typeof ResizeObserver === "function"
     }))
   : null;
 
+// Once the fonts are in and the page has loaded, every frame is drawn again
+// from scratch: either can resize a box after its frame first went in.
+const redrawAll = () => { for (const svg of tracked) { lastSize.delete(svg); draw(svg); } };
+document.fonts?.ready.then(redrawAll);
+if (document.readyState !== "complete") window.addEventListener("load", redrawAll, { once: true });
+
 /** Draws every filigree placeholder under `root` and keeps it sized. */
 export function mountFiligrees(root = document) {
   root.querySelectorAll("svg.filigree").forEach((svg) => {
@@ -555,7 +576,10 @@ export function mountFiligrees(root = document) {
     observer?.observe(svg.parentElement, { box: "border-box" });
   });
   for (const svg of tracked) {
-    if (!svg.isConnected) { tracked.delete(svg); observer?.unobserve(svg.parentElement); }
+    if (svg.isConnected) continue;
+    tracked.delete(svg);
+    // A frame taken out with its host has no parent left to stop watching.
+    if (svg.parentElement) observer?.unobserve(svg.parentElement);
   }
 }
 
