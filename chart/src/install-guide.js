@@ -259,7 +259,7 @@ export function installGuide({ name, hint, key: dismissKey, note = "" }) {
         ${steps}
         ${note && !(r && r.outside) ? `<p class="ig-note">${note}</p>` : ""}
         <div class="ig-actions">
-          ${oneTap ? `<span class="framed-button"><button class="ig-go" type="button">Install</button><svg class="filigree" aria-hidden="true" data-radius="10" data-mode="button"></svg></span>` : ""}
+          ${oneTap ? `<span class="framed-button" style="position:relative;display:inline-flex;max-width:100%"><button class="ig-go" type="button">Install</button><svg class="filigree" aria-hidden="true" style="position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);pointer-events:none;overflow:visible" data-radius="10" data-mode="button"></svg></span>` : ""}
           <button class="ig-close" type="button">Close</button>
         </div>
       </div>

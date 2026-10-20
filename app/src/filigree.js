@@ -456,7 +456,7 @@ function sideReach(w, h, radius, scale, band) {
  * with a band of that depth above and below, as AreaHoroscopeSection does).
  */
 export function filigree({ radius = 11, mode = "card" } = {}) {
-  return `<svg class="filigree" aria-hidden="true" data-radius="${radius}" data-mode="${mode}"></svg>`;
+  return `<svg class="filigree" aria-hidden="true" style="position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);pointer-events:none;overflow:visible" data-radius="${radius}" data-mode="${mode}"></svg>`;
 }
 
 const tracked = new Set();
@@ -465,6 +465,15 @@ const lastSize = new WeakMap();
 function draw(svg) {
   const host = svg.parentElement;
   if (!host || !svg.isConnected) { tracked.delete(svg); return; }
+  // The frame is laid over its host, so it needs the host positioned and
+  // itself absolute. The markup says so inline; this holds even where a page
+  // arrives with an older stylesheet (GitHub Pages lets one be cached for ten
+  // minutes), which would otherwise stretch the frame across the whole page.
+  if (getComputedStyle(host).position === "static") host.style.position = "relative";
+  if (getComputedStyle(svg).position !== "absolute") {
+    Object.assign(svg.style, { position: "absolute", inset: `-${BLEED}px`, width: `calc(100% + ${2 * BLEED}px)`,
+      height: `calc(100% + ${2 * BLEED}px)`, pointerEvents: "none", overflow: "visible" });
+  }
   const w = host.offsetWidth, h = host.offsetHeight;
   const mode = svg.dataset.mode, radius = +svg.dataset.radius;
   let scale = 1;
