@@ -485,7 +485,7 @@ function draw(svg) {
     if (host.style.paddingInline !== side) host.style.paddingInline = side;
   } else if (mode === "button") {
     // A button given emphasis (the install buttons, the homepage's first Cast
-    // Your Chart): the frame sits around it in a band of its own, the corner
+    // Your Chart), or a small plate framed whole (the instrument section's): the frame sits around it in a band of its own, the corner
     // clusters held to a 20px reach that suits a button's height rather than
     // a card's, with the button centred in the band.
     const reach = 20;

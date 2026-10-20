@@ -326,8 +326,9 @@
       <p>An astrolabe is the oldest computer built for the sky — a brass instrument astronomers and navigators turned by hand for over a thousand years to read the positions of the stars.</p>
       <p>Cast your chart and it's struck the way the instrument always was: the houses cut into the rim for the place you were born, the sky over your own latitude engraved on the plate, and every planet riding the rete at its true position. Tap a house or a planet to see what's there.</p>
       <div class="shot"><img src="assets/screenshots/web-instrument.jpg" alt="A birth chart drawn as a brass astrolabe, with Leo rising, the planets as brass studs on the rete, and the twelve houses numbered around the rim" width="780" height="780" loading="lazy"></div>
-      <div class="plate actions">
+      <div class="plate actions framed-plate">
         <div class="action"><a class="metal-button" href="/chart/">Cast Your Chart</a><p class="note">Your birth date, time, and place, struck on the plate</p></div>
+        <svg class="filigree" aria-hidden="true" data-radius="12" data-mode="button" data-metal="brass"></svg>
       </div>
     </div>
   </div>
@@ -518,8 +519,9 @@
 
 <script type="module">
   import { initWelcome, initBackdrop } from "/assets/home/welcome.js";
-  // The first Cast Your Chart sits in the filigree; loaded when wanted, so
-  // the button works whether or not the frame arrives.
+  // The first Cast Your Chart sits in the filigree, and the instrument
+  // section's plate sits in it whole; loaded when wanted, so the buttons work
+  // whether or not the frames arrive.
   import("/app/src/filigree.js").then((m) => m.mountFiligrees(document.querySelector("main"))).catch(() => {});
   initBackdrop(document.querySelector(".backdrop"));
   const welcome = document.querySelector(".welcome");
