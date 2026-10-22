@@ -162,7 +162,9 @@
 
     const head = el("section", { className: "card" },
       el("span", { className: "plate-label" }, `${LABELS[p.status] ?? p.status}${p.testMode ? " · Stripe test mode" : ""}`),
-      el("p", {}, `${p.email} · paid ${longDay(p.paidAt)} · due ${longDay(p.dueBy)}`));
+      el("p", {}, `${p.email} · paid ${longDay(p.paidAt)} · due ${longDay(p.dueBy)}`),
+      el("p", {}, `Skin tone for the people: ${p.skinTone ?? "Left to the artist"}`));
+    if (p.artistNotes) head.append(el("p", { className: "quote" }, `Notes for the artist: ${p.artistNotes}`));
     for (const m of p.messages) head.append(el("p", { className: "quote" }, `${longDay(m.at)}: ${m.text}`));
 
     const placements = el("section", { className: "card" },

@@ -38,6 +38,26 @@
   .price-line .price{ font-family: var(--font-display); color: var(--resist); font-size: 20px; }
   fieldset{ border: 0; padding: 0; margin: 0; min-width: 0; }
   legend{ padding: 0; margin-bottom: 10px; }
+  .tones{ display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .tones label{
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    background: var(--panel); border: 1px solid rgba(176,140,63,0.25);
+    border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--ink);
+  }
+  .tones label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+  .tones input{ position: absolute; opacity: 0; pointer-events: none; }
+  .tones label:has(:focus-visible){ outline: 2px solid var(--bright); outline-offset: 2px; }
+  .swatch{ flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.25); }
+  .swatch.mix{ background: conic-gradient(#F3D9C4 0 25%, #C99872 0 50%, #8A5A3B 0 75%, #4A2C1E 0); }
+  .swatch.open{ background: none; border: 1px dashed var(--muted); }
+  .order-section{ margin-top: 22px; }
+  .order-section .hint{ color: var(--muted); font-size: 13px; margin: -4px 0 10px; }
+  textarea{
+    width: 100%; box-sizing: border-box; min-height: 92px; resize: vertical;
+    background: var(--panel); color: var(--ink); border: 1px solid rgba(176,140,63,0.35);
+    border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 15px;
+  }
+  .count{ color: var(--muted); font-size: 12px; text-align: right; margin-top: 4px; }
 </style>
 </head>
 <body class="page">
@@ -58,7 +78,7 @@
   <section class="card">
     <h2>How It Works</h2>
     <ol class="steps muted-prose">
-      <li>Choose whose chart it is, and pay $9.99.</li>
+      <li>Choose whose chart it is and the skin tone for its people, then pay $9.99.</li>
       <li>We make the artwork from that chart. A person checks and refines every
       one before it reaches you, and it's ready within three days.</li>
       <li>We email you a link. Look at it, then approve it or ask for a change.</li>
@@ -82,12 +102,37 @@
     <p class="note" id="none" hidden>There's no chart saved in this browser yet.
     <a href="/app/">Cast one in the app</a>, with an exact birth time, and come back.</p>
 
+    <fieldset class="order-section">
+      <legend class="plate-label">The People in It</legend>
+      <p class="hint">Some signs are drawn as people, such as the water bearer, the
+      twins, and the maiden. Choose the skin tone you'd like them to have.</p>
+      <div class="tones" id="tones">
+        <label><input type="radio" name="skinTone" value="artist" checked><span class="swatch open"></span>Leave it to the artist</label>
+        <label><input type="radio" name="skinTone" value="mix"><span class="swatch mix"></span>A mix of skin tones</label>
+        <label><input type="radio" name="skinTone" value="tone1"><span class="swatch" style="background:#F3D9C4"></span>Very light</label>
+        <label><input type="radio" name="skinTone" value="tone2"><span class="swatch" style="background:#E2B898"></span>Light</label>
+        <label><input type="radio" name="skinTone" value="tone3"><span class="swatch" style="background:#C99872"></span>Light brown</label>
+        <label><input type="radio" name="skinTone" value="tone4"><span class="swatch" style="background:#A6744E"></span>Medium brown</label>
+        <label><input type="radio" name="skinTone" value="tone5"><span class="swatch" style="background:#7A4D30"></span>Dark brown</label>
+        <label><input type="radio" name="skinTone" value="tone6"><span class="swatch" style="background:#4A2C1E"></span>Deep brown</label>
+      </div>
+    </fieldset>
+
+    <div class="order-section">
+      <label class="plate-label" for="notes">Notes for the Artist</label>
+      <p class="hint">Optional. Anything you'd like us to know, such as a color you
+      love or a symbol that matters to you. We'll do our best with it.</p>
+      <textarea id="notes" name="artistNotes" maxlength="500"></textarea>
+      <div class="count" id="count">0 / 500</div>
+    </div>
+
     <div class="price-line"><span>Digital poster</span><span class="price">$9.99</span></div>
     <button class="buy metal-button wide" type="submit" id="buy" disabled>Continue to checkout</button>
     <p class="note">Payment is on Stripe's own page, and the poster comes to the
     email address you pay with. Your name, birth date, time, and place stay in
     this browser: we're sent only the positions in the chart, the same ones a
-    reading uses. <a href="/privacy/#poster">How we handle them</a>.</p>
+    reading uses, along with the skin tone you choose and any notes you write.
+    <a href="/privacy/#poster">How we handle them</a>.</p>
   </form>
 
   <p class="note center">Already ordered one? <a href="/account/">See your posters</a>.</p>
@@ -105,6 +150,9 @@
   const people = document.getElementById("people");
   const buy = document.getElementById("buy");
   const problem = document.getElementById("problem");
+  const notes = document.getElementById("notes");
+  const count = document.getElementById("count");
+  notes.addEventListener("input", () => { count.textContent = `${notes.value.length} / 500`; });
 
   const profiles = listProfiles();
   const selected = selectedProfileId();
@@ -156,7 +204,11 @@
     buy.disabled = true;
     buy.textContent = "Taking you to checkout…";
     try {
-      const { ok, body } = await call("/poster/checkout", { positions });
+      const { ok, body } = await call("/poster/checkout", {
+        positions,
+        skinTone: form.querySelector('input[name="skinTone"]:checked')?.value ?? "artist",
+        artistNotes: notes.value.trim(),
+      });
       if (ok && body.url) { window.location.href = body.url; return; }
       problem.textContent = body.error ?? "Couldn't start checkout. Please try again.";
     } catch {
