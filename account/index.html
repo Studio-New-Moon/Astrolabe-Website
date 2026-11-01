@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#14100A">
 <link rel="stylesheet" href="/assets/app.css">
 <script src="/assets/fit-buttons.js" defer></script>
+<script src="/assets/product-mockup.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap">
@@ -193,12 +194,15 @@
           document.body.append(a); a.click(); a.remove();
         } catch { complain("Couldn't download it just now. Please try again."); }
       });
-      box.append(download, await printForm(p));
+      box.append(download, await printForm(p, img));
     }
     return box;
   }
 
-  async function printForm(p) {
+  // What a poster can be printed on: the paper print, or anything in the
+  // catalogue's `products` (the broker's goods.js). A poster has no paper
+  // border, so there is no border choice here.
+  async function printForm(p, artImg) {
     const form = el("form", { className: "print-form" });
     form.append(el("span", { className: "plate-label" }, "Order a Print"));
     let data;
@@ -207,33 +211,88 @@
       return form;
     }
     const sizes = data.prints;
+    // A mug prints from its own file, made in the studio with the artwork;
+    // until it exists the mug isn't offered for this poster.
+    const goods = (data.products || []).filter((g) => g.variants?.length && (g.id !== "mug" || p.mugReady));
+    const TITLES = { size: "Size", color: "Colour", frame: "Frame" };
+
+    const product = el("select", { id: `product-${p.id}` },
+      el("option", { value: "paper" }, "Paper print"),
+      ...goods.map((g) => el("option", { value: g.id }, g.name)));
     const size = el("select", { id: `size-${p.id}` }, ...sizes.map((s, i) => el("option", { value: String(i) }, `${s.label}, ${s.dimensions}`)));
     const paper = el("select", { id: `paper-${p.id}` }, ...sizes[0].papers.map((x, i) => el("option", { value: String(i) }, x.paper)));
     const qty = el("select", { id: `qty-${p.id}` }, ...Array.from({ length: Math.min(data.maxQuantity || 1, 10) }, (_, i) => el("option", { value: String(i + 1) }, String(i + 1))));
     const total = el("span", { className: "total" });
     const detail = el("p", { className: "note" });
-    const chosen = () => sizes[Number(size.value)].papers[Number(paper.value)];
-    const refresh = () => {
-      total.textContent = money(chosen().unitCents * Number(qty.value), sizes[0].currency);
-      detail.textContent = chosen().detail ?? "";
-    };
-    [size, paper, qty].forEach((s) => s.addEventListener("change", refresh));
-    form.append(
+    const paperRows = el("div", { className: "print-form" },
       el("div", { className: "row" }, el("label", { htmlFor: size.id }, "Size"), size),
-      el("div", { className: "row" }, el("label", { htmlFor: paper.id }, "Paper"), paper),
-      detail,
+      el("div", { className: "row" }, el("label", { htmlFor: paper.id }, "Paper"), paper));
+    const goodsRows = el("div", { className: "print-form" });
+    const mock = el("div", { hidden: true });
+    const mockNote = el("p", { className: "note", hidden: true },
+      "A preview on the print partner's own photo of the product, with your poster where they place it. Colours on a screen are only a guide.");
+
+    const currentGoods = () => goods.find((g) => g.id === product.value) || null;
+    const goodsOptions = () => Object.fromEntries([...goodsRows.querySelectorAll("select")].map((s) => [s.name, s.value]));
+    const variant = () => {
+      const g = currentGoods();
+      if (!g) return null;
+      const o = goodsOptions();
+      return g.variants.find((v) => Object.entries(v.options).every(([k, val]) => o[k] === val)) || null;
+    };
+    const chosen = () => {
+      if (product.value === "paper") return sizes[Number(size.value)].papers[Number(paper.value)];
+      const v = variant();
+      return v ? { productUid: v.productUid, unitCents: v.unitCents, detail: currentGoods().detail } : null;
+    };
+
+    function buildGoods() {
+      goodsRows.replaceChildren();
+      const g = currentGoods();
+      if (!g) return;
+      Object.entries(g.options).forEach(([name, values]) => {
+        const sel = el("select", { id: `opt-${name}-${p.id}`, name },
+          ...values.map((v) => el("option", { value: v.key, selected: name === "size" && v.key === "m" }, v.label)));
+        sel.addEventListener("change", refresh);
+        goodsRows.append(el("div", { className: "row" }, el("label", { htmlFor: sel.id }, TITLES[name] || name), sel));
+      });
+    }
+
+    function refresh() {
+      const isPaper = product.value === "paper";
+      paperRows.hidden = !isPaper;
+      goodsRows.hidden = isPaper;
+      const c = chosen();
+      total.textContent = c ? money(c.unitCents * Number(qty.value), "usd") : "";
+      detail.textContent = c?.detail ?? "";
+      buy.disabled = !c;
+      const g = currentGoods();
+      const show = !!(g && window.ProductMockup && ProductMockup.has(g.id) && artImg.src);
+      mock.hidden = !show;
+      mockNote.hidden = !show;
+      if (show) ProductMockup.render(mock, g.id, goodsOptions(), artImg.src, `Your poster on a ${g.noun || g.name.toLowerCase()}`);
+    }
+
+    product.addEventListener("change", () => { buildGoods(); refresh(); });
+    [size, paper, qty].forEach((s) => s.addEventListener("change", refresh));
+    artImg.addEventListener("load", refresh);
+    const buy = el("button", { className: "buy metal-button wide", type: "submit" }, "Continue to checkout");
+    form.append(
+      el("div", { className: "row" }, el("label", { htmlFor: product.id }, "Printed on"), product),
+      paperRows, goodsRows, mock, mockNote, detail,
       el("div", { className: "row" }, el("label", { htmlFor: qty.id }, "How many"), qty),
       el("div", { className: "row" }, el("span", {}, "Total"), total),
-    );
-    const buy = el("button", { className: "buy metal-button wide", type: "submit" }, "Continue to checkout");
-    form.append(buy, el("p", { className: "note" }, "Prints are landscape, made to order, and shipped to you flat. Payment and your shipping address are taken on Stripe's own page."));
+      buy,
+      el("p", { className: "note" }, "Made to order and shipped to you. Payment and your shipping address are taken on Stripe's own page."));
     refresh();
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const c = chosen();
+      if (!c) return;
       buy.disabled = true; buy.textContent = "Taking you to checkout…";
       try {
         const { ok, body } = await call("/create-checkout-session", {
-          posterId: p.id, pass: readPass(), productUid: chosen().productUid,
+          posterId: p.id, pass: readPass(), productUid: c.productUid,
           quantity: Number(qty.value), channel: "web",
         });
         if (ok && body.url) { window.location.href = body.url; return; }

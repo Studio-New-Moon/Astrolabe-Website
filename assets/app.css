@@ -331,3 +331,16 @@ h1.plate-label, h2.plate-label, h3.plate-label, p.plate-label{
 }
 .page footer a{ color: var(--brass); }
 .page footer p{ margin-top: 6px; }
+
+/* ---------- product preview ----------
+ * assets/product-mockup.js: Gelato's own photo of the blank product, with the
+ * art laid where Gelato places it. Used by /prints/ and /account/. The art is
+ * multiplied into light products so the fabric or glaze shows through, and
+ * drawn plainly on black, where multiplying would bury it.
+ */
+.mockup{ position: relative; overflow: hidden; border-radius: 11px; background: #f2f1ee;
+         border: 1px solid rgba(176,140,63,0.22); }
+.mockup .mock-photo{ display: block; width: 100%; height: auto; max-height: 70vh; object-fit: contain; }
+.mockup .mock-art{ position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
+.mockup .mock-art img{ width: 100%; height: 100%; object-fit: contain; display: block; mix-blend-mode: multiply; }
+.mockup.on-dark .mock-art img{ mix-blend-mode: normal; }

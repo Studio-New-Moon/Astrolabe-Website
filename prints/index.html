@@ -21,6 +21,7 @@
 <meta name="theme-color" content="#14100A">
 <link rel="stylesheet" href="/assets/app.css">
 <script src="/assets/fit-buttons.js" defer></script>
+<script src="/assets/product-mockup.js"></script>
 <!-- Only for the "Engraved" type a visitor may have chosen on the Chart pages;
      the files are fetched only when that face is in use. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -125,6 +126,33 @@
   .sizes-list li{ padding: 6px 0; border-top: 1px solid rgba(176,140,63,0.15); }
   .sizes-list li:first-child{ border-top: 0; }
   .sizes-list strong{ color: var(--resist); font-family: var(--font-display); font-weight: 400; }
+
+  /* What to print on. Same cards as the sizes, two to a row. */
+  .products{ display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .products label{
+    display: flex; flex-direction: column; gap: 2px; cursor: pointer;
+    background: var(--panel); border: 1px solid rgba(176,140,63,0.25);
+    border-radius: 10px; padding: 10px 12px; font-size: 15px; color: var(--ink);
+  }
+  .products label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+  .products input{ position: absolute; opacity: 0; pointer-events: none; }
+  .products label:has(:focus-visible){ outline: 2px solid var(--bright); outline-offset: 2px; }
+  .products .from{ color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .opt-row{ display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .opt-row + .opt-row{ margin-top: 10px; }
+  .opt-row select{ max-width: 70%; }
+  .choice{ display: flex; flex-wrap: wrap; gap: 8px; }
+  .choice label{
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    background: var(--panel); border: 1px solid rgba(176,140,63,0.25);
+    border-radius: 999px; padding: 7px 12px; font-size: 14px; color: var(--ink);
+  }
+  .choice label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
+  .choice input{ position: absolute; opacity: 0; pointer-events: none; }
+  .choice label:has(:focus-visible){ outline: 2px solid var(--bright); outline-offset: 2px; }
+  .total{ display: flex; justify-content: space-between; align-items: baseline; margin-top: 18px; font-size: 15px; }
+  .total .price{ font-family: var(--font-display); color: var(--resist); font-size: 20px; font-variant-numeric: tabular-nums; }
+
 </style>
 </head>
 <body class="page">
@@ -148,12 +176,16 @@
            alt="Aries, illustrated in a batik style"
            width="1600" height="1200" fetchpriority="high">
     </div>
-    <figcaption><strong id="previewName">Aries</strong><span id="previewPaper"
+    <div id="mockup" hidden></div>
+    <figcaption id="paperCaption"><strong id="previewName">Aries</strong><span id="previewPaper"
     hidden> on <strong id="previewPaperName"></strong></span> &mdash; the
     image a print is made from, shown here at a fraction of its printed size.
     Pick another below and this changes.<span id="finishNote" hidden> The
     paper's finish is only suggested here; no screen can show how a sheet
     catches the light.</span></figcaption>
+    <figcaption id="mockupCaption" hidden><strong id="mockupName"></strong>
+    &mdash; a preview on the print partner's own photo of the product, with the
+    art where they place it. Colours on a screen are only a guide.</figcaption>
   </figure>
 
   <section class="card">
@@ -176,6 +208,10 @@
   <p>And five papers: a semi-gloss and a matte, each in a standard and a
   heavier weight, and a 250&nbsp;gsm archival matte on off-white stock made
   to last. The price below changes with the paper you choose.</p>
+
+  <p>Or on something other than paper: framed, on canvas, metal, or acrylic,
+  or on a T-shirt, sweatshirt, tote bag, or mug. On the last four you can
+  have the painting with its cream border and title, or the painting alone.</p>
   </div>
   </section>
 
@@ -208,7 +244,12 @@
       </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset id="productSet" hidden>
+      <legend class="plate-label">Printed On</legend>
+      <div class="products" id="products"></div>
+    </fieldset>
+
+    <fieldset id="sizeSet">
       <legend class="plate-label">Size</legend>
       <div class="sizes" id="sizes"></div>
     </fieldset>
@@ -222,6 +263,20 @@
       <p class="paper-detail" id="paperDetail"></p>
     </fieldset>
 
+    <fieldset id="goodsSet" hidden>
+      <legend class="plate-label" id="goodsLegend">Options</legend>
+      <p class="paper-detail" id="goodsDetail" style="margin:0 0 12px"></p>
+      <div id="goodsOptions"></div>
+    </fieldset>
+
+    <fieldset id="borderSet" hidden>
+      <legend class="plate-label">Border</legend>
+      <div class="choice">
+        <label><input type="radio" name="border" value="with" checked><span>With border and title</span></label>
+        <label><input type="radio" name="border" value="none"><span>The painting alone</span></label>
+      </div>
+    </fieldset>
+
     <fieldset>
       <legend class="plate-label">Quantity</legend>
       <div class="qty">
@@ -229,6 +284,8 @@
         <select id="qty" name="qty"></select>
       </div>
     </fieldset>
+
+    <div class="total"><span>Total</span><span class="price" id="total"></span></div>
 
     <button class="buy metal-button wide" type="submit" id="buy">Continue to checkout</button>
     <p class="note">Payment is handled by Stripe on their own page &mdash; we
@@ -240,7 +297,7 @@
     <p>A Custom Chart Poster is artwork of your whole birth chart, the symbols
     your own planets, signs, and houses call for, made for you in this style.
     $29 for the digital poster, ready within three days, and printable on
-    any of the papers above.</p>
+    any of the papers and products above.</p>
     <p><a class="metal-button wide" href="/poster/">Order a Custom Chart Poster</a></p>
   </section>
 
@@ -279,6 +336,25 @@
   var previewPaperEl = document.getElementById("previewPaper");
   var previewPaperNameEl = document.getElementById("previewPaperName");
   var finishNoteEl = document.getElementById("finishNote");
+  var productSetEl = document.getElementById("productSet");
+  var productsEl = document.getElementById("products");
+  var sizeSetEl = document.getElementById("sizeSet");
+  var goodsSetEl = document.getElementById("goodsSet");
+  var goodsLegendEl = document.getElementById("goodsLegend");
+  var goodsDetailEl = document.getElementById("goodsDetail");
+  var goodsOptionsEl = document.getElementById("goodsOptions");
+  var borderSetEl = document.getElementById("borderSet");
+  var totalEl = document.getElementById("total");
+  var mockupEl = document.getElementById("mockup");
+  var paperCaptionEl = document.getElementById("paperCaption");
+  var mockupCaptionEl = document.getElementById("mockupCaption");
+  var mockupNameEl = document.getElementById("mockupName");
+
+  // Everything other than a paper print, from /catalogue's `products`
+  // (src/goods.js in the broker): each with its options and, per
+  // combination, the product to order and its price. "paper" is the print.
+  var goods = [];
+  var current = "paper";
 
   // The preview is outside the form on purpose: the form stays hidden until
   // the catalogue loads, and the art should carry the page whether or not the
@@ -296,6 +372,7 @@
     previewEl.src = "/assets/prints/" + sign + ".jpg";
     previewEl.alt = name + ", illustrated in a batik style";
     previewNameEl.textContent = name;
+    if (sizes && sizes.length) refresh();
   }
 
   Array.prototype.forEach.call(
@@ -380,6 +457,171 @@
     }
     previewPaperEl.hidden = !paperName;
     finishNoteEl.hidden = !paperName;
+
+    var isPaper = current === "paper";
+    sizeSetEl.hidden = !isPaper;
+    paperSetEl.hidden = !isPaper || sizes[0].papers.length < 2;
+    var product = currentProduct();
+    goodsSetEl.hidden = isPaper;
+    borderSetEl.hidden = isPaper || !product || !product.borderOptional;
+
+    var unit = isPaper ? selectedPaper().unitCents : (selectedVariant() || {}).unitCents;
+    var qty = Number(qtyEl.value) || 1;
+    totalEl.textContent = unit ? money(unit * qty, "usd") : "";
+    buyEl.disabled = !unit;
+
+    showPreview(product);
+  }
+
+  function currentProduct() {
+    for (var i = 0; i < goods.length; i++) if (goods[i].id === current) return goods[i];
+    return null;
+  }
+
+  function selectedOptions() {
+    var o = {};
+    Array.prototype.forEach.call(goodsOptionsEl.querySelectorAll("select, input:checked"), function (el) {
+      o[el.name.replace(/^opt-/, "")] = el.value;
+    });
+    return o;
+  }
+
+  function selectedVariant() {
+    var product = currentProduct();
+    if (!product) return null;
+    var o = selectedOptions();
+    for (var i = 0; i < product.variants.length; i++) {
+      var v = product.variants[i], ok = true;
+      for (var k in v.options) if (v.options[k] !== o[k]) { ok = false; break; }
+      if (ok) return v;
+    }
+    return null;
+  }
+
+  function borderChoice() {
+    var product = currentProduct();
+    var b = form.querySelector('input[name="border"]:checked');
+    return product && product.borderOptional && b && b.value === "none" ? "none" : "with";
+  }
+
+  // A paper print shows the sheet as before; anything else shows the
+  // product's own photo with the art on it (product-mockup.js).
+  function showPreview(product) {
+    var sign = form.elements.sign.value;
+    var name = SIGN_NAMES[sign] || "";
+    var mock = !!(product && window.ProductMockup && ProductMockup.has(product.id));
+    sheetEl.hidden = mock;
+    paperCaptionEl.hidden = mock;
+    mockupEl.hidden = !mock;
+    mockupCaptionEl.hidden = !mock;
+    if (!mock) return;
+    var o = selectedOptions();
+    var art = borderChoice() === "none"
+      ? "/assets/prints/" + sign + "-art.webp"
+      : "/assets/prints/" + sign + ".jpg";
+    var label = name + " on " + describe(product, o);
+    ProductMockup.render(mockupEl, product.id, o, art, label);
+    mockupNameEl.textContent = label;
+  }
+
+  // "a white T-shirt, without border" / "a black framed print"
+  function describe(product, o) {
+    var bits = [];
+    ["color", "frame"].forEach(function (k) {
+      if (!o[k] || !product.options[k]) return;
+      product.options[k].forEach(function (v) { if (v.key === o[k]) bits.push(v.label.toLowerCase()); });
+    });
+    var noun = product.noun || product.name.toLowerCase();
+    var phrase = bits.concat([noun]).join(" ");
+    phrase = (/^[aeiou]/i.test(phrase) ? "an " : "a ") + phrase;
+    if (product.borderOptional) phrase += borderChoice() === "none" ? ", the painting alone" : ", with its border";
+    return phrase;
+  }
+
+  function cheapest(product) {
+    return product.variants.reduce(function (m, v) { return Math.min(m, v.unitCents); }, Infinity);
+  }
+
+  // The options for one product: shirt sizes as a dropdown, everything else
+  // as a row of choices.
+  function buildOptions(product) {
+    goodsOptionsEl.textContent = "";
+    goodsLegendEl.textContent = product.name;
+    goodsDetailEl.textContent = product.detail || "";
+    var TITLES = { size: "Size", color: "Colour", frame: "Frame" };
+    Object.keys(product.options).forEach(function (name) {
+      var values = product.options[name];
+      var row = document.createElement("div");
+      row.className = "opt-row";
+      var title = document.createElement("span");
+      title.textContent = TITLES[name] || name;
+      row.appendChild(title);
+      var shirtSize = name === "size" && product.kind === "goods" && values.length > 3;
+      if (shirtSize) {
+        var sel = document.createElement("select");
+        sel.name = "opt-" + name;
+        sel.setAttribute("aria-label", TITLES[name] || name);
+        values.forEach(function (v) {
+          var opt = document.createElement("option");
+          opt.value = v.key; opt.textContent = v.label;
+          if (v.key === "m") opt.selected = true;
+          sel.appendChild(opt);
+        });
+        sel.addEventListener("change", refresh);
+        row.appendChild(sel);
+      } else {
+        var wrap = document.createElement("div");
+        wrap.className = "choice";
+        wrap.setAttribute("role", "radiogroup");
+        wrap.setAttribute("aria-label", TITLES[name] || name);
+        values.forEach(function (v, i) {
+          var label = document.createElement("label");
+          var input = document.createElement("input");
+          input.type = "radio"; input.name = "opt-" + name; input.value = v.key;
+          if (i === 0) input.checked = true;
+          input.addEventListener("change", refresh);
+          label.appendChild(input);
+          var span = document.createElement("span");
+          span.textContent = v.label;
+          label.appendChild(span);
+          wrap.appendChild(label);
+        });
+        row.appendChild(wrap);
+      }
+      goodsOptionsEl.appendChild(row);
+    });
+  }
+
+  function buildProducts() {
+    var cards = [{ id: "paper", name: "Paper print", from: sizes.reduce(function (m, s) {
+      return Math.min(m, s.papers.reduce(function (n, p) { return Math.min(n, p.unitCents); }, Infinity));
+    }, Infinity) }].concat(goods.map(function (g) { return { id: g.id, name: g.name, from: cheapest(g) }; }));
+    cards.forEach(function (c) {
+      var label = document.createElement("label");
+      var input = document.createElement("input");
+      input.type = "radio"; input.name = "product"; input.value = c.id;
+      if (c.id === current) input.checked = true;
+      input.addEventListener("change", function () {
+        if (!input.checked) return;
+        current = c.id;
+        var product = currentProduct();
+        if (product) buildOptions(product);
+        refresh();
+        var url = new URL(location.href);
+        if (c.id === "paper") url.searchParams.delete("product"); else url.searchParams.set("product", c.id);
+        history.replaceState(history.state, "", url);
+      });
+      label.appendChild(input);
+      var name = document.createElement("span");
+      name.textContent = c.name;
+      label.appendChild(name);
+      var from = document.createElement("span");
+      from.className = "from";
+      from.textContent = "from " + money(c.from, "usd");
+      label.appendChild(from);
+      productsEl.appendChild(label);
+    });
+    productSetEl.hidden = goods.length === 0;
   }
 
   // Sizes and prices are read from the order service, never written into this
@@ -435,7 +677,17 @@
       });
       paperEl.addEventListener("change", refresh);
       paperSetEl.hidden = sizes[0].papers.length < 2;
-      refresh();
+
+      // A catalogue from before other products existed has no `products`,
+      // and the page is the paper-print page it always was.
+      goods = (data.products || []).filter(function (g) { return g.variants && g.variants.length; });
+      var wantedProduct = new URLSearchParams(location.search).get("product");
+      if (wantedProduct && goods.some(function (g) { return g.id === wantedProduct; })) current = wantedProduct;
+      buildProducts();
+      if (currentProduct()) buildOptions(currentProduct());
+      Array.prototype.forEach.call(form.querySelectorAll('input[name="border"]'), function (el) {
+        el.addEventListener("change", refresh);
+      });
 
       var max = Math.min(Number(data.maxQuantity) || 1, 10);
       for (var q = 1; q <= max; q++) {
@@ -444,6 +696,8 @@
         opt.textContent = String(q);
         qtyEl.appendChild(opt);
       }
+      qtyEl.addEventListener("change", refresh);
+      refresh();
 
       form.hidden = false;
     })
@@ -459,12 +713,14 @@
     buyEl.disabled = true;
     buyEl.textContent = "Taking you to checkout…";
 
+    var variant = current === "paper" ? null : selectedVariant();
     var body = {
-      productUid: selectedPaper().productUid,
+      productUid: variant ? variant.productUid : selectedPaper().productUid,
       sign: form.elements.sign.value,
       quantity: Number(qtyEl.value),
       channel: "web"
     };
+    if (variant) body.border = borderChoice();
 
     fetch(BROKER + "/create-checkout-session", {
       method: "POST",

@@ -154,6 +154,34 @@
     }
   }
 
+  // A mug's print file: the artwork twice, once on each side of the cup, on
+  // the mug's whole print area at 300 dpi. The same layout as the signs'
+  // (App/Tools/make_mug_files.py): each copy 40% of the width, centred at
+  // 20% and 80%. Made here, from the artwork just uploaded, because a
+  // plain artwork file would be centred opposite the handle and wrapped
+  // half way round the cup.
+  const MUG_SIZES = { mug11: [2362, 1134], mug15: [2516, 1217] };
+  async function mugBlob(bitmap, [w, h]) {
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    const boxW = Math.round(w * 0.4), boxH = Math.round(boxW * 3 / 4);
+    const scale = Math.min(boxW / bitmap.width, boxH / bitmap.height);
+    const cw = Math.round(bitmap.width * scale), ch = Math.round(bitmap.height * scale);
+    ctx.imageSmoothingQuality = "high";
+    for (const c of [0.2, 0.8]) ctx.drawImage(bitmap, Math.round(w * c - cw / 2), Math.round((h - ch) / 2), cw, ch);
+    return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("canvas"))), "image/png"));
+  }
+  async function makeMugFiles(p, source) {
+    const bitmap = await createImageBitmap(source);
+    for (const [size, dims] of Object.entries(MUG_SIZES)) {
+      const res = await api(`/studio/mug?poster=${p.id}&size=${size}`, { method: "PUT", headers: { "Content-Type": "image/png" }, body: await mugBlob(bitmap, dims) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "The mug file didn't upload.");
+      Object.assign(p, body.poster);
+    }
+  }
+
   async function renderDetail() {
     const box = $("detail");
     while (objectUrls.length) URL.revokeObjectURL(objectUrls.pop());
@@ -200,7 +228,10 @@
         if (!res.ok) { complain(body.error ?? "Upload failed."); }
         else {
           Object.assign(p, body.poster);
-          tell(body.warnings.length ? "Uploaded, with warnings below." : "Uploaded. Send it as a proof when you're happy with it.");
+          upload.textContent = "Making the mug files…";
+          let mugNote = "";
+          try { await makeMugFiles(p, f); } catch (e) { mugNote = ` The mug files didn't save (${e.message}); use "Make the mug files" below.`; }
+          tell((body.warnings.length ? "Uploaded, with warnings below." : "Uploaded. Send it as a proof when you're happy with it.") + mugNote);
           await renderDetail();
           $("warnings")?.replaceChildren(...body.warnings.map((w) => el("p", { className: "warn" }, w)));
           return;
@@ -209,6 +240,20 @@
       upload.disabled = false; upload.textContent = p.final ? "Replace the artwork" : "Upload the artwork";
     });
     warnings.id = "warnings";
+
+    // Artwork uploaded before mugs were sold has no mug files yet.
+    const mugs = el("button", { className: "plain quiet-button", type: "button", hidden: !p.final || p.mugReady }, "Make the mug files");
+    mugs.addEventListener("click", async () => {
+      mugs.disabled = true; mugs.textContent = "Making the mug files…";
+      try {
+        const res = await api(`/studio/file?poster=${p.id}&which=final`);
+        if (!res.ok) throw new Error("couldn't read the artwork");
+        await makeMugFiles(p, await res.blob());
+        tell("Mug files made. This poster can now be ordered on a mug.");
+        return renderDetail();
+      } catch (e) { if (e.message !== "unauthorized") complain(`The mug files didn't save: ${e.message}`); }
+      mugs.disabled = false; mugs.textContent = "Make the mug files";
+    });
 
     const note = el("textarea", { id: "note", maxLength: 2000, placeholder: "Optional: a note to the customer, shown with the proof" });
     const send = el("button", { className: "buy metal-button wide", type: "button" },
@@ -236,6 +281,7 @@
       el("div", { className: "field" }, el("label", { htmlFor: "upload" }, "Finished artwork: landscape 4:3, ideally 6000×4500 PNG"), file),
       warnings,
       upload,
+      mugs,
       el("div", { className: "field" }, el("label", { htmlFor: "note" }, "Note to the customer"), note),
       send);
     if (p.status === "approved") work.append(el("p", { className: "note" }, "The customer has approved this one. Uploading a new file now changes what they download and print."));
