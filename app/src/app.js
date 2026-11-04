@@ -30,7 +30,7 @@ import { mountSky } from "./sky.js";
 import {
   SIGNS, signAt, ROMAN, ORDINAL, rulerOf, rulerSubject, subject, PLANET_NAMES, PLANET_GLYPHS, POINT_INFO, ANGLE_INFO,
   HOUSE_TITLES, HOUSE_COVERS, HOUSE_ESSENCES, AREAS, ASPECT_KINDS, matchAspect, TAROT, SIGN_READINGS,
-  retrogradeNote, CHIRON_RETROGRADE_NOTE,
+  retrogradeNote, CHIRON_RETROGRADE_NOTE, moonPhase,
 } from "./lore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -429,6 +429,21 @@ $("readout").addEventListener("click", (e) => {
   if (b) openSheet({ kind: "angle", angle: b.dataset.angle });
 });
 
+// The phase the Moon was in at birth, with the widget's art. Its layout is
+// inline, and a page older than this script is tolerated, because the site can
+// serve a new script beside a ten-minute-old page or stylesheet.
+function renderBirthMoon() {
+  const el = $("birthMoon");
+  if (!el) return;
+  const phase = moonPhase(body(chart, "moon").longitude, body(chart, "sun").longitude);
+  el.innerHTML =
+    `<div style="display:flex;align-items:center;gap:14px;padding:16px">` +
+    `<img src="/app/art/${phase.art}.png" width="66" height="66" alt="" style="flex:none">` +
+    `<div style="display:flex;flex-direction:column;gap:3px;min-width:0"><span class="plate-label">The Moon at Your Birth</span>` +
+    `<span class="display" style="font-size:17px">${phase.name}</span></div></div>`;
+  el.hidden = false;
+}
+
 function renderPlacements() {
   const c = chart;
   const anyRetro = c.bodies.some((b) => b.retrograde) || c.points.some((p) => p.retrograde);
@@ -472,6 +487,7 @@ function open(profile) {
   $("chartView").hidden = false;
   $("empty").hidden = true;
   renderPlacements();
+  renderBirthMoon();
   renderReadout();
   const sun = signAt(body(chart, "sun").longitude).name;
   // Drawn once the view is showing, because a hidden canvas has no width.

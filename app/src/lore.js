@@ -216,3 +216,22 @@ export const SIGN_READINGS = {
     "shadow": "Without an edge there's no way to tell your own weather from someone else's, and the fatigue that follows gets explained as anything but what it is."
   }
 };
+
+// The Moon's phase, as the app's `MoonPhase` works it out: how far ahead of the
+// Sun the Moon has travelled, in eight even 45° slices centred on each phase's
+// exact point. The art is the app's own, drawn by Tools/render_moons.py.
+const MOON_PHASES = [
+  { name: "New Moon", art: "moon-new" },
+  { name: "Waxing Crescent", art: "moon-waxing-crescent" },
+  { name: "First Quarter", art: "moon-first-quarter" },
+  { name: "Waxing Gibbous", art: "moon-waxing-gibbous" },
+  { name: "Full Moon", art: "moon-full" },
+  { name: "Waning Gibbous", art: "moon-waning-gibbous" },
+  { name: "Last Quarter", art: "moon-last-quarter" },
+  { name: "Waning Crescent", art: "moon-waning-crescent" },
+];
+
+export function moonPhase(moonLongitude, sunLongitude) {
+  const elongation = ((moonLongitude - sunLongitude + 22.5) % 360 + 360) % 360;
+  return MOON_PHASES[Math.floor(elongation / 45)];
+}
