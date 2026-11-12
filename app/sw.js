@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. cache.addAll fails the whole install if any
 // entry 404s, so a renamed module has to be renamed here too.
 
-const CACHE = "astrolabe-app-v17";
+const CACHE = "astrolabe-app-v18";
 
 // Each installable page clears only caches with its own prefix. Caches are
 // shared across the site, and deleting everything that isn't ours would wipe
@@ -53,6 +53,15 @@ const SHELL = [
   "/app/art/moon-waning-gibbous.png",
   "/app/art/moon-waxing-crescent.png",
   "/app/art/moon-waxing-gibbous.png",
+  "/app/art/planet-jupiter.png",
+  "/app/art/planet-mars.png",
+  "/app/art/planet-mercury.png",
+  "/app/art/planet-neptune.png",
+  "/app/art/planet-pluto.png",
+  "/app/art/planet-saturn.png",
+  "/app/art/planet-sun.png",
+  "/app/art/planet-uranus.png",
+  "/app/art/planet-venus.png",
   "/app/src/app.js",
   "/app/src/chart-wheel.js",
   "/app/src/filigree.js",

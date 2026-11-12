@@ -538,7 +538,7 @@ function renderWhole() {
       out.push(signCard("Core Identity", s.coreIdentity), signCard("Emotional Self", s.emotionalSelf),
         signCard("Outer Persona", s.outerPersona));
       out.push(`<div class="rcard fire"><span class="plate-label">The Hidden Engine</span>` +
-        `<div class="rwho"><span class="glyph" aria-hidden="true">${PLANET_GLYPHS[e.planet] ?? ""}</span>` +
+        `<div class="rwho" style="align-items:center">${planetArt(e.planet, 48)}` +
         `<span>${esc(e.subject)} at ${esc(e.label)}, your ${ORDINAL[e.house - 1]} house</span></div>` +
         `<p class="rnote">Your chart ruler — the planet ruling your Rising sign, and wherever it actually landed.</p>` +
         advice(e.reason, e.action) + `</div>`);
@@ -561,9 +561,19 @@ function renderWhole() {
       `<div><dt>Sun</dt><dd>${signAt(body(c, "sun").longitude).name}</dd></div>` +
       `<div><dt>Moon</dt><dd>${signAt(body(c, "moon").longitude).name}</dd></div>` +
       `<div><dt>Rising</dt><dd>${c.ascSign.name}</dd></div>` +
-      `<div><dt>Chart Ruler</dt><dd>${planetName(ruler.name)} · ${ORDINAL[c.houseOf(ruler.longitude) - 1]} house</dd></div></dl></div>`);
+      `<div><dt>Chart Ruler</dt><dd style="display:flex;align-items:center;gap:8px;justify-content:flex-end">${planetArt(ruler.name, 22)}${planetName(ruler.name)} · ${ORDINAL[c.houseOf(ruler.longitude) - 1]} house</dd></div></dl></div>`);
   }
   $("wholeBody").innerHTML = out.join("");
+}
+
+/** The chart ruler's batik drawing, the same art the app shows. Sized
+ *  inline, so a stale stylesheet beside a new script still lays it out. The
+ *  Moon shows the full-moon picture, as it does in the app. */
+function planetArt(name, size) {
+  const key = String(name).toLowerCase();
+  const file = key === "moon" ? "moon-full" : `planet-${key}`;
+  return `<img src="/app/art/${file}.png" alt="${esc(planetName(key))}, illustrated in a batik style" ` +
+    `width="${size}" height="${size}" style="width:${size}px;height:${size}px;flex:none;display:block">`;
 }
 
 // ---------------------------------------------------------------- Areas
@@ -582,7 +592,10 @@ function renderAreas() {
     const ruler = area.house ? rulerOf(s) : rulerOf(c.ascSign);
     const framed = area.id === "purpose";
     return `<a class="area-card${framed ? " framed" : ""}" href="#areas/${area.id}">` +
-      `<span class="medallion" style="--tint: var(--el-${s.element})" aria-hidden="true"><span class="glyph">${s.glyph}</span></span>` +
+      // Purpose's subject is the chart ruler, so its medallion is that
+      // planet's drawing; the five houses keep their sign glyphs.
+      (framed ? `<span style="width:52px;height:52px;flex:none" aria-hidden="true">${planetArt(ruler, 52)}</span>`
+        : `<span class="medallion" style="--tint: var(--el-${s.element})" aria-hidden="true"><span class="glyph">${s.glyph}</span></span>`) +
       `<span class="txt"><span class="top"><span class="t">${area.title}</span>` +
       `<span class="plate-label">${area.house ? `House ${ROMAN[area.house - 1]}` : "Chart Ruler"}</span></span>` +
       `<span class="s">${s.name} · ${ruler}</span><span class="c">${esc(area.covers)}</span></span>` +
@@ -725,7 +738,7 @@ function purposeBody(c) {
   const aspects = c.aspects.filter((a) => a.a === p.name || a.b === p.name);
   return `<div class="stack gap-18" style="text-align:left">` +
     `<div class="section"><span class="plate-label">Where It Sits</span>` +
-    `<div class="occupant" style="align-items:center"><span class="g glyph" aria-hidden="true">${PLANET_GLYPHS[p.name]}</span><span class="stack" style="gap:1px">` +
+    `<div class="occupant" style="align-items:center">${planetArt(p.name, 48)}<span class="stack" style="gap:1px">` +
     `<span class="what">${subject(planetName(p.name), true)} at ${label(p.longitude, p.retrograde)}, your ${ORDINAL[h - 1]} house</span>` +
     (p.retrograde ? `<span class="note">${esc(retrogradeNote(planetName(p.name)))}</span>` : "") + `</span></div>` +
     `<p style="font-size:13px;font-weight:600;color:var(--brass)">${HOUSE_TITLES[h - 1]} — ${esc(HOUSE_COVERS[h - 1])}</p>` +
