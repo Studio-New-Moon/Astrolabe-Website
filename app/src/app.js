@@ -1053,12 +1053,29 @@ function signSheet(index) {
 
 function openSettings() { openSheet({ kind: "settings" }); }
 
+/** A profile's icon: its chart ruler's drawing (Morgan, 2026-11-12), the
+ *  app's `ProfileStandIn`. Only the angles are cast, since the rising sign
+ *  is all this needs. A profile without an exact time keeps the silhouette,
+ *  since its rising sign isn't settled. */
+function profileStandIn(p) {
+  try {
+    if (p.timeMode && p.timeMode !== "exact") return icon("person");
+    const [y, m, d] = p.date.split("-").map(Number);
+    const [hh, mm] = p.time.split(":").map(Number);
+    const jd = julianDayFromLocal(y, m, d, hh, mm, p.place.timeZoneID);
+    const ruler = rulerOf(signAt(anglesFor(jd, p.place.latitude, p.place.longitude)[0].longitude));
+    return planetArt(ruler, 40);
+  } catch {
+    return icon("person");
+  }
+}
+
 function settingsSheet() {
   const people = listProfiles();
   const rows = people.map((p) => {
     const active = current?.id === p.id;
     return `<div class="profile-row"><button type="button" class="pick" data-pick="${p.id}" aria-pressed="${active}">` +
-      `<span class="avatar" aria-hidden="true">${icon("person")}</span><span class="stack" style="gap:2px;min-width:0;flex:1">` +
+      `<span class="avatar" aria-hidden="true">${profileStandIn(p)}</span><span class="stack" style="gap:2px;min-width:0;flex:1">` +
       `<span class="nm">${esc(p.name || "Unnamed")}</span>${p.relationship ? `<span class="rel">${esc(p.relationship)}</span>` : ""}</span>` +
       (active ? `<span class="tick" aria-hidden="true">${icon("check")}</span>` : "") + `</button>` +
       `<button type="button" class="plate-button plate-label" data-edit="${p.id}" aria-label="Edit ${esc(p.name)}">Edit</button></div>`;
