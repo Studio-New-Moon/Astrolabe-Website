@@ -931,7 +931,11 @@ $("sheetBody").addEventListener("click", (e) => {
 });
 
 function detailHead(big, title, sub, sub2 = "", bigClass = "") {
-  return `<div class="detail-head"><span class="big glyph ${bigClass}" aria-hidden="true">${big}</span>` +
+  // "art" carries a drawing rather than a glyph, so it skips the glyph
+  // span's font sizing.
+  const lead = bigClass === "art" ? `<span aria-hidden="true" style="flex:none;display:block">${big}</span>`
+    : `<span class="big glyph ${bigClass}" aria-hidden="true">${big}</span>`;
+  return `<div class="detail-head" style="align-items:center">${lead}` +
     `<span class="stack" style="gap:2px"><h2>${esc(title)}</h2><span class="sub">${sub}</span>${sub2 ? `<span class="sub2">${sub2}</span>` : ""}</span></div>`;
 }
 const section = (labelText, text) => `<div class="section" style="gap:5px"><span class="plate-label">${esc(labelText)}</span><p class="body14">${text}</p></div>`;
@@ -957,7 +961,7 @@ function planetSheet(name) {
     `<div><h4>The Orb Next to Each Aspect</h4><p>Real placements almost never land on a clean 90° or 120° — the orb is how far off exact an aspect actually is. The tighter the orb, the more exact the aspect, and the more strongly it tends to read; a wide one is still real, just quieter. Anything at 2° or under is marked tight, and worth reading first.</p></div>` +
     `<hr class="divider">` + kinds.map((k) => `<div><h4><span class="glyph" style="color:var(--brass)">${k.glyph}</span> ${k.id[0].toUpperCase() + k.id.slice(1)}</h4><p>${esc(k.meaning)}</p></div>`).join("") +
     `</div></details></div>` : "";
-  const out = [detailHead(PLANET_GLYPHS[name], planetName(name), `${label(b.longitude, b.retrograde)} · House ${ROMAN[h - 1]}`)];
+  const out = [detailHead(planetArt(name, 64), planetName(name), `${label(b.longitude, b.retrograde)} · House ${ROMAN[h - 1]}`, "", "art")];
   if (b.retrograde) out.push(`<p class="lede">${esc(retrogradeNote(planetName(name)))}</p>`);
   out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
   if (rules.length) out.push(section("What It Governs", esc(rulesText)));
