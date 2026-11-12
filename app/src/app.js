@@ -30,8 +30,7 @@ import { mountSky } from "./sky.js";
 import {
   SIGNS, signAt, ROMAN, ORDINAL, rulerOf, rulerSubject, subject, PLANET_NAMES, PLANET_GLYPHS, POINT_INFO, ANGLE_INFO,
   HOUSE_TITLES, HOUSE_COVERS, HOUSE_ESSENCES, AREAS, ASPECT_KINDS, matchAspect, TAROT, SIGN_READINGS,
-  retrogradeNote, CHIRON_RETROGRADE_NOTE, moonPhase,
-} from "./lore.js";
+  retrogradeNote, CHIRON_RETROGRADE_NOTE, moonPhase, PLANET_SYMBOLISM } from "./lore.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -963,6 +962,8 @@ function planetSheet(name) {
     `</div></details></div>` : "";
   const out = [detailHead(planetArt(name, 64), planetName(name), `${label(b.longitude, b.retrograde)} · House ${ROMAN[h - 1]}`, "", "art")];
   if (b.retrograde) out.push(`<p class="lede">${esc(retrogradeNote(planetName(name)))}</p>`);
+  // What the planet is, before what it's doing in this chart.
+  out.push(section("What It Stands For", esc(PLANET_SYMBOLISM[name])));
   out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
   if (rules.length) out.push(section("What It Governs", esc(rulesText)));
   out.push(anglesCard);

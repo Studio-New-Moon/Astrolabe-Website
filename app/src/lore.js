@@ -235,3 +235,19 @@ export function moonPhase(moonLongitude, sunLongitude) {
   const elongation = ((moonLongitude - sunLongitude + 22.5) % 360 + 360) % 360;
   return MOON_PHASES[Math.floor(elongation / 45)];
 }
+
+/** What each planet's symbol shows and what it stands for, under its drawing
+ *  on its own panel. The same ten strings as the app's `Planet.symbolism`
+ *  (AstrolabeCore/PlanetSymbolism.swift); change both together. */
+export const PLANET_SYMBOLISM = {
+  sun: "Its symbol is a circle with a point at the center: a self with a middle. The Sun stands for identity, vitality, and the will to be someone in particular. In a chart, it's what you're building, and what you're proud of when it works.",
+  moon: "Its symbol is the crescent, a light that changes shape and never goes out. The Moon stands for feeling, instinct, memory, and the need to be looked after. It's the part of you that reacts before you've decided anything, and what you reach for when you're tired.",
+  mercury: "Its symbol is the messenger's staff: a crescent of mind over a circle of spirit, over a cross of matter. Mercury stands for thought, speech, learning, and trade, every exchange of information between people. It's how you notice, how you explain, and how you get from one idea to the next.",
+  venus: "Its symbol is a circle over a cross, usually read as a hand mirror. Venus stands for love, beauty, pleasure, and value: what you find lovely, and what you think is worth the price. It's how you attract, and what you're attracted to.",
+  mars: "Its symbol is a circle with an arrow breaking out of it, the shield and spear of the god of war. Mars stands for drive, courage, desire, and anger, the energy to go after something. It's how you start, how you compete, and how you defend what's yours.",
+  jupiter: "Its symbol is a crescent of mind lifted over a cross of matter. Jupiter, king of the gods, stands for growth, faith, generosity, and luck, the urge to make things larger and mean more. It's where you're optimistic, and where you can overdo it.",
+  saturn: "Its symbol is Jupiter's turned over, the cross of matter pressing down on the crescent of mind, often drawn as the old god's scythe. Saturn stands for time, limits, discipline, and responsibility: the structures that hold you up and the ones that hem you in. It's where you have to work slowly, and where you end up an authority.",
+  uranus: "It was the first planet found with a telescope, in 1781, and its symbol is built on the H of William Herschel, who found it. Uranus, named for the sky itself, stands for change, invention, independence, and the sudden break with how things have always been done. It's where you rebel, and where you think ahead of your time.",
+  neptune: "Its symbol is the sea god's trident. Neptune stands for dreams, imagination, compassion, and the longing to dissolve into something larger, along with the fog and illusion that come with it. It's where you're most inspired, and where you're most easily fooled.",
+  pluto: "Its symbol joins a P and an L, for Percival Lowell, whose search led to its discovery in 1930. Pluto, god of the underworld, stands for power, depth, death, and rebirth: what has to be broken down before it can be rebuilt. It's where you're most intense, and where you change completely.",
+};
