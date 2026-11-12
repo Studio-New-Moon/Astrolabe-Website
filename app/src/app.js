@@ -525,6 +525,37 @@ function renderWhole() {
     const glance = readings?.atAGlance;
     out.push(`<div class="rcard"><span class="plate-label">At a Glance</span>` +
       (glance ? `<p>${md(glance)}</p>` : `<p class="muted">${esc(readingsError ?? "Reading the chart…")}</p>`) + `</div>`);
+    // The rest of ChartSynthesisView, in its order; the reading server writes
+    // the words, so an older server that sends none simply leaves them out.
+    const s = readings?.synthesis;
+    if (s) {
+      const signCard = (lbl, x) => `<div class="rcard"><span class="plate-label">${lbl}</span>` +
+        `<p class="rintro">${esc(x.intro)}</p><p>${esc(x.portrait)}</p></div>`;
+      const advice = (why, todo) => `<hr class="rdiv"><span class="plate-label">Why</span><p>${md(why)}</p>` +
+        `<hr class="rdiv"><span class="plate-label">What to Do About It</span><p class="rlead">${md(todo)}</p>`;
+      const e = s.hiddenEngine;
+      const pct = (n) => `${n.toFixed(1)}%`;
+      out.push(signCard("Core Identity", s.coreIdentity), signCard("Emotional Self", s.emotionalSelf),
+        signCard("Outer Persona", s.outerPersona));
+      out.push(`<div class="rcard fire"><span class="plate-label">The Hidden Engine</span>` +
+        `<div class="rwho"><span class="glyph" aria-hidden="true">${PLANET_GLYPHS[e.planet] ?? ""}</span>` +
+        `<span>${esc(e.subject)} at ${esc(e.label)}, your ${ORDINAL[e.house - 1]} house</span></div>` +
+        `<p class="rnote">Your chart ruler — the planet ruling your Rising sign, and wherever it actually landed.</p>` +
+        advice(e.reason, e.action) + `</div>`);
+      out.push(`<div class="rcard"><span class="plate-label">Planetary Dominance</span>` +
+        `<p class="rnote">Every planet's share of the chart's total weight — its own placement plus the aspects it makes to the other nine. Not the same question as the chart ruler above: that's fixed by one fact, this is a tally across the whole chart.</p>` +
+        `<ol class="ranks">${s.dominance.map((d) => `<li><span class="n">${d.rank}</span>` +
+          `<span class="glyph" aria-hidden="true">${PLANET_GLYPHS[d.planet] ?? ""}</span>` +
+          `<span class="nm">${planetName(d.planet)}</span><span class="pc">${pct(d.percent)}</span></li>`).join("")}</ol></div>`);
+      if (s.dominant) {
+        out.push(`<div class="rcard fire"><span class="plate-label">Your Dominant Planet</span>` +
+          `<div class="rwho"><span class="glyph" aria-hidden="true">${PLANET_GLYPHS[s.dominant.planet] ?? ""}</span>` +
+          `<span>${planetName(s.dominant.planet)} — ${pct(s.dominant.percent)} of your chart's total weight</span></div>` +
+          advice(s.dominant.meaning, s.dominant.action) + `</div>`);
+      }
+      out.push(`<div class="rcard"><span class="plate-label">How These Connect</span><p>${md(s.throughline)}</p></div>`,
+        `<div class="rcard"><span class="plate-label">Your Chart's Overall Lean</span><p>${md(s.elementLean)}</p></div>`);
+    }
     const ruler = body(c, rulerOf(c.ascSign).toLowerCase());
     out.push(`<div class="rcard"><span class="plate-label">Your Chart at a Glance</span><dl class="glance" style="margin:0">` +
       `<div><dt>Sun</dt><dd>${signAt(body(c, "sun").longitude).name}</dd></div>` +
