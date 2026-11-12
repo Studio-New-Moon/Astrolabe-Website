@@ -1051,27 +1051,47 @@ export function drawInstrument(canvas, chart, options = {}) {
     const maxWidth = (r - g.size * 0.012) * 2;
     lines.forEach((ln, i) => {
       const cy = y + heights[i] / 2;
-      c.font = ln.font;
-      let fontCss = ln.font;
-      const width = c.measureText(ln.text).width + (ln.tracking ?? 0) * ([...ln.text].length - 1);
-      if (width > maxWidth) {
-        const scale = Math.max(0.6, maxWidth / width);
-        fontCss = ln.font.replace(/([\d.]+)px/, (_, px) => `${Number(px) * scale}px`);
+      let ink = inkLine(ln, ln.font, maxWidth);
+      if (ink && ink.width > maxWidth) {
+        const scale = Math.max(0.6, maxWidth / ink.width);
+        ink = inkLine(ln, ln.font.replace(/([\d.]+)px/, (_, px) => `${Number(px) * scale}px`), maxWidth);
       }
-      c.font = fontCss;
-      c.fillStyle = ln.color;
-      c.textAlign = ln.tracking ? "left" : "center";
-      c.textBaseline = "middle";
-      if (ln.tracking) {
-        const chars = [...ln.text];
-        const widths = chars.map((ch) => c.measureText(ch).width);
-        let x = g.c.x - width / 2;
-        chars.forEach((ch, k) => { c.fillText(ch, x, cy); x += widths[k] + ln.tracking; });
-      } else {
-        c.fillText(ln.text, g.c.x, cy);
+      if (ink) {
+        c.drawImage(ink.canvas, ink.lo, 0, ink.hi - ink.lo, ink.canvas.height,
+          g.c.x - ink.width / 2, cy - ink.height / 2, ink.width, ink.height);
       }
       y += heights[i] + 1;
     });
+  }
+
+  // Centring a hub line on what canvas *reports* is not safe: iPhone Safari
+  // has measured the sign line ("♑︎ Capricorn" in Didot) as nearly zero wide,
+  // so `textAlign = "center"` started it at the hub's centre and the
+  // shrink-to-fit never fired. So each line is drawn into a scratch layer and
+  // centred, and shrunk, by the ink it actually left there.
+  function inkLine(ln, fontCss, maxWidth) {
+    const pad = ln.size * 2;
+    const w = maxWidth * 3 + pad * 2;
+    const h = ln.size * 2.4;
+    const l = makeLayer(w, h, dpr);
+    const lc = l.ctx;
+    lc.font = fontCss;
+    lc.fillStyle = ln.color;
+    lc.textAlign = "left";
+    lc.textBaseline = "middle";
+    if (ln.tracking) {
+      let x = pad;
+      for (const ch of ln.text) { lc.fillText(ch, x, h / 2); x += lc.measureText(ch).width + ln.tracking; }
+    } else {
+      lc.fillText(ln.text, pad, h / 2);
+    }
+    const W = l.canvas.width, H = l.canvas.height;
+    const data = lc.getImageData(0, 0, W, H).data;
+    let lo = -1, hi = -1;
+    for (let x = 0; x < W && lo < 0; x++) for (let yy = 0; yy < H; yy++) if (data[(yy * W + x) * 4 + 3]) { lo = x; break; }
+    if (lo < 0) return null;
+    for (let x = W - 1; x >= lo && hi < 0; x--) for (let yy = 0; yy < H; yy++) if (data[(yy * W + x) * 4 + 3]) { hi = x + 1; break; }
+    return { canvas: l.canvas, lo, hi, width: (hi - lo) / dpr, height: h };
   }
 
   // ================================================================ studs
