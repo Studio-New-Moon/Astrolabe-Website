@@ -15,7 +15,7 @@
 // Bump CACHE when SHELL changes. A name that stays the same keeps serving the
 // old file list to anyone offline until they next load the page online.
 
-const CACHE = "astrolabe-chart-v12";
+const CACHE = "astrolabe-chart-v13";
 
 // Every file the page needs to cast a chart with no signal. cache.addAll fails
 // the whole install if any one of these 404s, so a renamed module has to be

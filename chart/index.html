@@ -98,7 +98,10 @@
   td.pos{ font-variant-numeric: tabular-nums; color: var(--ink); }
   td:last-child, th:last-child{ text-align: right; }
 
-  /* The Wheel, the app's flat chart, as /app/ draws it. */
+  /* The Wheel, the app's flat chart, as /app/ draws it. Its signs are
+     coloured by element; these are Palette.brassAndInk's dyes, swapped per
+     scheme by the script, as app/index.html does. */
+  :root{ --el-fire: #DD6440; --el-earth: #6D9F38; --el-air: #2F52A0; --el-water: #12797F; }
   .style-toggle{ max-width: 320px; margin-inline: auto; }
   .chart-wheel{ display: block; width: 100%; height: auto; overflow: visible; }
   .chart-wheel .cw-house, .chart-wheel .cw-stud{ cursor: pointer; outline: none; }
@@ -410,7 +413,24 @@ $("styleToggle").addEventListener("click", (e) => {
   try { localStorage.setItem(STYLE_KEY, b.dataset.style); } catch { /* private window: this visit only */ }
   drawStyle();
 });
-window.addEventListener(EVENT, () => { if (wheelStyle() === "wheel") drawStyle(); });
+// The element dyes the Wheel paints its signs with, per colour scheme. The
+// same table as app/src/app.js's ELEMENT_DYES; change both together.
+const ELEMENT_DYES = {
+  brass: ["#DD6440", "#6D9F38", "#2F52A0", "#12797F"],
+  rose: ["#C4452A", "#5E7C2E", "#2F5E8C", "#1E8C8C"],
+  plum: ["#E0714B", "#6D9F38", "#5A7BC4", "#2FA8AD"],
+  verdigris: ["#C4542A", "#5E8C34", "#2F52A0", "#12797F"],
+};
+function dyeElements() {
+  const r = resolve();
+  const [fire, earth, air, water] = ELEMENT_DYES[r.scheme.id] ?? ELEMENT_DYES.brass;
+  const root = document.documentElement.style;
+  root.setProperty("--el-fire", fire); root.setProperty("--el-earth", earth);
+  root.setProperty("--el-air", air); root.setProperty("--el-water", water);
+  root.setProperty("--metal-deep", r.metal.deep ?? "#6D5424");
+}
+dyeElements();
+window.addEventListener(EVENT, () => { dyeElements(); if (wheelStyle() === "wheel") drawStyle(); });
 
 // Taps on the Wheel light the same rows the instrument's do.
 function wheelActivate(target) {
