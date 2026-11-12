@@ -651,6 +651,11 @@
     const { initWelcome } = await import("/assets/home/welcome.js");
     initWelcome(welcome);
     const enter = welcome.querySelector(".enter");
+    // Focused so a keyboard can press it at once, since everything behind
+    // is inert. iPhone draws the focus ring for focus set from script, so it
+    // stays hidden until a key is actually pressed.
+    enter.dataset.quietFocus = "";
+    addEventListener("keydown", () => { delete enter.dataset.quietFocus; }, { once: true, capture: true });
     enter.focus({ preventScroll: true });
     enter.addEventListener("click", () => {
       try { sessionStorage.setItem("astrolabe.app.welcomed", "1"); } catch (e) {}
