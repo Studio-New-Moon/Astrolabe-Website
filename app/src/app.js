@@ -531,7 +531,6 @@ function renderWhole() {
       `<div><dt>Moon</dt><dd>${signAt(body(c, "moon").longitude).name}</dd></div>` +
       `<div><dt>Rising</dt><dd>${c.ascSign.name}</dd></div>` +
       `<div><dt>Chart Ruler</dt><dd>${planetName(ruler.name)} · ${ORDINAL[c.houseOf(ruler.longitude) - 1]} house</dd></div></dl></div>`);
-    out.push(passMismatchNote());
   }
   $("wholeBody").innerHTML = out.join("");
 }
