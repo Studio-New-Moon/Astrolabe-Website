@@ -97,6 +97,38 @@
   td.body{ width: 40%; padding-right: 12px; color: var(--ink); }
   td.pos{ font-variant-numeric: tabular-nums; color: var(--ink); }
   td:last-child, th:last-child{ text-align: right; }
+
+  /* The Wheel, the app's flat chart, as /app/ draws it. */
+  .style-toggle{ max-width: 320px; margin-inline: auto; }
+  .chart-wheel{ display: block; width: 100%; height: auto; overflow: visible; }
+  .chart-wheel .cw-house, .chart-wheel .cw-stud{ cursor: pointer; outline: none; }
+  .chart-wheel .cw-house:focus-visible path{ stroke: var(--bright); stroke-opacity: 1; stroke-width: 6; }
+  .chart-wheel .cw-stud:focus-visible .cw-ring{ stroke: #fff; stroke-width: 6; opacity: 1; }
+  .chart-wheel .cw-glyph{ font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", system-ui, sans-serif; }
+  .chart-wheel .cw-body{ font-family: var(--font-body); }
+  .chart-wheel .cw-display{ font-family: var(--font-display); }
+
+  /* "Every Aspect": each row opens in place to say what it means. */
+  .aspects{ display: flex; flex-direction: column; gap: 6px; }
+  .aspects details{ border-radius: 8px; background: color-mix(in srgb, var(--brass) 6%, transparent); }
+  .aspects summary{ display: flex; align-items: center; gap: 10px; padding: 9px; cursor: pointer; list-style: none; }
+  .aspects summary::-webkit-details-marker{ display: none; }
+  .aspects summary .k{ width: 26px; flex: none; font-size: 17px; text-align: center; color: var(--brass); }
+  .aspects summary .k.tight{ color: var(--el-fire, #c2553a); }
+  .aspects summary .tx{ flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .aspects summary .tx > span{ font-size: 15px; color: var(--ink); }
+  .aspects summary .tx > span + span{ font-size: 12px; color: var(--muted); }
+  .aspects summary .chev{ color: var(--muted); transition: transform .15s; }
+  .aspects details[open] summary .chev{ transform: rotate(90deg); }
+  .aspects .why{ padding: 0 12px 12px 45px; display: flex; flex-direction: column; gap: 8px; }
+  .aspects .why p{ margin: 0; font-size: 14px; color: var(--ink); }
+  .aspects .why .small{ font-size: 12px; color: var(--muted); }
+  .aspects .why .plate-label{ margin: 4px 0 0; }
+
+  /* "Keep This Chart". */
+  .save form{ display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 10px 0; }
+  .save label{ display: flex; flex-direction: column; gap: 4px; flex: 1 1 200px; font-size: 12px; color: var(--muted); }
+  .save p{ margin: 0; }
   /* Rows lit by a tap on the instrument. */
   tr.picked td{ background: color-mix(in srgb, var(--brass) 16%, transparent); }
   tr.picked td:first-child{ box-shadow: inset 3px 0 0 var(--brass); padding-left: 8px; }
@@ -173,8 +205,13 @@
   details to cast yours.</p>
 
   <div class="result" id="result" hidden>
+    <div class="segmented style-toggle" role="tablist" aria-label="Chart style" id="styleToggle">
+      <button type="button" role="tab" data-style="instrument" aria-selected="true" aria-controls="wheel">Instrument</button>
+      <button type="button" role="tab" data-style="wheel" aria-selected="false" aria-controls="flatWheel">Wheel</button>
+    </div>
     <div class="wheel" id="wheel"></div>
-    <p class="note center">A real astrolabe, with the houses cut into the fixed
+    <div class="wheel" id="flatWheel" hidden></div>
+    <p class="note center" id="styleNote">A real astrolabe, with the houses cut into the fixed
     limb, the sky over your own latitude on the plate beneath, and the zodiac
     turning on the rete above.</p>
     <section class="card" aria-labelledby="placementsTitle">
@@ -190,6 +227,24 @@
         <thead><tr><th>Angle</th><th>Position</th><th>House</th></tr></thead>
         <tbody id="anglesBody"></tbody>
       </table>
+    </section>
+    <section class="card" aria-labelledby="aspectsTitle">
+      <h2 class="plate-label" id="aspectsTitle">Every Aspect</h2>
+      <p class="note" style="margin:0 0 10px">The angles the planets make to each other, tightest first. Tap one to see what it means.</p>
+      <div class="aspects" id="aspectsBody"></div>
+    </section>
+    <section class="card save" aria-labelledby="saveTitle">
+      <h2 class="plate-label" id="saveTitle">Keep This Chart</h2>
+      <p>Save it to your charts in the web app, where it gets its readings, its life areas, and a daily horoscope.</p>
+      <form id="saveForm">
+        <label>Whose chart is this?
+          <input id="saveName" type="text" maxlength="60" autocomplete="off" placeholder="A name" required></label>
+        <button class="go metal-button" type="submit">Save and Open</button>
+      </form>
+      <p class="note" style="margin:0">Saved charts are kept in this browser only, never on a server. To
+      write the readings, the web app sends the planets' positions, never a name,
+      a birthday, or a birthplace.</p>
+      <p class="problem" id="saveProblem" hidden></p>
     </section>
   </div>
 
@@ -211,6 +266,11 @@ import { longitudeOf, isRetrograde, PLANETS } from "./src/ephemeris.js";
 import { pointLongitude, pointIsRetrograde, POINTS, POINT_NAMES, POINT_GLYPHS } from "./src/points.js";
 import { mountInstrument } from "./src/instrument-view.js";
 import { searchPlaces } from "./src/places.js";
+import { studImage } from "./src/instrument.js";
+import { resolve, EVENT } from "./src/appearance.js";
+import { chartWheelSVG } from "../app/src/chart-wheel.js";
+import { ASPECT_KINDS, matchAspect, PLANET_NAMES, PLANET_GLYPHS, PLANET_SYMBOLISM, ROMAN, subject, signAt } from "../app/src/lore.js";
+import { saveProfile, selectProfile, requestPersistentStorage } from "../app/src/profiles.js";
 
 const $ = (id) => document.getElementById(id);
 const problem = (msg) => { $("problem").textContent = msg; $("problem").hidden = false; };
@@ -290,10 +350,126 @@ function lightRows({ house, planet }) {
 
 const instrument = mountInstrument($("wheel"), { onSelect: lightRows });
 
-function showWheel(chart, label) {
-  $("result").hidden = false;
-  instrument.show(chart, label);
+// The Wheel, the app's flat chart. The choice is shared with the web app
+// (the same storage key), so whichever one someone picked shows in both.
+const STYLE_KEY = "astrolabe.app.wheelStyle";
+const wheelStyle = () => { try { return localStorage.getItem(STYLE_KEY) === "wheel" ? "wheel" : "instrument"; } catch { return "instrument"; } };
+let shown = null;   // { chart, label, wheel } for the chart on screen
+
+const STYLE_NOTES = {
+  instrument: $("styleNote").textContent,
+  wheel: "The flat chart astrologers draw: your rising sign on the left, the houses counted round from it, and a line for every aspect between two planets.",
+};
+
+// The Wheel's studs are the instrument's, struck at the size they'll show,
+// as /app/ does it. Each one is kept, so redrawing doesn't strike them again.
+const canStrikeStuds = (() => {
+  try { return typeof document.createElement("canvas").getContext("2d").createConicGradient === "function"; }
+  catch { return false; }
+})();
+const studCache = new Map();
+function wheelStudArt() {
+  const width = $("flatWheel").getBoundingClientRect().width;
+  if (!canStrikeStuds || !width) return undefined;
+  const px = Math.round(width * 0.072 * 2) / 2;
+  const { metal, tarnished } = resolve().instrument;
+  const dpr = window.devicePixelRatio || 1;
+  return (b) => {
+    const key = [b.name, b.retrograde, b.glyph, b.apside, px, metal, tarnished, dpr].join("|");
+    if (!studCache.has(key)) {
+      try {
+        const { href, box } = studImage(b, px, { metal, tarnished, dpr });
+        studCache.set(key, { href, px, boxRatio: box / px });
+      } catch (err) {
+        console.error(err);
+        studCache.set(key, null);
+      }
+    }
+    return studCache.get(key);
+  };
 }
+
+function drawStyle() {
+  const style = wheelStyle();
+  document.querySelectorAll("#styleToggle button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.style === style)));
+  $("wheel").hidden = style !== "instrument";
+  $("flatWheel").hidden = style !== "wheel";
+  $("styleNote").textContent = STYLE_NOTES[style];
+  if (!shown) return;
+  if (style === "wheel") {
+    const sun = shown.wheel.bodies.find((b) => b.name === "sun");
+    $("flatWheel").innerHTML = chartWheelSVG(shown.wheel, { showAspects: true, sunSign: signAt(sun.longitude).name, studArt: wheelStudArt() });
+  } else {
+    instrument.show(shown.chart, shown.label);
+  }
+}
+
+$("styleToggle").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-style]");
+  if (!b) return;
+  try { localStorage.setItem(STYLE_KEY, b.dataset.style); } catch { /* private window: this visit only */ }
+  drawStyle();
+});
+window.addEventListener(EVENT, () => { if (wheelStyle() === "wheel") drawStyle(); });
+
+// Taps on the Wheel light the same rows the instrument's do.
+function wheelActivate(target) {
+  const g = target.closest?.("[data-house],[data-planet],[data-point]");
+  if (!g) return;
+  if (g.dataset.planet) lightRows({ planet: g.dataset.planet });
+  else if (g.dataset.point) lightRows({ planet: g.dataset.point });
+  else lightRows({ house: Number(g.dataset.house) });
+}
+$("flatWheel").addEventListener("click", (e) => wheelActivate(e.target));
+$("flatWheel").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); wheelActivate(e.target); }
+});
+
+function showWheel(chart, label, wheel) {
+  $("result").hidden = false;
+  shown = { chart, label, wheel };
+  drawStyle();
+}
+
+// ---- the aspects ----
+//
+// Every angle between two planets, tightest first, the web app's own list
+// (BirthChart.aspects). Each row opens in place rather than in a sheet:
+// what the angle is, how far from exact this one is, and what the two
+// planets stand for. All of it is worked out here, so nothing is sent.
+const nameOf = (n) => PLANET_NAMES[n];
+const standsFor = (n) => (PLANET_SYMBOLISM[n].match(/[^.]* stands for [^.]*\./) ?? [""])[0].trim();
+function aspectsHTML(bodies, asc) {
+  const list = [];
+  for (let i = 0; i < bodies.length; i++) {
+    for (let j = i + 1; j < bodies.length; j++) {
+      const hit = matchAspect(bodies[i].longitude, bodies[j].longitude);
+      if (hit) list.push({ a: bodies[i], b: bodies[j], ...hit });
+    }
+  }
+  list.sort((x, y) => x.orb - y.orb);
+  if (!list.length) return `<p class="note">No two planets here are close enough to any of the five angles to count.</p>`;
+  const side = (b) => `<p><span class="glyph" aria-hidden="true">${PLANET_GLYPHS[b.name]}</span> ` +
+    `<strong>${subject(nameOf(b.name), true)}</strong> at ${position(b.longitude)}, House ${ROMAN[wholeSignHouse(b.longitude, asc) - 1]}. ` +
+    `${standsFor(b.name)}</p>`;
+  return list.map((x) => {
+    const k = x.kind, tight = x.orb <= 2;
+    const kindName = k.id[0].toUpperCase() + k.id.slice(1);
+    const arithmetic = k.id === "conjunction"
+      ? `A conjunction means the two sitting in the same spot. These sit ${x.orb.toFixed(1)}° apart, which is the orb. Anything inside 2° counts as tight, and reads first.`
+      : `A ${k.id} is ${k.angle}° of the wheel. These sit ${x.separation.toFixed(1)}° apart, so the orb is ${x.orb.toFixed(1)}°. Anything inside 2° counts as tight, and reads first.`;
+    return `<details><summary>` +
+      `<span class="k glyph${tight ? " tight" : ""}" aria-hidden="true">${k.glyph}</span>` +
+      `<span class="tx"><span>${nameOf(x.a.name)} ${k.id} ${nameOf(x.b.name)}</span>` +
+      `<span>${k.temper} · ${x.orb.toFixed(1)}° from exact${tight ? " · tight" : ""}</span></span>` +
+      `<span class="chev" aria-hidden="true">›</span></summary>` +
+      `<div class="why"><span class="plate-label">What a ${kindName} Is</span><p>${k.meaning}</p>` +
+      `<p class="small">${arithmetic}</p>` +
+      `<span class="plate-label">The Two Sides</span>${side(x.a)}${side(x.b)}</div></details>`;
+  }).join("");
+}
+
+let castFrom = null;
 
 function cast() {
   $("problem").hidden = true;
@@ -307,6 +483,13 @@ function cast() {
     problem("Please fill in the date, the time, and both coordinates.");
     return;
   }
+
+  // What "Keep This Chart" saves: the details this chart was cast from, not
+  // whatever the form says by the time someone presses Save.
+  castFrom = {
+    date: $("date").value, time: $("time").value, timeMode: "exact",
+    place: { name: $("place").value || `${lat}, ${lon}`, latitude: lat, longitude: lon, timeZoneID: zone },
+  };
 
   const jd = julianDayFromLocal(y, m, d, hh, mm, zone);
   const angles = anglesFor(jd, lat, lon);
@@ -332,7 +515,9 @@ function cast() {
   showWheel(
     { ascendantLongitude: asc, midheavenLongitude: angles[1].longitude, latitude: lat, bodies, points },
     `Birth chart for ${$("date").value}: ${SIGNS[signIndex(asc)]} rising, Sun in ${SIGNS[signIndex(bodies[0].longitude)]}`,
+    { asc, bodies, points, angles },
   );
+  $("aspectsBody").innerHTML = aspectsHTML(bodies, asc);
 
   const row = (label, lon, retro, key = "") =>
     `<tr data-body="${key}" data-house="${wholeSignHouse(lon, asc)}"><td class="body">${label}</td>` +
@@ -353,6 +538,26 @@ function cast() {
 }
 
 $("chartForm").addEventListener("submit", (e) => { e.preventDefault(); cast(); });
+
+// ---- keeping it ----
+//
+// Into the web app's own saved charts (app/src/profiles.js, this browser's
+// storage on the same site), then open it there.
+$("saveForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  $("saveProblem").hidden = true;
+  const fail = (msg) => { $("saveProblem").textContent = msg; $("saveProblem").hidden = false; };
+  let saved = null;
+  try {
+    saved = saveProfile({ name: $("saveName").value, ...castFrom });
+  } catch (err) {
+    return fail("That chart is missing a date, a time, or a place. Fill them in, press Cast My Chart, then save.");
+  }
+  if (!saved) return fail("This browser wouldn't let the chart be saved. A private window keeps nothing; try a regular one.");
+  selectProfile(saved.id);
+  requestPersistentStorage?.();
+  location.href = "/app/#chart";
+});
 
 // ---- finding the place ----
 //
