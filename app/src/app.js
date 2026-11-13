@@ -968,6 +968,19 @@ function detailHead(big, title, sub, sub2 = "", bigClass = "") {
 }
 const section = (labelText, text) => `<div class="section" style="gap:5px"><span class="plate-label">${esc(labelText)}</span><p class="body14">${text}</p></div>`;
 
+/** The app's `adviceCard` on PlanetDetail, PointDetail and AngleDetail:
+ *  the reading server's words for this chart's own placement (its
+ *  `details`), or a quiet line while they're on their way. */
+function adviceCard(group, key, whyLabel) {
+  const r = readings?.details?.[group]?.[key];
+  if (!r) {
+    const note = readingsError ?? (readingsLoading ? "Reading the chart…" : null);
+    return note ? `<p style="font-size:12px;color:var(--muted)">${esc(note)}</p>` : "";
+  }
+  return `<div class="rcard fire"><span class="plate-label">${whyLabel}</span><p>${md(r.reason)}</p>` +
+    `<hr class="rdiv"><span class="plate-label">What to Do About It</span><p class="rlead">${md(r.action)}</p></div>`;
+}
+
 function planetSheet(name) {
   const c = chart, b = body(c, name);
   const h = c.houseOf(b.longitude);
@@ -993,6 +1006,7 @@ function planetSheet(name) {
   if (b.retrograde) out.push(`<p class="lede">${esc(retrogradeNote(planetName(name)))}</p>`);
   // What the planet is, before what it's doing in this chart.
   out.push(section("What It Stands For", esc(PLANET_SYMBOLISM[name])));
+  out.push(adviceCard("planets", name, "Why"));
   out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
   if (rules.length) out.push(section("What It Governs", esc(rulesText)));
   out.push(anglesCard);
@@ -1006,6 +1020,7 @@ function pointSheet(name) {
   const glyph = apside ? moonApsideGlyph(name === "blackMoonLilith", 36) : POINT_INFO[name].glyph;
   const out = [detailHead(glyph, POINT_INFO[name].name, `${label(p.longitude, p.retrograde)} · House ${ROMAN[h - 1]}`)];
   if (name === "chiron" && p.retrograde) out.push(`<p class="lede">${esc(CHIRON_RETROGRADE_NOTE)}</p>`);
+  out.push(adviceCard("points", name, "What It Means"));
   out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
   return out.join("");
 }
@@ -1015,6 +1030,7 @@ function angleSheet(kind) {
   const h = c.houseOf(a.longitude);
   return detailHead(ANGLE_INFO[kind].abbreviation, ANGLE_INFO[kind].name, `${label(a.longitude)} · House ${ROMAN[h - 1]}`,
     `ruled by ${rulerSubject(signAt(a.longitude))}`, "abbr") +
+    adviceCard("angles", kind, "What It Means") +
     section("Where It Sits", esc(HOUSE_COVERS[h - 1]));
 }
 
