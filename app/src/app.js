@@ -126,6 +126,12 @@ function parseRoute() {
 
 function routeKey(r) { return r.page ? `${r.tab}/${r.page}` : r.tab; }
 
+// The first-visit screen, with no chart cast yet, is the page search engines
+// see, so it carries the calculator title /chart/ used to rank for before it
+// merged in here. Once a chart is open the tab says whose page it is.
+const CALCULATOR_TITLE = "Free Birth Chart Calculator — Follow My Astrolabe";
+const onChartHome = () => !route || (route.tab === "chart" && !route.page);
+
 function navBar(r) {
   const lead = [], trail = [];
   let title = "";
@@ -155,7 +161,7 @@ function navBar(r) {
   $("navLeading").innerHTML = lead.join("");
   $("navTrailing").innerHTML = trail.join("");
   $("navTitle").textContent = title;
-  document.title = `${title} — Follow My Astrolabe`;
+  document.title = r.tab === "chart" && !r.page && !current ? CALCULATOR_TITLE : `${title} — Follow My Astrolabe`;
   $("openSettings")?.addEventListener("click", openSettings);
 }
 
@@ -475,6 +481,7 @@ $("placements").addEventListener("click", (e) => {
 
 function open(profile) {
   current = profile;
+  if (onChartHome()) document.title = "Your Chart — Follow My Astrolabe";
   if (profile.id) selectProfile(profile.id);
   chart = cast(profile);
   selectedHouse = null;
@@ -502,6 +509,7 @@ function boot() {
   const people = listProfiles();
   if (!people.length) {
     current = null; chart = null;
+    if (onChartHome()) document.title = CALCULATOR_TITLE;
     $("chartView").hidden = true;
     $("empty").hidden = false;
     rerenderReadingViews();
