@@ -1,0 +1,8 @@
+# Every page may be crawled. Pages that should stay out of search results
+# (the studio, order confirmations) say so with their own noindex tag.
+#
+# This file has to exist: without it GitHub Pages answered /robots.txt with a
+# 503, which Google reads as the whole site being down, and it refused to
+# index anything.
+User-agent: *
+Allow: /
