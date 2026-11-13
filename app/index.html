@@ -360,6 +360,7 @@
                 border-radius: 12px 12px 0 0; background: var(--ground); color: var(--ink); overflow: hidden; }
   dialog.sheet[open]{ display: flex; flex-direction: column; animation: rise .32s cubic-bezier(.2,.8,.2,1); }
   dialog.sheet::backdrop{ background: rgba(0,0,0,.5); }
+  dialog.sheet:focus, dialog.sheet:focus-visible{ outline: none; }
   @keyframes rise{ from{ transform: translateY(40px); opacity: .4; } to{ transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce){ dialog.sheet[open]{ animation: none; } }
   @media (min-width: 900px){
@@ -604,7 +605,7 @@
 
 <nav class="tab-bar" id="tabBar" aria-label="Tabs"></nav>
 
-<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle">
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle" tabindex="-1">
   <div class="sheet-top">
     <span class="grabber" aria-hidden="true"></span>
     <h2 id="sheetTitle"></h2>

@@ -930,8 +930,12 @@ function renderTopSheet({ refresh = false } = {}) {
   }
   if (refresh) { bodyEl.scrollTop = keepScroll; return; }
   bodyEl.scrollTop = 0;
+  // The sheet itself takes focus, not its X: iPhone draws the focus ring for
+  // focus set from script, so the X opened every page wearing a box. Tab
+  // still reaches the X first, and Escape still closes, so the keyboard
+  // loses nothing. Same as the Home Screen guide's sheet.
   if (spec.kind === "editor") $("fName").focus();
-  else $("sheetClose").focus();
+  else $("sheet").focus({ preventScroll: true });
 }
 
 function handleDetailClick(e) {
