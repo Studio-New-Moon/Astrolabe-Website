@@ -94,8 +94,14 @@
   pointer-events:none;
 }
 
-/* ENTER: `wornBrassButton` + `brassBevel` + the engraved label. */
+/* ENTER: `wornBrassButton` + `brassBevel` + the engraved label.
+   Always brass, whatever metal Appearance has chosen: Morgan's rule. The
+   installed web app opens on this screen inside /app/, where Appearance sets
+   --metal on the root, so the polished brass ramp (Brass.polished, the same
+   stops as the homepage's :root) is pinned here on the button itself. The
+   wear marks in welcome.js are drawn from brass colours too. */
 .welcome .enter{
+  --metal: linear-gradient(180deg, #6D5424 0%, #C9A24C 6%, #FDF1CD 14%, #F0D493 24%, #C9A24C 40%, #B08C3F 66%, #6D5424 82%, #B08C3F 89%, #F0D493 95%, #3D2F14 100%);
   position:relative; flex:none; box-sizing:border-box;
   display:inline-flex; align-items:center; justify-content:center;
   width:calc(168px * var(--k)); padding:calc(14px * var(--k)) 0;
