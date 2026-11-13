@@ -97,10 +97,26 @@
       : read() === "denied" ? "Google Analytics is off for this browser." : "You haven't chosen yet.";
   }
 
+  // The installed web app opens on its welcome screen (html.welcoming, see
+  // app/index.html) with everything behind it inert until ENTER. Asked then,
+  // the bar showed for a moment on iPhone and vanished behind the welcome
+  // screen once its canvases painted, and was untappable even where it showed.
+  // So the question waits for ENTER, which removes the class.
+  function askWhenWelcomed() {
+    var root = document.documentElement;
+    if (!root.classList.contains("welcoming")) { ask(); return; }
+    var watch = new MutationObserver(function () {
+      if (root.classList.contains("welcoming")) return;
+      watch.disconnect();
+      ask();
+    });
+    watch.observe(root, { attributes: true, attributeFilter: ["class"] });
+  }
+
   function start() {
     var choice = read();
     if (choice === "granted") load();
-    else if (choice !== "denied") ask();
+    else if (choice !== "denied") askWhenWelcomed();
 
     var el = document.getElementById("analytics-choice");
     if (el) {
