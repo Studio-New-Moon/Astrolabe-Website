@@ -232,6 +232,9 @@ const degMin = (lon) => {
   if (m === 60) { m = 0; d += 1; }
   return `${d}° ${m}' ${signAt(lon).name}`;
 };
+/** A sign as a label: its symbol, then its name (Morgan, 2026-11-13). Prose
+ *  keeps the bare name; headings, rows, and readouts take this. */
+const signLabel = (sign) => `${sign.glyph} ${sign.name}`;
 const shortDate = (iso) => {
   const [y, m, d] = iso.split("-").map(Number);
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(Date.UTC(y, m - 1, d));
@@ -474,7 +477,7 @@ function renderPlacements() {
   const row = (glyph, name, lon, retro, data, aria) =>
     `<li><button type="button" class="placement-row" ${data} aria-label="${esc(aria)}">` +
     `<span class="g glyph" aria-hidden="true">${glyph}</span><span class="n">${esc(name)}</span>` +
-    `<span class="d">${degMin(lon)}</span>${retro ? '<span class="rx" aria-hidden="true">℞</span>' : ""}</button></li>`;
+    `<span class="d">${degMin(lon).replace(/ (\S+)$/, ` ${signAt(lon).glyph} $1`)}</span>${retro ? '<span class="rx" aria-hidden="true">℞</span>' : ""}</button></li>`;
   $("placements").innerHTML = [
     ...c.bodies.map((b) => row(PLANET_GLYPHS[b.name], planetName(b.name), b.longitude, b.retrograde, `data-planet="${b.name}"`,
       `${planetName(b.name)}, ${degMin(b.longitude)}${b.retrograde ? ", retrograde" : ""}`)),
@@ -565,7 +568,7 @@ function renderWhole() {
       out.push(signCard("Core Identity", s.coreIdentity), signCard("Emotional Self", s.emotionalSelf),
         signCard("Outer Persona", s.outerPersona));
       out.push(`<div class="rcard fire"><span class="plate-label">The Hidden Engine</span>` +
-        `<div class="rwho" style="align-items:center">${planetArt(e.planet, 48)}` +
+        `<div class="rwho" style="align-items:center">${planetArt(e.planet, 48, signAt(body(c, e.planet).longitude))}` +
         `<span>${esc(e.subject)} at ${esc(e.label)}, your ${ORDINAL[e.house - 1]} house</span></div>` +
         `<p class="rnote">Your chart ruler — the planet ruling your Rising sign, and wherever it actually landed.</p>` +
         advice(e.reason, e.action) + `</div>`);
@@ -585,9 +588,9 @@ function renderWhole() {
     }
     const ruler = body(c, rulerOf(c.ascSign).toLowerCase());
     out.push(`<div class="rcard"><span class="plate-label">Your Chart at a Glance</span><dl class="glance" style="margin:0">` +
-      `<div><dt>Sun</dt><dd>${signAt(body(c, "sun").longitude).name}</dd></div>` +
-      `<div><dt>Moon</dt><dd>${signAt(body(c, "moon").longitude).name}</dd></div>` +
-      `<div><dt>Rising</dt><dd>${c.ascSign.name}</dd></div>` +
+      `<div><dt>Sun</dt><dd>${signLabel(signAt(body(c, "sun").longitude))}</dd></div>` +
+      `<div><dt>Moon</dt><dd>${signLabel(signAt(body(c, "moon").longitude))}</dd></div>` +
+      `<div><dt>Rising</dt><dd>${signLabel(c.ascSign)}</dd></div>` +
       `<div><dt>Chart Ruler</dt><dd style="display:flex;align-items:center;gap:8px;justify-content:flex-end">${planetArt(ruler.name, 22)}${planetName(ruler.name)} · ${ORDINAL[c.houseOf(ruler.longitude) - 1]} house</dd></div></dl></div>`);
   }
   $("wholeBody").innerHTML = out.join("");
@@ -596,11 +599,21 @@ function renderWhole() {
 /** The chart ruler's batik drawing, the same art the app shows. Sized
  *  inline, so a stale stylesheet beside a new script still lays it out. The
  *  Moon shows the full-moon picture, as it does in the app. */
-function planetArt(name, size) {
+function planetArt(name, size, sign = null) {
   const key = String(name).toLowerCase();
   const file = key === "moon" ? "moon-full" : `planet-${key}`;
-  return `<img src="/app/art/${file}.png" alt="${esc(planetName(key))}, illustrated in a batik style" ` +
+  const img = `<img src="/app/art/${file}.png" alt="${esc(planetName(key))}${sign ? ` in ${sign.name}` : ""}, illustrated in a batik style" ` +
     `width="${size}" height="${size}" style="width:${size}px;height:${size}px;flex:none;display:block">`;
+  if (!sign) return img;
+  // The sign it sits in, as a coin on the planet's lower-right rim (the app's
+  // `SignCoin`): the drawing is the same for every chart, the coin is not.
+  const d = Math.round(size * 0.36);
+  return `<span style="position:relative;display:block;flex:none;width:${size}px;height:${size}px">${img}` +
+    `<span aria-hidden="true" style="position:absolute;left:${size * 0.8 - d / 2}px;top:${size * 0.8 - d / 2}px;width:${d}px;height:${d}px;` +
+    `border-radius:50%;background:var(--el-${sign.element});border:${Math.max(1, Math.round(d * 0.07))}px solid var(--bright);box-sizing:border-box;` +
+    `display:grid;place-items:center;color:var(--resist);font-size:${Math.round(d * 0.56)}px;line-height:1;font-weight:600;` +
+    `box-shadow:${(d * 0.04).toFixed(1)}px ${(d * 0.06).toFixed(1)}px ${(d * 0.12).toFixed(1)}px rgba(0,0,0,.45)">` +
+    `<span class="glyph">${sign.glyph}</span></span></span>`;
 }
 
 // ---------------------------------------------------------------- Areas
@@ -621,11 +634,11 @@ function renderAreas() {
     return `<a class="area-card${framed ? " framed" : ""}" href="#areas/${area.id}">` +
       // Purpose's subject is the chart ruler, so its medallion is that
       // planet's drawing; the five houses keep their sign glyphs.
-      (framed ? `<span style="width:52px;height:52px;flex:none" aria-hidden="true">${planetArt(ruler, 52)}</span>`
+      (framed ? `<span style="width:52px;height:52px;flex:none" aria-hidden="true">${planetArt(ruler, 52, signAt(body(c, ruler.toLowerCase()).longitude))}</span>`
         : `<span class="medallion" style="--tint: var(--el-${s.element})" aria-hidden="true"><span class="glyph">${s.glyph}</span></span>`) +
       `<span class="txt"><span class="top"><span class="t">${area.title}</span>` +
       `<span class="plate-label">${area.house ? `House ${ROMAN[area.house - 1]}` : "Chart Ruler"}</span></span>` +
-      `<span class="s">${s.name} · ${ruler}</span><span class="c">${esc(area.covers)}</span></span>` +
+      `<span class="s">${framed ? signLabel(s) : s.name} · ${ruler}</span><span class="c">${esc(area.covers)}</span></span>` +
       (framed ? filigree({ radius: 11, mode: "card" }) : "") + `</a>`;
   };
   el.innerHTML =
@@ -667,7 +680,7 @@ function renderArea(id) {
 
   // Horoscope (AreaHoroscopeSection).
   const h = readings?.horoscopes?.find((x) => x.area === id && x.period === shownPeriod);
-  const strip = `${shownPeriod.toUpperCase()} · ${area.title.toUpperCase()} · ${s.name.toUpperCase()}`;
+  const strip = `${shownPeriod.toUpperCase()} · ${area.title.toUpperCase()} · ${s.glyph} ${s.name.toUpperCase()}`;
   let reading;
   if (h) {
     const lead = h.detail ? h.detail : h.instruction;
@@ -765,7 +778,7 @@ function purposeBody(c) {
   const aspects = c.aspects.filter((a) => a.a === p.name || a.b === p.name);
   return `<div class="stack gap-18" style="text-align:left">` +
     `<div class="section"><span class="plate-label">Where It Sits</span>` +
-    `<div class="occupant" style="align-items:center">${planetArt(p.name, 48)}<span class="stack" style="gap:1px">` +
+    `<div class="occupant" style="align-items:center">${planetArt(p.name, 48, signAt(p.longitude))}<span class="stack" style="gap:1px">` +
     `<span class="what">${subject(planetName(p.name), true)} at ${label(p.longitude, p.retrograde)}, your ${ORDINAL[h - 1]} house</span>` +
     (p.retrograde ? `<span class="note">${esc(retrogradeNote(planetName(p.name)))}</span>` : "") + `</span></div>` +
     `<p style="font-size:13px;font-weight:600;color:var(--brass)">${HOUSE_TITLES[h - 1]} — ${esc(HOUSE_COVERS[h - 1])}</p>` +
@@ -1006,7 +1019,7 @@ function planetSheet(name) {
     `<div><h4>The Orb Next to Each Aspect</h4><p>Real placements almost never land on a clean 90° or 120° — the orb is how far off exact an aspect actually is. The tighter the orb, the more exact the aspect, and the more strongly it tends to read; a wide one is still real, just quieter. Anything at 2° or under is marked tight, and worth reading first.</p></div>` +
     `<hr class="divider">` + kinds.map((k) => `<div><h4><span class="glyph" style="color:var(--brass)">${k.glyph}</span> ${k.id[0].toUpperCase() + k.id.slice(1)}</h4><p>${esc(k.meaning)}</p></div>`).join("") +
     `</div></details></div>` : "";
-  const out = [detailHead(planetArt(name, 64), planetName(name), `${label(b.longitude, b.retrograde)} · House ${ROMAN[h - 1]}`, "", "art")];
+  const out = [detailHead(planetArt(name, 64, signAt(b.longitude)), planetName(name), `${signAt(b.longitude).glyph} ${label(b.longitude, b.retrograde)} · House ${ROMAN[h - 1]}`, "", "art")];
   if (b.retrograde) out.push(`<p class="lede">${esc(retrogradeNote(planetName(name)))}</p>`);
   // What the planet is, before what it's doing in this chart.
   out.push(section("What It Stands For", esc(PLANET_SYMBOLISM[name])));
@@ -1022,7 +1035,7 @@ function pointSheet(name) {
   const h = c.houseOf(p.longitude);
   const apside = name === "blackMoonLilith" || name === "whiteMoonSelena";
   const glyph = apside ? moonApsideGlyph(name === "blackMoonLilith", 36) : POINT_INFO[name].glyph;
-  const out = [detailHead(glyph, POINT_INFO[name].name, `${label(p.longitude, p.retrograde)} · House ${ROMAN[h - 1]}`)];
+  const out = [detailHead(glyph, POINT_INFO[name].name, `${signAt(p.longitude).glyph} ${label(p.longitude, p.retrograde)} · House ${ROMAN[h - 1]}`)];
   if (name === "chiron" && p.retrograde) out.push(`<p class="lede">${esc(CHIRON_RETROGRADE_NOTE)}</p>`);
   out.push(adviceCard("points", name, "What It Means"));
   out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
@@ -1032,7 +1045,7 @@ function pointSheet(name) {
 function angleSheet(kind) {
   const c = chart, a = c.angles.find((x) => x.kind === kind);
   const h = c.houseOf(a.longitude);
-  return detailHead(ANGLE_INFO[kind].abbreviation, ANGLE_INFO[kind].name, `${label(a.longitude)} · House ${ROMAN[h - 1]}`,
+  return detailHead(ANGLE_INFO[kind].abbreviation, ANGLE_INFO[kind].name, `${signAt(a.longitude).glyph} ${label(a.longitude)} · House ${ROMAN[h - 1]}`,
     `ruled by ${rulerSubject(signAt(a.longitude))}`, "abbr") +
     adviceCard("angles", kind, "What It Means") +
     section("Where It Sits", esc(HOUSE_COVERS[h - 1]));
