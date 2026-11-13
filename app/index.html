@@ -435,8 +435,17 @@
 
   /* The welcome screen the installed app opens on (assets/home/welcome.css),
      laid over the app until ENTER. */
-  .welcome.app-welcome{ display:none; position:fixed; inset:0; z-index:1000; overflow-y:auto; }
+  /* With the black-translucent status bar, iPhone's installed web app gives
+     the page a viewport one status bar shorter than the screen (812pt of 874
+     on a 16 Pro, measured 2026-11-13) and fills the strip below it with the
+     BODY's background, not with anything the page draws. The body is the
+     app's brown ground, so a brown bar sat under the welcome screen's night
+     sky. While welcoming, html and body take the welcome screen's night
+     instead. The welcome screen itself is sized by the screen (100lvh)
+     rather than inset:0, so it reaches the true bottom wherever iOS lets it. */
+  .welcome.app-welcome{ display:none; position:fixed; top:0; left:0; right:0; height:100vh; height:100lvh; z-index:1000; overflow-y:auto; }
   html.welcoming .welcome.app-welcome{ display:block; }
+  html.welcoming, html.welcoming body{ background:#090B1C; }
   html.welcoming, html.welcoming body{ overflow:hidden; }
   /* Behind the welcome screen, nothing is drawn at all. Covering it was not
      enough on iPhone: the tab bar's backdrop blur is a layer of its own, and
