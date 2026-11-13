@@ -1066,7 +1066,28 @@ function aspectSheet(aName, bName) {
   return `<div class="detail-head"><span class="big glyph" style="font-size:38px;color:${tight ? "var(--el-fire)" : "var(--bright)"}" aria-hidden="true">${k.glyph}</span>` +
     `<span class="stack" style="gap:2px"><h2 style="font-size:25px">${esc(aspectTitle(a))}</h2><span class="sub">${k.temper} · ${a.orb.toFixed(1)}° from exact${tight ? " · tight" : ""}</span></span></div>` +
     `<div class="section" style="gap:6px"><span class="plate-label">What a ${k.id[0].toUpperCase() + k.id.slice(1)} Is</span><p class="body14">${esc(k.meaning)}</p><p style="font-size:12px;color:var(--muted)">${arithmetic}</p></div>` +
-    `<div class="section"><span class="plate-label">The Two Sides</span>${side(a.a)}${side(a.b)}</div>`;
+    `<div class="section"><span class="plate-label">The Two Sides</span>${side(a.a)}${side(a.b)}</div>` +
+    aspectCard(a.a, a.b);
+}
+
+/** AspectDetail's `readingCard`: "Why This Pair" and "What to Do About It"
+ *  from the reading server's `details.aspects`, keyed "a|b" in the aspect's
+ *  own order there, which need not be this list's, so both are tried. The
+ *  move can be absent (the app's `adviceAction(for:)` is optional), and then
+ *  the card is the reason alone, as in the app. */
+function aspectCard(aName, bName) {
+  const all = readings?.details?.aspects;
+  const r = all?.[`${aName}|${bName}`] ?? all?.[`${bName}|${aName}`];
+  if (!r) {
+    // An older server sends no aspects at all; say nothing then, rather than
+    // promising a reading that isn't coming.
+    if (readings?.details && !all) return "";
+    const note = readingsError ?? (readingsLoading ? "Reading the chart…" : null);
+    return note ? `<p style="font-size:12px;color:var(--muted)">${esc(note)}</p>` : "";
+  }
+  return `<div class="rcard fire"><span class="plate-label">Why This Pair</span><p>${md(r.reason)}</p>` +
+    (r.action ? `<hr class="rdiv"><span class="plate-label">What to Do About It</span><p class="rlead">${md(r.action)}</p>` : "") +
+    `</div>`;
 }
 
 function signSheet(index) {
