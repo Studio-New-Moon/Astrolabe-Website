@@ -123,8 +123,18 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin || !MINE.some((p) => url.pathname.startsWith(p))) return;
 
+  // "Online, always fresh" has to get past the browser's own HTTP cache too:
+  // GitHub Pages sends max-age=600, so a plain fetch(req) handed back a copy
+  // up to ten minutes old, and a fix could look unshipped on a phone that had
+  // just opened the app. no-cache asks the server every time; an unchanged
+  // file costs a 304. A navigation can't be re-wrapped with new options, so
+  // it is fetched by its URL.
+  const fresh = req.mode === "navigate"
+    ? fetch(req.url, { cache: "no-cache", credentials: "same-origin" })
+    : fetch(req, { cache: "no-cache" });
+
   event.respondWith(
-    fetch(req)
+    fresh
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();

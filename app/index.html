@@ -438,6 +438,12 @@
   .welcome.app-welcome{ display:none; position:fixed; inset:0; z-index:1000; overflow-y:auto; }
   html.welcoming .welcome.app-welcome{ display:block; }
   html.welcoming, html.welcoming body{ overflow:hidden; }
+  /* Behind the welcome screen, nothing is drawn at all. Covering it was not
+     enough on iPhone: the tab bar's backdrop blur is a layer of its own, and
+     while the welcome screen's canvases were still being composited it showed
+     over them for a moment, then vanished. The app is inert until ENTER
+     anyway, and visibility keeps its layout, so nothing reflows on ENTER. */
+  html.welcoming body > :not(.app-welcome){ visibility:hidden; }
 </style>
 </head>
 <body>
