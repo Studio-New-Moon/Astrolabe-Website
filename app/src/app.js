@@ -712,17 +712,29 @@ $("areaBody").addEventListener("click", (e) => {
 
 // ---------------------------------------------------------------- shared reading bodies
 
+// Each occupant row ends with its placement's move, as HouseDetail's rows do
+// (`p.adviceAction` under the position): the reading server's
+// details.planets / details.points, which the planet and point pages use too.
+// Absent until the readings arrive; the sheet re-renders when they do.
+// A planet's in near-full ink, a point's muted, as in the app.
+const occupantMove = (group, name) => {
+  const a = readings?.details?.[group]?.[name]?.action;
+  const tone = group === "points" ? "color:var(--muted)" : "color:var(--ink);opacity:.85";
+  return a ? `<span class="move" style="font-size:13px;${tone}">${md(a)}</span>` : "";
+};
 function occupantRow(c, b) {
   return `<div class="occupant"><span class="g glyph" aria-hidden="true">${PLANET_GLYPHS[b.name]}</span><span class="stack" style="gap:4px">` +
     `<span class="what">${subject(planetName(b.name), true)} at ${label(b.longitude, b.retrograde)}</span>` +
-    (b.retrograde ? `<span class="note">Retrograde — moving backwards against the stars at your birth</span>` : "") + `</span></div>`;
+    (b.retrograde ? `<span class="note">Retrograde — moving backwards against the stars at your birth</span>` : "") +
+    occupantMove("planets", b.name) + `</span></div>`;
 }
 function pointRow(c, p) {
   const apside = p.name === "blackMoonLilith" || p.name === "whiteMoonSelena";
   const g = apside ? moonApsideGlyph(p.name === "blackMoonLilith", 20) : POINT_INFO[p.name].glyph;
-  return `<div class="occupant"><span class="g glyph" aria-hidden="true">${g}</span><span class="stack" style="gap:1px">` +
+  return `<div class="occupant"><span class="g glyph" aria-hidden="true">${g}</span><span class="stack" style="gap:4px">` +
     `<span class="what">${POINT_INFO[p.name].name} at ${label(p.longitude, p.retrograde)}</span>` +
-    (p.retrograde ? `<span class="note">Retrograde — moving backwards against the stars at your birth</span>` : "") + `</span></div>`;
+    (p.retrograde ? `<span class="note">Retrograde — moving backwards against the stars at your birth</span>` : "") +
+    occupantMove("points", p.name) + `</span></div>`;
 }
 const aspectTitle = (a) => `${planetName(a.a)} ${a.kind.id} ${planetName(a.b)}`;
 function aspectRow(a) {
