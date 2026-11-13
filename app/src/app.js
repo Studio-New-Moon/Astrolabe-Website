@@ -441,12 +441,30 @@ function renderBirthMoon() {
   const el = $("birthMoon");
   if (!el) return;
   const phase = moonPhase(body(chart, "moon").longitude, body(chart, "sun").longitude);
+  // One button over the whole panel: it opens what the phase means.
   el.innerHTML =
-    `<div style="display:flex;align-items:center;gap:14px;padding:16px">` +
+    `<button type="button" data-birth-moon aria-label="The Moon at your birth: ${phase.name}. Opens what it means." ` +
+    `style="all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px">` +
     `<img src="/app/art/${phase.art}.png" width="66" height="66" alt="" style="flex:none">` +
-    `<div style="display:flex;flex-direction:column;gap:3px;min-width:0"><span class="plate-label">The Moon at Your Birth</span>` +
-    `<span class="display" style="font-size:17px">${phase.name}</span></div></div>`;
+    `<span style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1"><span class="plate-label">The Moon at Your Birth</span>` +
+    `<span class="display" style="font-size:17px">${phase.name}</span></span>` +
+    `<span class="chev" style="color:var(--brass);display:flex">${icon("chevronRight")}</span></button>`;
   el.hidden = false;
+}
+$("birthMoon").addEventListener("click", (e) => {
+  if (e.target.closest("[data-birth-moon]")) openSheet({ kind: "moonPhase" });
+});
+
+/** MoonPhaseDetail: what the Moon's phase at birth means. */
+function moonPhaseSheet() {
+  const phase = moonPhase(body(chart, "moon").longitude, body(chart, "sun").longitude);
+  return `<div class="detail-head" style="align-items:center"><span aria-hidden="true" style="flex:none;display:block">` +
+    `<img src="/app/art/${phase.art}.png" width="72" height="72" alt="" style="width:72px;height:72px;display:block"></span>` +
+    `<span class="stack" style="gap:2px"><span class="plate-label">The Moon at Your Birth</span><h2>${esc(phase.name)}</h2></span></div>` +
+    section("What It Means", esc(phase.meaning)) +
+    `<div class="section" style="gap:5px"><span class="plate-label">How It's Read</span><p style="font-size:13px;color:var(--muted)">` +
+    `The phase is set by how far the Moon had moved ahead of the Sun when you were born: ${Math.round(phase.elongation)}° of the 360° cycle. ` +
+    `Each of the eight phases covers 45° of it, centered on the phase's exact point.</p></div>`;
 }
 
 function renderPlacements() {
@@ -486,6 +504,8 @@ function open(profile) {
   chart = cast(profile);
   selectedHouse = null;
   $("chartName").textContent = profile.name;
+  // The chart ruler beside the name, as in the app's chart header.
+  $("chartRulerArt").innerHTML = planetArt(rulerOf(chart.ascSign), 40);
   $("chartSummary").textContent = `${shortDate(profile.date)} · ${clock(profile.time)} · ${profile.place.name || "Coordinates entered by hand"}` +
     (profile.unsaved ? " — this browser won't let the page save it" : "");
   $("editPerson").textContent = profile.id ? "Edit" : "Add Yourself";
@@ -886,6 +906,7 @@ function renderTopSheet({ refresh = false } = {}) {
     case "angle": html = angleSheet(spec.angle); break;
     case "house": html = houseSheet(spec.house); break;
     case "aspect": html = aspectSheet(spec.a, spec.b); break;
+    case "moonPhase": html = moonPhaseSheet(); break;
     case "sign": html = signSheet(spec.index); break;
     case "settings": titleEl.textContent = "Settings"; html = settingsSheet(); break;
     case "editor": titleEl.textContent = spec.profile ? "Edit Profile" : "Add Profile"; break;

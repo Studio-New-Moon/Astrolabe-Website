@@ -220,20 +220,31 @@ export const SIGN_READINGS = {
 // The Moon's phase, as the app's `MoonPhase` works it out: how far ahead of the
 // Sun the Moon has travelled, in eight even 45° slices centred on each phase's
 // exact point. The art is the app's own, drawn by Tools/render_moons.py.
+// `meaning` is the natal reading, the app's `MoonPhase.natalMeaning`
+// (AstrolabeCore/MoonPhaseAtBirth.swift); change both together.
 const MOON_PHASES = [
-  { name: "New Moon", art: "moon-new" },
-  { name: "Waxing Crescent", art: "moon-waxing-crescent" },
-  { name: "First Quarter", art: "moon-first-quarter" },
-  { name: "Waxing Gibbous", art: "moon-waxing-gibbous" },
-  { name: "Full Moon", art: "moon-full" },
-  { name: "Waning Gibbous", art: "moon-waning-gibbous" },
-  { name: "Last Quarter", art: "moon-last-quarter" },
-  { name: "Waning Crescent", art: "moon-waning-crescent" },
+  { name: "New Moon", art: "moon-new",
+    meaning: "Born at the new Moon, with the Moon and the Sun in the same part of the sky, you start things on instinct. You tend to act before the reasons arrive, trusting a direction you can feel but can't yet explain. The work is letting other people see what you're making while it's still half-formed." },
+  { name: "Waxing Crescent", art: "moon-waxing-crescent",
+    meaning: "Born as the first thin crescent appears, you carry the push of something just begun and not yet safe. You're drawn to break from the way things were done before you, and you can feel the past pulling at you while you do it. The work is pressing on before you're sure, since the certainty comes from going." },
+  { name: "First Quarter", art: "moon-first-quarter",
+    meaning: "Born at the first quarter, half lit and half dark, you're built for the moment a plan meets resistance. You decide quickly, clear the way, and build things that last. The work is choosing which fights are worth having, since you can make a crisis out of any obstacle." },
+  { name: "Waxing Gibbous", art: "moon-waxing-gibbous",
+    meaning: "Born as the Moon swells toward full, you're always refining: asking how something could be better, and working at it until it is. You're a student of your own life. The work is letting a thing be finished, since the last improvement is never quite the last." },
+  { name: "Full Moon", art: "moon-full",
+    meaning: "Born at the full Moon, with the Sun and the Moon facing each other across the sky, you see things in full light, and you see them through other people. Relationships are where you find out who you are. The work is holding both sides of what you feel, since you're pulled between them more than most." },
+  { name: "Waning Gibbous", art: "moon-waning-gibbous",
+    meaning: "Born as the full Moon begins to wane, you're the one who passes on what's been learned. You want to share what you understand, and you're good at making it make sense to someone else. The work is listening as hard as you teach." },
+  { name: "Last Quarter", art: "moon-last-quarter",
+    meaning: "Born at the last quarter, half lit again but fading, you're built to question what everyone else takes for granted. You turn away from ideas that have stopped working, often before anyone else notices they have. The work is offering what comes next, not only refusing what came before." },
+  { name: "Waning Crescent", art: "moon-waning-crescent",
+    meaning: "Born under the last thin crescent before the dark, you carry the end of one cycle and the seed of the next. You often sense where things are going before anyone else does, and you can feel a little out of step with your own time. The work is trusting that sense, and finishing what others leave undone." },
 ];
 
 export function moonPhase(moonLongitude, sunLongitude) {
   const elongation = ((moonLongitude - sunLongitude + 22.5) % 360 + 360) % 360;
-  return MOON_PHASES[Math.floor(elongation / 45)];
+  // `elongation` is how far the Moon is ahead of the Sun, 0 to 360°.
+  return { ...MOON_PHASES[Math.floor(elongation / 45)], elongation: ((moonLongitude - sunLongitude) % 360 + 360) % 360 };
 }
 
 /** What each planet's symbol shows and what it stands for, under its drawing
