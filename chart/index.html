@@ -133,6 +133,16 @@
   .save label{ display: flex; flex-direction: column; gap: 4px; flex: 1 1 200px; font-size: 12px; color: var(--muted); }
   .save p{ margin: 0; }
   /* Rows lit by a tap on the instrument. */
+  /* The people saved in this browser, one tap each, then a clean form. */
+  .people[hidden], .open-saved[hidden], #saveForm[hidden]{ display: none !important; }
+  .people .plate-label{ margin: 0 0 10px; }
+  .people-row{ display: flex; flex-wrap: wrap; gap: 8px; }
+  .people-row button{ font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+                      color: var(--ink); background: transparent; border: 1px solid color-mix(in srgb, var(--brass) 45%, transparent); }
+  .people-row button[aria-pressed="true"]{ color: var(--bright); background: color-mix(in srgb, var(--brass) 18%, transparent); border-color: var(--brass); }
+  .people-row button.new{ color: var(--muted); border-style: dashed; }
+  .open-saved{ display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; margin: 10px 0; }
+  .open-saved p{ flex: 1 1 26ch; }
   tr.picked td{ background: color-mix(in srgb, var(--brass) 16%, transparent); }
   tr.picked td:first-child{ box-shadow: inset 3px 0 0 var(--brass); padding-left: 8px; }
   td .rx{ color: var(--fire); font-size: 12px; }
@@ -159,6 +169,11 @@
     <span class="framed-button" style="position:relative;display:inline-flex;max-width:100%"><button class="go metal-button" type="button" data-install-go>Show Me How</button><svg class="filigree" aria-hidden="true" style="position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);pointer-events:none;overflow:visible" data-radius="10" data-mode="button"></svg></span>
     <button class="later text-link" type="button" data-dismiss>Not now</button>
   </div>
+
+  <section class="people plate" id="people" aria-labelledby="peopleTitle" hidden>
+    <h2 class="plate-label" id="peopleTitle">Your Saved Charts</h2>
+    <div class="people-row" id="peopleRow"></div>
+  </section>
 
   <form id="chartForm" class="plate">
     <fieldset>
@@ -203,9 +218,9 @@
 
   <p class="note center"><strong>Nothing you type here leaves your device.</strong>
   The chart is worked out right here in your own browser, and there's no server
-  to send it to. The chart below is for <strong>Alex Rivera</strong>, an invented
+  to send it to. <span id="whose">The chart below is for <strong>Alex Rivera</strong>, an invented
   person born March 16, 1990, at 2:15 PM in New York. Put in your own birth
-  details to cast yours.</p>
+  details to cast yours.</span></p>
 
   <div class="result" id="result" hidden>
     <div class="segmented style-toggle" role="tablist" aria-label="Chart style" id="styleToggle">
@@ -238,7 +253,11 @@
     </section>
     <section class="card save" aria-labelledby="saveTitle">
       <h2 class="plate-label" id="saveTitle">Keep This Chart</h2>
-      <p>Save it to your charts in the web app, where it gets its readings, its life areas, and a daily horoscope.</p>
+      <p id="saveLead">Save it to your charts in the web app, where it gets its readings, its life areas, and a daily horoscope.</p>
+      <div class="open-saved" id="openSaved" hidden>
+        <p>This chart is already saved as <strong id="savedName"></strong>. In the web app it gets its readings, its life areas, and a daily horoscope.</p>
+        <button class="go metal-button" type="button" id="openSavedButton">Open in the Web App</button>
+      </div>
       <form id="saveForm">
         <label>Whose chart is this?
           <input id="saveName" type="text" maxlength="60" autocomplete="off" placeholder="A name" required></label>
@@ -273,7 +292,7 @@ import { studImage } from "./src/instrument.js";
 import { resolve, EVENT } from "./src/appearance.js";
 import { chartWheelSVG } from "../app/src/chart-wheel.js";
 import { ASPECT_KINDS, matchAspect, PLANET_NAMES, PLANET_GLYPHS, PLANET_SYMBOLISM, ROMAN, subject, signAt } from "../app/src/lore.js";
-import { saveProfile, selectProfile, requestPersistentStorage } from "../app/src/profiles.js";
+import { listProfiles, saveProfile, selectProfile, selectedProfileId, requestPersistentStorage } from "../app/src/profiles.js";
 
 const $ = (id) => document.getElementById(id);
 const problem = (msg) => { $("problem").textContent = msg; $("problem").hidden = false; };
@@ -538,6 +557,7 @@ function cast() {
     { asc, bodies, points, angles },
   );
   $("aspectsBody").innerHTML = aspectsHTML(bodies, asc);
+  if (!showing && people.length) $("whose").textContent = "The chart below is cast from the details above.";
 
   const row = (label, lon, retro, key = "") =>
     `<tr data-body="${key}" data-house="${wholeSignHouse(lon, asc)}"><td class="body">${label}</td>` +
@@ -634,9 +654,95 @@ $("place").addEventListener("input", () => {
   }, 120);
 });
 
+// ---- the people saved here ----
+//
+// Saving from this page always worked, but the page never read the list back,
+// so anyone who came here rather than to /app/ typed their birth details in on
+// every visit. Now the page opens on whoever was picked last, and each saved
+// person is one tap away. Only exact birth times are offered: those are the
+// only ones this page can cast, as in the web app.
+const people = listProfiles().filter((p) => p.timeMode === "exact");
+let showing = null; // the saved person the chart on screen is, until the form is edited
+
+function markSaved() {
+  $("saveTitle").textContent = showing ? "Saved in This Browser" : "Keep This Chart";
+  $("saveLead").hidden = !!showing;
+  $("saveForm").hidden = !!showing;
+  $("openSaved").hidden = !showing;
+  if (showing) $("savedName").textContent = showing.name;
+  for (const b of $("peopleRow").querySelectorAll("button")) {
+    b.setAttribute("aria-pressed", String(showing ? b.dataset.id === showing.id : b.dataset.id === "new" && !$("date").value));
+  }
+}
+
+function showPerson(p) {
+  $("date").value = p.date;
+  $("time").value = p.time;
+  $("place").value = p.place.name;
+  $("lat").value = p.place.latitude;
+  $("lon").value = p.place.longitude;
+  if (!selectZone(zoneSelect, p.place.timeZoneID)) {
+    showing = null;
+    markSaved();
+    problem(`This browser doesn't recognize ${p.name}'s time zone (${p.place.timeZoneID.replace(/_/g, " ")}). Please choose it from the time zone list, then press Cast My Chart.`);
+    return;
+  }
+  selectProfile(p.id);
+  cast();
+  showing = p;
+  $("whose").textContent = `The chart below is ${p.name}'s, saved in this browser.`;
+  markSaved();
+}
+
+function newChart() {
+  showing = null;
+  for (const id of ["date", "time", "place", "lat", "lon"]) $(id).value = "";
+  castFrom = null;
+  $("problem").hidden = true;
+  $("result").hidden = true;
+  $("whose").textContent = "Put in the birth details to cast a new chart.";
+  markSaved();
+  $("date").focus();
+}
+
+if (people.length) {
+  for (const p of people) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.id = p.id;
+    b.textContent = p.name;
+    b.addEventListener("click", () => showPerson(p));
+    $("peopleRow").appendChild(b);
+  }
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "new";
+  b.dataset.id = "new";
+  b.textContent = "New Chart";
+  b.addEventListener("click", newChart);
+  $("peopleRow").appendChild(b);
+  $("people").hidden = false;
+}
+
+// Any change to the form makes it a different chart from the saved one.
+$("chartForm").addEventListener("input", () => {
+  if (!showing) return;
+  showing = null;
+  $("whose").textContent = "The chart below is cast from the details above.";
+  markSaved();
+});
+
+$("openSavedButton").addEventListener("click", () => {
+  if (!showing) return;
+  selectProfile(showing.id);
+  location.href = "/app/#chart";
+});
+
 // Cast once on load, so the page opens showing what it does rather than an
-// empty frame waiting to be told.
-cast();
+// empty frame waiting to be told: the person picked last if there is one,
+// otherwise the invented example.
+const first = people.find((p) => p.id === selectedProfileId()) ?? people[0];
+if (first) showPerson(first); else cast();
 
 // ---- installing it ----
 //
