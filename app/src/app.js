@@ -656,13 +656,13 @@ function renderAreas() {
     const ruler = area.house ? rulerOf(s) : rulerOf(c.ascSign);
     const framed = area.id === "purpose";
     return `<a class="area-card${framed ? " framed" : ""}" href="#areas/${area.id}">` +
-      // Purpose's subject is the chart ruler, so its medallion is that
-      // planet's drawing; the five houses keep their sign glyphs.
-      (framed ? `<span style="width:52px;height:52px;flex:none" aria-hidden="true">${planetArt(ruler, 52, signAt(body(c, ruler.toLowerCase()).longitude))}</span>`
-        : `<span class="medallion" style="--tint: var(--el-${s.element})" aria-hidden="true"><span class="glyph">${s.glyph}</span></span>`) +
+      // Every area's medallion is its ruling planet's drawing, wearing the
+      // coin of the sign that planet sits in, as in the app: Purpose's is the
+      // chart ruler, a house's is its sign's ruler.
+      `<span style="width:52px;height:52px;flex:none" aria-hidden="true">${planetArt(ruler, 52, signAt(body(c, ruler.toLowerCase()).longitude))}</span>` +
       `<span class="txt"><span class="top"><span class="t">${area.title}</span>` +
       `<span class="plate-label">${area.house ? `House ${ROMAN[area.house - 1]}` : "Chart Ruler"}</span></span>` +
-      `<span class="s">${framed ? signLabel(s) : s.name} · ${ruler}</span><span class="c">${esc(area.covers)}</span></span>` +
+      `<span class="s">${signLabel(s)} · ${ruler}</span><span class="c">${esc(area.covers)}</span></span>` +
       (framed ? filigree({ radius: 11, mode: "card" }) : "") + `</a>`;
   };
   el.innerHTML =
@@ -747,7 +747,8 @@ const occupantMove = (group, name) => {
   return a ? `<span class="move" style="font-size:13px;${tone}">${md(a)}</span>` : "";
 };
 function occupantRow(c, b) {
-  return `<div class="occupant"><span class="g glyph" aria-hidden="true">${PLANET_GLYPHS[b.name]}</span><span class="stack" style="gap:4px">` +
+  // The planet's drawing wearing its sign's coin, as on its own page.
+  return `<div class="occupant"><span aria-hidden="true" style="flex:none">${planetArt(b.name, 40, signAt(b.longitude))}</span><span class="stack" style="gap:4px">` +
     `<span class="what">${subject(planetName(b.name), true)} at ${label(b.longitude, b.retrograde)}</span>` +
     (b.retrograde ? `<span class="note">Retrograde — moving backwards against the stars at your birth</span>` : "") +
     occupantMove("planets", b.name) + `</span></div>`;
@@ -795,9 +796,9 @@ function houseBody(c, house) {
   if (d) {
     const dh = c.houseOf(d.longitude);
     if (dh === house) {
-      ruler += `<p>${s.name} answers to ${subject(planetName(d.name))}, and ${subject(planetName(d.name))} sits right here — this house rules itself, running on its own terms rather than through anywhere else.</p>`;
+      ruler += `<div style="display:flex;align-items:center;gap:10px">${planetArt(d.name, 40, signAt(d.longitude))}<p>${s.name} answers to ${subject(planetName(d.name))}, and ${subject(planetName(d.name))} sits right here — this house rules itself, running on its own terms rather than through anywhere else.</p></div>`;
     } else {
-      ruler += `<p>${s.name} answers to ${subject(planetName(d.name))}, and your ${planetName(d.name)} sits at ${label(d.longitude, d.retrograde)} in the ${ORDINAL[dh - 1]} — your ${HOUSE_TITLES[dh - 1]} house.</p>` +
+      ruler += `<div style="display:flex;align-items:center;gap:10px">${planetArt(d.name, 40, signAt(d.longitude))}<p>${s.name} answers to ${subject(planetName(d.name))}, and your ${planetName(d.name)} sits at ${label(d.longitude, d.retrograde)} in the ${ORDINAL[dh - 1]} — your ${HOUSE_TITLES[dh - 1]} house.</p></div>` +
         `<p>However your ${roman} behaves, it tends to play out there: ${esc(HOUSE_ESSENCES[dh - 1])}</p>`;
     }
   } else {
