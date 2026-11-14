@@ -265,7 +265,7 @@
         <label><input type="radio" name="sign" value="cancer"><img src="/assets/signs/cancer-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♋</span>Cancer</span></label>
         <label><input type="radio" name="sign" value="leo"><img src="/assets/signs/leo-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♌</span>Leo</span></label>
         <label class="soon"><input type="radio" name="sign" value="virgo" disabled><span class="art"><img src="/assets/signs/virgo-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span class="row"><span class="glyph" aria-hidden="true">♍</span>Virgo<span class="visually-hidden">, coming soon</span></span></label>
-        <label class="soon"><input type="radio" name="sign" value="libra" disabled><span class="art"><img src="/assets/signs/libra-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span class="row"><span class="glyph" aria-hidden="true">♎</span>Libra<span class="visually-hidden">, coming soon</span></span></label>
+        <label><input type="radio" name="sign" value="libra"><img src="/assets/signs/libra-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♎</span>Libra</span></label>
         <label><input type="radio" name="sign" value="scorpio"><img src="/assets/signs/scorpio-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="row"><span class="glyph" aria-hidden="true">♏</span>Scorpio</span></label>
         <label class="soon"><input type="radio" name="sign" value="sagittarius" disabled><span class="art"><img src="/assets/signs/sagittarius-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span class="row"><span class="glyph" aria-hidden="true">♐</span>Sagittarius<span class="visually-hidden">, coming soon</span></span></label>
         <label class="soon"><input type="radio" name="sign" value="capricorn" disabled><span class="art"><img src="/assets/signs/capricorn-thumb.jpg" alt="" loading="lazy" width="360" height="270"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span class="row"><span class="glyph" aria-hidden="true">♑</span>Capricorn<span class="visually-hidden">, coming soon</span></span></label>
@@ -400,7 +400,7 @@
   // a Coming Soon band, but can't be chosen or bought. When one ships, delete
   // it here AND take `class="soon"`, `disabled` and the band off its label
   // above, and off its tile on the homepage; app/src/app.js has the same list.
-  var COMING_SOON = { virgo: 1, libra: 1, sagittarius: 1, capricorn: 1, aquarius: 1 };
+  var COMING_SOON = { virgo: 1, sagittarius: 1, capricorn: 1, aquarius: 1 };
   var sheetSoonEl = document.getElementById("sheetSoon");
   var shownSign = "aries";
 

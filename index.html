@@ -224,7 +224,7 @@
   .sign-tile:focus-visible{ outline:2px solid var(--bright); outline-offset:3px; border-radius:10px; }
   /* A sign whose finished art hasn't shipped: shown, banded, not a link to
      the shop. Same list as /prints/ (COMING_SOON) and app/src/app.js. When
-     one ships, also update the count in #prints ("Seven of the twelve"). */
+     one ships, also update the count in #prints ("Eight of the twelve"). */
   .sign-tile .art{ position:relative; display:block; margin-top:0; }
   .sign-tile.soon img{ filter:brightness(.55) saturate(.6); }
   .sign-tile.soon:hover img{ transform:none; filter:brightness(.55) saturate(.6); }
@@ -448,7 +448,7 @@
     <a class="sign-tile" href="/prints/?sign=cancer"><img src="assets/signs/cancer-thumb.jpg" alt="Cancer, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Cancer</span></a>
     <a class="sign-tile" href="/prints/?sign=leo"><img src="assets/signs/leo-thumb.jpg" alt="Leo, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Leo</span></a>
     <div class="sign-tile soon"><span class="art"><img src="assets/signs/virgo-thumb.jpg" alt="Virgo, illustrated in a batik style. Print coming soon" width="360" height="270" loading="lazy"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span>Virgo</span></div>
-    <div class="sign-tile soon"><span class="art"><img src="assets/signs/libra-thumb.jpg" alt="Libra, illustrated in a batik style. Print coming soon" width="360" height="270" loading="lazy"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span>Libra</span></div>
+    <a class="sign-tile" href="/prints/?sign=libra"><img src="assets/signs/libra-thumb.jpg" alt="Libra, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Libra</span></a>
     <a class="sign-tile" href="/prints/?sign=scorpio"><img src="assets/signs/scorpio-thumb.jpg" alt="Scorpio, illustrated in a batik style" width="360" height="270" loading="lazy"><span>Scorpio</span></a>
     <div class="sign-tile soon"><span class="art"><img src="assets/signs/sagittarius-thumb.jpg" alt="Sagittarius, illustrated in a batik style. Print coming soon" width="360" height="270" loading="lazy"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span>Sagittarius</span></div>
     <div class="sign-tile soon"><span class="art"><img src="assets/signs/capricorn-thumb.jpg" alt="Capricorn, illustrated in a batik style. Print coming soon" width="360" height="270" loading="lazy"><span class="soon-band" aria-hidden="true">Coming Soon</span></span><span>Capricorn</span></div>
@@ -462,7 +462,7 @@
     <div class="head">
       <span class="plate-label">Chart to Canvas</span>
       <h2 id="prints-title">Your Sign, Off the Screen and On the Wall.</h2>
-      <p>Seven of the twelve signs, printed to order on your choice of five papers and shipped to you flat; the other five are coming soon. Every print keeps the proportions the art was drawn in, so nothing gets cropped to fit.</p>
+      <p>Eight of the twelve signs, printed to order on your choice of five papers and shipped to you flat; the other four are coming soon. Every print keeps the proportions the art was drawn in, so nothing gets cropped to fit.</p>
     </div>
     <div class="sizes plans">
       <div class="card plan" data-size="Small">
@@ -486,7 +486,7 @@
       <ul></ul>
     </div>
     <div class="plate center-plate">
-      <div class="action"><a class="metal-button" href="/prints/">Choose Your Print</a><p class="note">Any of the seven finished signs, in any of the three sizes, on any of the five papers</p></div>
+      <div class="action"><a class="metal-button" href="/prints/">Choose Your Print</a><p class="note">Any of the eight finished signs, in any of the three sizes, on any of the five papers</p></div>
     </div>
     <p class="fine">Ships to addresses in the United States. Checkout is handled by Stripe, and each print is made and mailed by our print partner.</p>
   </div>

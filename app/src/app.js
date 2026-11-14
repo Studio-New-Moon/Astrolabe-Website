@@ -1149,7 +1149,7 @@ function aspectCard(aName, bName) {
 
 // Signs whose finished art hasn't shipped: no Order button yet. Same list as
 // /prints/ (COMING_SOON) and the homepage's `.sign-tile.soon` tiles.
-const PRINT_COMING_SOON = new Set(["virgo", "libra", "sagittarius", "capricorn", "aquarius"]);
+const PRINT_COMING_SOON = new Set(["virgo", "sagittarius", "capricorn", "aquarius"]);
 
 function signSheet(index) {
   const s = SIGNS[index];
