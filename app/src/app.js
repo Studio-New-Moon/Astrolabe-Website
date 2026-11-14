@@ -611,9 +611,33 @@ function planetArt(name, size, sign = null) {
   return `<span style="position:relative;display:block;flex:none;width:${size}px;height:${size}px">${img}` +
     `<span aria-hidden="true" style="position:absolute;left:${size * 0.8 - d / 2}px;top:${size * 0.8 - d / 2}px;width:${d}px;height:${d}px;` +
     `border-radius:50%;background:var(--el-${sign.element});border:${Math.max(1, Math.round(d * 0.07))}px solid var(--bright);box-sizing:border-box;` +
-    `display:grid;place-items:center;color:var(--resist);font-size:${Math.round(d * 0.56)}px;line-height:1;font-weight:600;` +
     `box-shadow:${(d * 0.04).toFixed(1)}px ${(d * 0.06).toFixed(1)}px ${(d * 0.12).toFixed(1)}px rgba(0,0,0,.45)">` +
-    `<span class="glyph">${sign.glyph}</span></span></span>`;
+    signCoinGlyph(sign.glyph) + `</span></span>`;
+}
+
+// The coin's symbol, centred on its own ink rather than its character box
+// (Morgan, 2026-11-14: Sagittarius sat visibly off). Fonts set the zodiac
+// symbols at different heights in their boxes, so each is measured once, in
+// the font this browser actually draws it with, and placed by its ink.
+const GLYPH_FONT = `'Apple Symbols', 'Segoe UI Symbol', 'Noto Sans Symbols 2', 'Noto Sans Symbols', system-ui, sans-serif`;
+const glyphInk = new Map();
+function signCoinGlyph(glyph) {
+  if (!glyphInk.has(glyph)) {
+    let at = { x: 50, y: 69 };   // a plain baseline guess if a canvas can't measure
+    try {
+      const ctx = document.createElement("canvas").getContext("2d");
+      ctx.font = `600 56px ${GLYPH_FONT}`;
+      const m = ctx.measureText(glyph);
+      if (Number.isFinite(m.actualBoundingBoxAscent)) {
+        at = { x: 50 - (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2,
+               y: 50 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2 };
+      }
+    } catch { /* keep the guess */ }
+    glyphInk.set(glyph, at);
+  }
+  const { x, y } = glyphInk.get(glyph);
+  return `<svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">` +
+    `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" fill="var(--resist)" font-size="56" font-weight="600" font-family="${GLYPH_FONT}" style="font-variant-emoji:text">${glyph}</text></svg>`;
 }
 
 // ---------------------------------------------------------------- Areas
