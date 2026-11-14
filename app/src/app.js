@@ -601,8 +601,19 @@ function renderWhole() {
  *  Moon shows the full-moon picture, as it does in the app. */
 function planetArt(name, size, sign = null) {
   const key = String(name).toLowerCase();
-  const file = key === "moon" ? "moon-full" : `planet-${key}`;
-  const img = `<img src="/app/art/${file}.png" alt="${esc(planetName(key))}${sign ? ` in ${sign.name}` : ""}, illustrated in a batik style" ` +
+  return bodyArt(key === "moon" ? "moon-full" : `planet-${key}`, planetName(key), size, sign);
+}
+
+/** Chiron, the North Node and the two Moon apsides, drawn in the same set
+ *  as the planets (Morgan, 2026-11-14); the app's `PointArt`. */
+const POINT_ART = { chiron: "planet-chiron", northNode: "planet-north-node",
+  blackMoonLilith: "planet-black-moon-lilith", whiteMoonSelena: "planet-white-moon-selena" };
+function pointArt(name, size, sign = null) {
+  return bodyArt(POINT_ART[name], POINT_INFO[name].name, size, sign);
+}
+
+function bodyArt(file, label, size, sign) {
+  const img = `<img src="/app/art/${file}.png" alt="${esc(label)}${sign ? ` in ${sign.name}` : ""}, illustrated in a batik style" ` +
     `width="${size}" height="${size}" style="width:${size}px;height:${size}px;flex:none;display:block">`;
   if (!sign) return img;
   // The sign it sits in, as a coin on the planet's lower-right rim (the app's
@@ -754,9 +765,7 @@ function occupantRow(c, b) {
     occupantMove("planets", b.name) + `</span></div>`;
 }
 function pointRow(c, p) {
-  const apside = p.name === "blackMoonLilith" || p.name === "whiteMoonSelena";
-  const g = apside ? moonApsideGlyph(p.name === "blackMoonLilith", 20) : POINT_INFO[p.name].glyph;
-  return `<div class="occupant"><span class="g glyph" aria-hidden="true">${g}</span><span class="stack" style="gap:4px">` +
+  return `<div class="occupant"><span aria-hidden="true" style="flex:none">${pointArt(p.name, 40, signAt(p.longitude))}</span><span class="stack" style="gap:4px">` +
     `<span class="what">${POINT_INFO[p.name].name} at ${label(p.longitude, p.retrograde)}</span>` +
     (p.retrograde ? `<span class="note">Retrograde — moving backwards against the stars at your birth</span>` : "") +
     occupantMove("points", p.name) + `</span></div>`;
@@ -1070,9 +1079,7 @@ function planetSheet(name) {
 function pointSheet(name) {
   const c = chart, p = c.points.find((x) => x.name === name);
   const h = c.houseOf(p.longitude);
-  const apside = name === "blackMoonLilith" || name === "whiteMoonSelena";
-  const glyph = apside ? moonApsideGlyph(name === "blackMoonLilith", 36) : POINT_INFO[name].glyph;
-  const out = [detailHead(glyph, POINT_INFO[name].name, `${signAt(p.longitude).glyph} ${label(p.longitude, p.retrograde)} · House ${ROMAN[h - 1]}`)];
+  const out = [detailHead(pointArt(name, 64, signAt(p.longitude)), POINT_INFO[name].name, `${signAt(p.longitude).glyph} ${label(p.longitude, p.retrograde)} · House ${ROMAN[h - 1]}`, "", "art")];
   if (name === "chiron" && p.retrograde) out.push(`<p class="lede">${esc(CHIRON_RETROGRADE_NOTE)}</p>`);
   out.push(adviceCard("points", name, "What It Means"));
   out.push(section("Where It Sits", esc(HOUSE_COVERS[h - 1])));
