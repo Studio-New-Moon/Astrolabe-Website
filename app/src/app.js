@@ -1140,6 +1140,10 @@ function aspectCard(aName, bName) {
     `</div>`;
 }
 
+// Signs whose finished art hasn't shipped: no Order button yet. Same list as
+// /prints/ (COMING_SOON) and the homepage's `.sign-tile.soon` tiles.
+const PRINT_COMING_SOON = new Set(["virgo", "libra", "sagittarius", "capricorn", "aquarius"]);
+
 function signSheet(index) {
   const s = SIGNS[index];
   const r = SIGN_READINGS[s.name];
@@ -1151,10 +1155,14 @@ function signSheet(index) {
     `<p style="font-size:16px;color:var(--ink)">${esc(s.keynote)}</p>`,
     `<div class="section" style="gap:5px"><span class="plate-label">What It Represents</span><p style="font-size:15px">${esc(r.portrait)}</p></div>`,
     // The print, where the app offers it: under the portrait, never ahead of it.
-    `<div class="rcard" style="gap:10px"><span class="plate-label">Buy a Print</span>` +
-    `<p style="font-size:12px;color:var(--muted)">This tile, printed on real paper — the same art, straight from the original file.</p>` +
-    `<p style="font: 400 15px var(--font-display); color: var(--resist)">12 × 16 to 24 × 32 in · prices at checkout</p>` +
-    `<a class="metal-button" href="/prints/?sign=${s.name.toLowerCase()}#order" style="align-self:flex-start;font-size:11px;letter-spacing:1.6px;padding:9px 14px;border-radius:7px" aria-label="Order the ${s.name} print">Order</a></div>`,
+    PRINT_COMING_SOON.has(s.name.toLowerCase())
+      ? `<div class="rcard" style="gap:10px"><span class="plate-label">Buy a Print</span>` +
+        `<p style="font: 400 15px var(--font-display); color: var(--resist)">Coming Soon</p>` +
+        `<p style="font-size:12px;color:var(--muted)">${s.name}'s art is still being finished, so its print isn't for sale yet.</p></div>`
+      : `<div class="rcard" style="gap:10px"><span class="plate-label">Buy a Print</span>` +
+        `<p style="font-size:12px;color:var(--muted)">This tile, printed on real paper — the same art, straight from the original file.</p>` +
+        `<p style="font: 400 15px var(--font-display); color: var(--resist)">12 × 16 to 24 × 32 in · prices at checkout</p>` +
+        `<a class="metal-button" href="/prints/?sign=${s.name.toLowerCase()}#order" style="align-self:flex-start;font-size:11px;letter-spacing:1.6px;padding:9px 14px;border-radius:7px" aria-label="Order the ${s.name} print">Order</a></div>`,
     section("When It Runs Unchecked", esc(r.shadow)),
   ];
   if (c) {
