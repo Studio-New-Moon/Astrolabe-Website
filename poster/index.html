@@ -18,6 +18,9 @@
 <meta property="og:title" content="Custom Chart Poster — Follow My Astrolabe">
 <meta property="og:description" content="Artwork of your own birth chart, in the Follow My Astrolabe batik style, made for you within three days.">
 <meta property="og:url" content="https://www.followmyastrolabe.com/poster/">
+<meta property="og:image" content="https://www.followmyastrolabe.com/poster/example-chart-poster.jpg">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="1200">
 <meta name="robots" content="index">
 <link rel="icon" href="/assets/favicon.png">
 <meta name="theme-color" content="#14100A">
@@ -32,6 +35,10 @@
 </script>
 <style>
   .steps{ margin: 10px 0 0; padding-left: 1.3em; }
+  figure.example{ margin: 18px 0 0; }
+  figure.example img{ display: block; width: 100%; height: auto; border-radius: 10px;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.35); }
+  figure.example figcaption{ color: var(--muted); font-size: 12px; line-height: 1.45; margin-top: 8px; text-align: center; }
   .steps li{ margin: 6px 0; }
   .people{ display: grid; gap: 8px; }
   .people label{
@@ -85,6 +92,17 @@
     <p>Artwork of your own birth chart: the symbols your planets, signs, and
     houses call for, brought together in one piece in our batik style.</p>
   </div>
+
+  <figure class="example">
+    <img src="/poster/example-chart-poster.jpg"
+         srcset="/poster/example-chart-poster-800.jpg 800w, /poster/example-chart-poster.jpg 1600w"
+         sizes="(max-width: 600px) 100vw, 560px"
+         alt="An example chart poster in the batik style: an archer drawing her bow, a woman carrying a water jar inside the sun, a scorpion inside the crescent moon, a goat, a ram, two fish in a river, and a hermit crab, with planets and their symbols placed among them"
+         width="1600" height="1200" fetchpriority="high">
+    <figcaption>An example, made for one chart: the Sun in Aquarius, the Moon in
+    Scorpio, Capricorn rising, three planets in Sagittarius, and each planet and
+    point placed in the scene as a symbol of its own.</figcaption>
+  </figure>
 
   <section class="card">
     <h2>How It Works</h2>
