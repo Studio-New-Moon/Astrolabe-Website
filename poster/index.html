@@ -55,6 +55,9 @@
   .tones label:has(:checked){ border-color: var(--bright); box-shadow: inset 0 0 0 1px var(--bright); }
   .tones input{ position: absolute; opacity: 0; pointer-events: none; }
   .tones label:has(:focus-visible){ outline: 2px solid var(--bright); outline-offset: 2px; }
+  .tones.figures{ margin-bottom: 14px; }
+  .sublabel{ color: var(--ink); font-size: 14px; font-weight: 600; margin: 4px 0 8px; }
+  .tones.figures label{ min-height: 44px; box-sizing: border-box; }
   .swatch{ flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.25); }
   .swatch.mix{ background: conic-gradient(#F3D9C4 0 25%, #C99872 0 50%, #8A5A3B 0 75%, #4A2C1E 0); }
   .swatch.open{ background: none; border: 1px dashed var(--muted); }
@@ -86,7 +89,7 @@
   <section class="card">
     <h2>How It Works</h2>
     <ol class="steps muted-prose">
-      <li>Choose whose chart it is and the skin tone for its people, then pay $29.</li>
+      <li>Choose whose chart it is and how its people look, then pay $29.</li>
       <li>We make the artwork from that chart. A person checks and refines every
       one before it reaches you, and it's ready within three days.</li>
       <li>We email you a link. Look at it, then approve it or ask for a change.</li>
@@ -113,8 +116,17 @@
     <fieldset class="order-section">
       <legend class="plate-label">The People in It</legend>
       <p class="hint">Some signs are drawn as people, such as the water bearer, the
-      twins, and the maiden. Choose the skin tone you'd like them to have.</p>
-      <div class="tones" id="tones">
+      twins, and the maiden. Choose whether you'd like them to be women, men, or
+      both, and the skin tone you'd like them to have.</p>
+      <p class="sublabel" id="figures-label">Women or men</p>
+      <div class="tones figures" id="figures" role="radiogroup" aria-labelledby="figures-label">
+        <label><input type="radio" name="figures" value="artist" checked>Leave it to the artist</label>
+        <label><input type="radio" name="figures" value="women">All women</label>
+        <label><input type="radio" name="figures" value="men">All men</label>
+        <label><input type="radio" name="figures" value="mix">A mix of women and men</label>
+      </div>
+      <p class="sublabel" id="tones-label">Skin tone</p>
+      <div class="tones" id="tones" role="radiogroup" aria-labelledby="tones-label">
         <label><input type="radio" name="skinTone" value="artist" checked><span class="swatch open"></span>Leave it to the artist</label>
         <label><input type="radio" name="skinTone" value="mix"><span class="swatch mix"></span>A mix of skin tones</label>
         <label><input type="radio" name="skinTone" value="tone1"><span class="swatch" style="background:#F3D9C4"></span>Very light</label>
@@ -139,7 +151,7 @@
     <p class="note">Payment is on Stripe's own page, and the poster comes to the
     email address you pay with. Your name, birth date, time, and place stay in
     this browser: we're sent only the positions in the chart, the same ones a
-    reading uses, along with the skin tone you choose and any notes you write.
+    reading uses, along with your choices for its people and any notes you write.
     <a href="/privacy/#poster">How we handle them</a>.</p>
   </form>
 
@@ -215,6 +227,7 @@
       const { ok, body } = await call("/poster/checkout", {
         positions,
         skinTone: form.querySelector('input[name="skinTone"]:checked')?.value ?? "artist",
+        figures: form.querySelector('input[name="figures"]:checked')?.value ?? "artist",
         artistNotes: notes.value.trim(),
       });
       if (ok && body.url) { window.location.href = body.url; return; }
