@@ -117,7 +117,7 @@
       <legend class="plate-label">The People in It</legend>
       <p class="hint">Some signs are drawn as people, such as the water bearer, the
       twins, and the maiden. Choose whether you'd like them to be women, men, or
-      both, and the skin tone you'd like them to have.</p>
+      both, their skin tone, and, if you like, their features.</p>
       <p class="sublabel" id="figures-label">Women or men</p>
       <div class="tones figures" id="figures" role="radiogroup" aria-labelledby="figures-label">
         <label><input type="radio" name="figures" value="artist" checked>Leave it to the artist</label>
@@ -135,6 +135,22 @@
         <label><input type="radio" name="skinTone" value="tone4"><span class="swatch" style="background:#A6744E"></span>Medium brown</label>
         <label><input type="radio" name="skinTone" value="tone5"><span class="swatch" style="background:#7A4D30"></span>Dark brown</label>
         <label><input type="radio" name="skinTone" value="tone6"><span class="swatch" style="background:#4A2C1E"></span>Deep brown</label>
+      </div>
+      <p class="sublabel" id="features-label">Features</p>
+      <p class="hint">Optional. A preference for the artwork, not a question about
+      you. We paint it by hand rather than leave it to the first draft.</p>
+      <div class="tones figures" id="features" role="radiogroup" aria-labelledby="features-label">
+        <label><input type="radio" name="features" value="artist" checked>Leave it to the artist</label>
+        <label><input type="radio" name="features" value="eastAsian">East Asian</label>
+        <label><input type="radio" name="features" value="southAsian">South Asian</label>
+        <label><input type="radio" name="features" value="southeastAsian">Southeast Asian</label>
+        <label><input type="radio" name="features" value="black">Black</label>
+        <label><input type="radio" name="features" value="hispanic">Hispanic or Latino</label>
+        <label><input type="radio" name="features" value="mena">Middle Eastern or North African</label>
+        <label><input type="radio" name="features" value="white">White</label>
+        <label><input type="radio" name="features" value="indigenous">Indigenous</label>
+        <label><input type="radio" name="features" value="pacific">Pacific Islander</label>
+        <label><input type="radio" name="features" value="mix">A mix</label>
       </div>
     </fieldset>
 
@@ -228,6 +244,7 @@
         positions,
         skinTone: form.querySelector('input[name="skinTone"]:checked')?.value ?? "artist",
         figures: form.querySelector('input[name="figures"]:checked')?.value ?? "artist",
+        features: form.querySelector('input[name="features"]:checked')?.value ?? "artist",
         artistNotes: notes.value.trim(),
       });
       if (ok && body.url) { window.location.href = body.url; return; }
