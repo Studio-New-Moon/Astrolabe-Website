@@ -247,6 +247,14 @@ export function moonPhase(moonLongitude, sunLongitude) {
   return { ...MOON_PHASES[Math.floor(elongation / 45)], elongation: ((moonLongitude - sunLongitude) % 360 + 360) % 360 };
 }
 
+/** "Day Chart" when the Sun was above the horizon at birth, else "Night
+ *  Chart". The horizon meets the ecliptic at the Ascendant and Descendant, and
+ *  the half above it runs 180° to 360° on from the Ascendant. The same test as
+ *  the app's `BirthChart.sect` (AstrolabeCore/Sect.swift); change both together. */
+export function sectName(sunLongitude, ascendantLongitude) {
+  return ((sunLongitude - ascendantLongitude) % 360 + 360) % 360 >= 180 ? "Day Chart" : "Night Chart";
+}
+
 /** What each planet's symbol shows and what it stands for, under its drawing
  *  on its own panel. The same ten strings as the app's `Planet.symbolism`
  *  (AstrolabeCore/PlanetSymbolism.swift); change both together. */

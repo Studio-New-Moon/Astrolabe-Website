@@ -30,7 +30,7 @@ import { mountSky } from "./sky.js";
 import {
   SIGNS, signAt, ROMAN, ORDINAL, rulerOf, rulerSubject, subject, PLANET_NAMES, PLANET_GLYPHS, POINT_INFO, ANGLE_INFO,
   HOUSE_TITLES, HOUSE_COVERS, HOUSE_ESSENCES, AREAS, ASPECT_KINDS, matchAspect, TAROT, SIGN_READINGS,
-  retrogradeNote, CHIRON_RETROGRADE_NOTE, moonPhase, PLANET_SYMBOLISM } from "./lore.js";
+  retrogradeNote, CHIRON_RETROGRADE_NOTE, moonPhase, sectName, PLANET_SYMBOLISM } from "./lore.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -591,7 +591,8 @@ function renderWhole() {
       `<div><dt>Sun</dt><dd>${signLabel(signAt(body(c, "sun").longitude))}</dd></div>` +
       `<div><dt>Moon</dt><dd>${signLabel(signAt(body(c, "moon").longitude))}</dd></div>` +
       `<div><dt>Rising</dt><dd>${signLabel(c.ascSign)}</dd></div>` +
-      `<div><dt>Chart Ruler</dt><dd style="display:flex;align-items:center;gap:8px;justify-content:flex-end">${planetArt(ruler.name, 22)}${planetName(ruler.name)} · ${ORDINAL[c.houseOf(ruler.longitude) - 1]} house</dd></div></dl></div>`);
+      `<div><dt>Chart Ruler</dt><dd style="display:flex;align-items:center;gap:8px;justify-content:flex-end">${planetArt(ruler.name, 22)}${planetName(ruler.name)} · ${ORDINAL[c.houseOf(ruler.longitude) - 1]} house</dd></div>` +
+      `<div><dt>Day or Night</dt><dd style="display:flex;align-items:center;gap:8px;justify-content:flex-end">${sectArt(sectName(body(c, "sun").longitude, c.asc), 22)}${sectName(body(c, "sun").longitude, c.asc)}</dd></div></dl></div>`);
   }
   $("wholeBody").innerHTML = out.join("");
 }
@@ -610,6 +611,12 @@ const POINT_ART = { chiron: "planet-chiron", northNode: "planet-north-node",
   blackMoonLilith: "planet-black-moon-lilith", whiteMoonSelena: "planet-white-moon-selena" };
 function pointArt(name, size, sign = null) {
   return bodyArt(POINT_ART[name], POINT_INFO[name].name, size, sign);
+}
+
+/** A Day Chart or a Night Chart: the Sun cut by the horizon, risen by day and
+ *  sunk under the earth by night (Morgan's pick, 2026-11-16); the app's `SectArt`. */
+function sectArt(name, size) {
+  return bodyArt(name === "Day Chart" ? "sect-day" : "sect-night", name, size, null);
 }
 
 function bodyArt(file, label, size, sign) {
