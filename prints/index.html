@@ -241,7 +241,7 @@
 
   <p>Or on something other than paper: framed, on canvas, metal, or acrylic,
   or on a T-shirt, sweatshirt, tote bag, or mug. On the last four you can
-  have the painting with its cream border and title, or the painting alone.</p>
+  have the artwork with its cream border and title, or the artwork alone.</p>
   </div>
   </section>
 
@@ -303,7 +303,7 @@
       <legend class="plate-label">Border</legend>
       <div class="choice">
         <label><input type="radio" name="border" value="with" checked><span>With border and title</span></label>
-        <label><input type="radio" name="border" value="none"><span>The painting alone</span></label>
+        <label><input type="radio" name="border" value="none"><span>The artwork alone</span></label>
       </div>
     </fieldset>
 
@@ -591,7 +591,7 @@
     var noun = product.noun || product.name.toLowerCase();
     var phrase = bits.concat([noun]).join(" ");
     phrase = (/^[aeiou]/i.test(phrase) ? "an " : "a ") + phrase;
-    if (product.borderOptional) phrase += borderChoice() === "none" ? ", the painting alone" : ", with its border";
+    if (product.borderOptional) phrase += borderChoice() === "none" ? ", the artwork alone" : ", with its border";
     return phrase;
   }
 
