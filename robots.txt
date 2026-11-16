@@ -6,3 +6,5 @@
 # index anything.
 User-agent: *
 Allow: /
+
+Sitemap: https://www.followmyastrolabe.com/sitemap.xml
