@@ -593,8 +593,67 @@ function renderWhole() {
       `<div><dt>Rising</dt><dd>${signLabel(c.ascSign)}</dd></div>` +
       `<div><dt>Chart Ruler</dt><dd style="display:flex;align-items:center;gap:8px;justify-content:flex-end">${planetArt(ruler.name, 22)}${planetName(ruler.name)} · ${ORDINAL[c.houseOf(ruler.longitude) - 1]} house</dd></div>` +
       `<div><dt>Day or Night</dt><dd style="display:flex;align-items:center;gap:8px;justify-content:flex-end">${sectArt(sectName(body(c, "sun").longitude, c.asc), 22)}${sectName(body(c, "sun").longitude, c.asc)}</dd></div></dl></div>`);
+    out.push(newsletterCard());
   }
   $("wholeBody").innerHTML = out.join("");
+  wireNewsletter();
+}
+
+// ---------------------------------------------------------------- New Moon notes
+
+// The free email list, offered once someone has seen their whole chart. The
+// broker emails a confirmation link and adds nobody until it's opened, so
+// all this page remembers is that it asked, to say "check your inbox" rather
+// than offer the form again.
+const NEWSLETTER_URL = "https://astrolabe-gelato-broker.astrolabe-gelato-broker.workers.dev/subscribe";
+const NEWSLETTER_KEY = "astrolabe.newsletter";
+
+function newsletterCard() {
+  const asked = store.get(NEWSLETTER_KEY) === "asked";
+  return `<div class="rcard newsletter" id="newsletterCard"><span class="plate-label">New Moon Notes</span>` +
+    `<p>One short email at each New Moon: what the sky is doing, and where to find it in your own chart. Free, and you can stop them at any time.</p>` +
+    (asked
+      ? `<p class="rlead" role="status">Check your inbox for the link that confirms it.</p>`
+      : `<form id="newsletterForm" class="newsletter-form" novalidate>` +
+        `<input type="email" id="newsletterEmail" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" aria-label="Email address" required>` +
+        `<button class="metal-button" type="submit">Sign Me Up</button></form>` +
+        `<p class="rnote" id="newsletterNote" role="status">We'll send one email first, to confirm. Your address is used for these notes and nothing else (<a href="/privacy/#newsletter">privacy policy</a>).</p>`) +
+    `</div>`;
+}
+
+function wireNewsletter() {
+  const form = $("newsletterForm");
+  if (!form) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $("newsletterEmail");
+    const note = $("newsletterNote");
+    const button = form.querySelector("button");
+    const email = input.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      note.textContent = "That doesn't look like an email address.";
+      input.focus();
+      return;
+    }
+    button.disabled = true;
+    note.textContent = "Sending…";
+    try {
+      const res = await fetch(NEWSLETTER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "whole-chart" }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "That didn't go through. Please try again in a moment.");
+      }
+      store.set(NEWSLETTER_KEY, "asked");
+      $("newsletterCard").outerHTML = newsletterCard();
+    } catch (err) {
+      note.textContent = err.message === "Failed to fetch" ? "That didn't go through. Please check your connection and try again." : err.message;
+      button.disabled = false;
+    }
+  });
 }
 
 /** The chart ruler's batik drawing, the same art the app shows. Sized
