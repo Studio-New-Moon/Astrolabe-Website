@@ -153,13 +153,23 @@ function withBlur(ctx, radius, k, draw) {
   const px = radius * k;
   ctx.save();
   if (px < 0.35) { draw(ctx); ctx.restore(); return; }
+  const W = ctx.canvas.width, H = ctx.canvas.height;
   if (canvasFilterWorks()) {
+    // The finished picture is blurred, never each stroke on its own. A
+    // filter set on the context blurs every fill and stroke but not the
+    // clips they are drawn through, so the straight cut between a ring's
+    // two halves stayed razor sharp and ran a line through a soft planet.
+    const tmp = document.createElement("canvas");
+    tmp.width = W; tmp.height = H;
+    const t = tmp.getContext("2d");
+    t.setTransform(ctx.getTransform());
+    draw(t);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.filter = `blur(${px}px)`;
-    draw(ctx);
+    ctx.drawImage(tmp, 0, 0);
     ctx.restore();
     return;
   }
-  const W = ctx.canvas.width, H = ctx.canvas.height;
   const f = Math.max(1, Math.min(4, Math.round(px / 2)));
   const tmp = document.createElement("canvas");
   tmp.width = Math.ceil(W / f); tmp.height = Math.ceil(H / f);
