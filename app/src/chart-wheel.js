@@ -19,7 +19,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 /**
  * `chart`: { asc, bodies: [{name, longitude, retrograde}], points: [...], angles: [{kind, longitude}] }
- * `opts`: { selectedHouse, selectedPlanet, selectedPoint, showAspects, sunSign }
+ * `opts`: { selectedHouse, selectedPlanet, selectedPoint, showAspects, sunSign, signNames }
  * plus `studArt(body)`, which returns `{ href, px, boxRatio }` for the
  * instrument's stud image, or nothing to keep the plain SVG stud.
  */
@@ -51,6 +51,13 @@ export function chartWheelSVG(chart, opts = {}) {
       <stop offset=".75" stop-color="var(--brass)"/><stop offset="1" stop-color="#5A4520"/>
     </radialGradient>
   </defs>`);
+  // The sign names run round a band outside the rim, each over its own slice
+  // in its element colour, so nobody has to know ♐ from ♑ to find a sign.
+  // The rest of the wheel shrinks to 90% to make room. The app's wheel has no
+  // band; pass `signNames: false` for its exact proportions.
+  const rimNames = opts.signNames !== false;
+  const k = 0.9;
+  if (rimNames) out.push(`<g transform="translate(${C} ${C}) scale(${k}) translate(${-C} ${-C})">`);
 
   // Houses.
   for (let h = 1; h <= 12; h++) {
@@ -173,6 +180,31 @@ export function chartWheelSVG(chart, opts = {}) {
     `<text x="${C}" y="${C - s * 0.05}" text-anchor="middle" font-size="${s * 0.029}" font-weight="600" letter-spacing="${s * 0.0042}" fill="var(--brass)" class="cw-body">RISING</text>` +
     `<text x="${C}" y="${C + s * 0.02}" text-anchor="middle" font-size="${s * 0.055}" font-weight="500" fill="var(--resist)" class="cw-display">${ascSign.glyph} ${ascSign.name}</text>` +
     `<text x="${C}" y="${C + s * 0.07}" text-anchor="middle" font-size="${s * 0.027}" fill="var(--muted)" class="cw-body">${Math.round(norm(chart.asc) % 30)}° · Sun in ${esc(sunSign)}</text></g>`);
+
+  if (rimNames) {
+    out.push(`</g>`);
+    const fs = s * 0.03;
+    const band0 = outer * k, band1 = outer;
+    out.push(`<circle cx="${C}" cy="${C}" r="${(band0 + band1) / 2}" fill="none" stroke="var(--panel, #221a10)" stroke-width="${band1 - band0}"/>`);
+    for (let h = 1; h <= 12; h++) {
+      const sign = SIGNS[(ascSign.index + h - 1) % 12];
+      const a0 = 180 + (h - 1) * 30, a1 = a0 + 30;
+      const mid = norm((a0 + a1) / 2);
+      // Upper half reads clockwise, lower half anticlockwise, so no name is
+      // ever upside down; the baseline moves so the letters sit mid-band.
+      const upper = mid < 180;
+      const r = upper ? (band0 + band1) / 2 - fs * 0.34 : (band0 + band1) / 2 + fs * 0.34;
+      const [from, to] = upper ? [a1, a0] : [a0, a1];
+      const p0 = polar(from, r), p1 = polar(to, r);
+      const id = `cwName${h}`;
+      out.push(`<path id="${id}" d="M${p0.x},${p0.y} A${r},${r} 0 0 ${upper ? 1 : 0} ${p1.x},${p1.y}" fill="none"/>` +
+        `<text font-size="${fs}" font-weight="600" letter-spacing="${s * 0.002}" fill="var(--el-${sign.element})" class="cw-body" aria-hidden="true">` +
+        `<textPath href="#${id}" startOffset="50%" text-anchor="middle">${sign.name}</textPath></text>`);
+      const t0 = polar(a0, band0), t1 = polar(a0, band1);
+      out.push(`<line x1="${t0.x}" y1="${t0.y}" x2="${t1.x}" y2="${t1.y}" stroke="var(--brass)" stroke-opacity=".35" stroke-width="2"/>`);
+    }
+    out.push(`<circle cx="${C}" cy="${C}" r="${band1 - 1}" fill="none" stroke="var(--brass)" stroke-opacity=".45" stroke-width="2"/>`);
+  }
 
   out.push(`</svg>`);
   return out.join("");
