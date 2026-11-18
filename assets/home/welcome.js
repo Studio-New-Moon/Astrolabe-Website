@@ -205,12 +205,19 @@ function drawFlare(ctx, fx, fy, tx, ty, color) {
   }
 }
 
-function strokeRing(ctx, r, color, strength) {
-  // in a frame already turned to the ring's tilt, centred on the planet
+function strokeRing(ctx, r, color) {
+  // in a frame already turned to the ring's tilt, centred on the planet.
+  // The far side is fainter than the near one, but the change is a fade
+  // across the ring's two ends, never a step: both halves are stroked with
+  // the same gradient, so where the halves meet they agree. A step there
+  // cut each end of the band off square.
   for (const [inset, width, opacity] of [[0, 0.34, 0.5], [0.16, 0.16, 0.32], [0.30, 0.1, 0.6]]) {
     ctx.beginPath();
     ctx.ellipse(0, 0, r * (1.75 - inset), r * (0.5 - inset * 0.29), 0, 0, Math.PI * 2);
-    ctx.strokeStyle = rgba(color, opacity * strength);
+    const g = ctx.createLinearGradient(0, -r * 0.25, 0, r * 0.25);
+    g.addColorStop(0, rgba(color, opacity * 0.32));
+    g.addColorStop(1, rgba(color, opacity));
+    ctx.strokeStyle = g;
     ctx.lineWidth = r * width;
     ctx.stroke();
   }
@@ -221,8 +228,12 @@ function drawPlanet(ctx, cx, cy, r, color, ringed, tilt, rng) {
   if (ringed) {
     ctx.save();
     ctx.translate(cx, cy); ctx.rotate(t);
+    // The far half stops at the globe's edge. The globe is see-through
+    // across its middle, so a far half drawn under it showed through as a
+    // second band crossing the planet.
     ctx.beginPath(); ctx.rect(-r * 3, -r * 3, r * 6, r * 3); ctx.clip();
-    strokeRing(ctx, r, color, 0.32);
+    ctx.beginPath(); ctx.rect(-r * 3, -r * 3, r * 6, r * 6); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip("evenodd");
+    strokeRing(ctx, r, color);
     ctx.restore();
   }
 
@@ -302,7 +313,7 @@ function drawPlanet(ctx, cx, cy, r, color, ringed, tilt, rng) {
     ctx.save();
     ctx.translate(cx, cy); ctx.rotate(t);
     ctx.beginPath(); ctx.rect(-r * 3, 0, r * 6, r * 3); ctx.clip();
-    strokeRing(ctx, r, color, 1);
+    strokeRing(ctx, r, color);
     ctx.restore();
   }
 }
