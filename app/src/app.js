@@ -166,6 +166,16 @@ function navBar(r) {
 }
 
 function show(r) {
+  // #signs/sagittarius opens that sign's page over the Signs tab, so one link
+  // (a newsletter's, a post's) shows every reader where the sign falls in
+  // their own chart. The address then settles back to #signs, so closing the
+  // page leaves you on the tab and a reload doesn't reopen it.
+  let linkedSign = null;
+  if (r.tab === "signs" && r.page) {
+    linkedSign = SIGNS.find((x) => x.name.toLowerCase() === r.page.toLowerCase()) ?? null;
+    r = { tab: "signs", page: null };
+    history.replaceState(null, "", "#signs");
+  }
   scrollMemory[routeKey(route)] = window.scrollY;
   route = r;
   navBar(r);
@@ -182,6 +192,7 @@ function show(r) {
   if (screen === "tarot") startDeck(); else stopDeck();
   if (screen === "sky") sky?.show(); else sky?.hide();
   window.scrollTo(0, r.page ? 0 : (scrollMemory[routeKey(r)] ?? 0));
+  if (linkedSign) openSheet({ kind: "sign", index: linkedSign.index });
 }
 
 window.addEventListener("hashchange", () => {
@@ -1069,6 +1080,8 @@ function handleDetailClick(e) {
   if (asp) { const [a, b] = asp.dataset.aspect.split("|"); return openSheet({ kind: "aspect", a, b }); }
   const side = t.closest("button[data-side]");
   if (side) return openSheet({ kind: "planet", name: side.dataset.side });
+  const house = t.closest("button[data-open-house]");
+  if (house) return openSheet({ kind: "house", house: Number(house.dataset.openHouse) });
   return false;
 }
 
@@ -1225,6 +1238,7 @@ function signSheet(index) {
     `<div class="detail-head" style="gap:10px"><span class="big glyph" style="font-size:34px;color:var(--el-${s.element});min-width:0" aria-hidden="true">${s.glyph}</span>` +
     `<span class="stack" style="gap:2px"><h2>${s.name}</h2><span class="sub2">${s.element[0].toUpperCase() + s.element.slice(1)} · ruled by ${rulerSubject(s)}</span>` +
     `<span style="font-size:12px;color:color-mix(in srgb, var(--muted) 80%, transparent)">${s.dateRange}</span></span></div>`,
+    yourSign(s, c),
     `<p style="font-size:16px;color:var(--ink)">${esc(s.keynote)}</p>`,
     `<div class="section" style="gap:5px"><span class="plate-label">What It Represents</span><p style="font-size:15px">${esc(r.portrait)}</p></div>`,
     // The print, where the app offers it: under the portrait, never ahead of it.
@@ -1238,16 +1252,25 @@ function signSheet(index) {
         `<a class="metal-button" href="/prints/?sign=${s.name.toLowerCase()}#order" style="align-self:flex-start;font-size:11px;letter-spacing:1.6px;padding:9px 14px;border-radius:7px" aria-label="Order the ${s.name} print">Order</a></div>`,
     section("When It Runs Unchecked", esc(r.shadow)),
   ];
-  if (c) {
-    const h = ((s.index - c.ascSign.index + 12) % 12) + 1;
-    const occ = c.bodies.filter((b) => c.houseOf(b.longitude) === h);
-    out.push(`<hr class="divider"><span class="plate-label">In Your Chart</span>` +
-      `<p class="body14">${s.name} is your ${ORDINAL[h - 1]} house — ${esc(HOUSE_COVERS[h - 1])}.</p>` +
-      (occ.length
-        ? occ.map((b) => `<p class="body14"><span class="glyph">${PLANET_GLYPHS[b.name]}</span>  ${planetName(b.name)} at ${label(b.longitude, b.retrograde)}</p>`).join("")
-        : `<p style="font-size:13px;color:var(--muted)">No planet of yours sits in it, so it's read through ${rulerSubject(s)}.</p>`));
-  }
   return out.join("");
+}
+
+/** Where a sign falls in the reader's own chart: the first thing on its page. */
+function yourSign(s, c) {
+  if (!c) {
+    return `<div class="rcard"><span class="plate-label">In Your Chart</span>` +
+      `<p>Cast your chart to see which house ${s.name} is in for you, and which of your planets sit there.</p>` +
+      `<a class="metal-button" href="#chart" style="align-self:flex-start;font-size:11px;letter-spacing:1.6px;padding:9px 14px;border-radius:7px">Cast My Chart</a></div>`;
+  }
+  const h = ((s.index - c.ascSign.index + 12) % 12) + 1;
+  const occ = c.bodies.filter((b) => c.houseOf(b.longitude) === h);
+  return `<div class="rcard"><span class="plate-label">In Your Chart</span>` +
+    `<p class="rlead">${s.name} is your ${ORDINAL[h - 1]} house: ${esc(HOUSE_TITLES[h - 1])}.</p>` +
+    `<p class="rnote">${esc(HOUSE_COVERS[h - 1])}</p>` +
+    (occ.length
+      ? occ.map((b) => `<p><span class="glyph">${PLANET_GLYPHS[b.name]}</span>  ${planetName(b.name)} at ${label(b.longitude, b.retrograde)}</p>`).join("")
+      : `<p class="rnote">No planet of yours sits in it, so it's read through ${rulerSubject(s)}.</p>`) +
+    `<button type="button" class="metal-button" data-open-house="${h}" style="align-self:flex-start;font-size:11px;letter-spacing:1.6px;padding:9px 14px;border-radius:7px">Open House ${ROMAN[h - 1]}</button></div>`;
 }
 
 // ---------------------------------------------------------------- Settings
